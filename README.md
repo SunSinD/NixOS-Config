@@ -19,7 +19,6 @@ sudo nixos-rebuild switch --flake ~/nixos-config#SunSD
 
 ## System Info
 
-| | |
 |---|---|
 | Host | SunSD |
 | OS | NixOS (unstable) |
