@@ -9,6 +9,6 @@ set -e  # Stop immediately if any command fails
 
 sudo nix --experimental-features "nix-command flakes" run \
   'github:nix-community/disko/latest#disko-install' -- \
-  --flake 'github:SunSinD/nixos-config#SunSD' \
+  --flake 'github:SunSinD/Nixos-Config#SunSD' \
   --write-efi-boot-entries \
   --disk main /dev/sda
