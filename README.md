@@ -1,4 +1,4 @@
-# nixos-config
+# Nixos-Config
 
 My personal NixOS configuration, fully declarative, version-controlled, and reproducible.
 Built with Flakes, niri, DankMaterialShell, and Home Manager.
