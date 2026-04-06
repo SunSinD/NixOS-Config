@@ -55,7 +55,6 @@
     vim
     wget
     curl
-    ghostty
     vivaldi
     discord
   ];
