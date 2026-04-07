@@ -27,7 +27,7 @@
 
   programs.ghostty.enable = true;
 
-  programs.dms-shell = {
+  programs.dank-material-shell = {
     enable = true;
     systemd.enable = true;
   };
