@@ -8,7 +8,7 @@
         type = "disk";
         # lib.mkDefault means "use this unless overridden elsewhere"
         # sda is your VirtualBox virtual disk
-        device = lib.mkDefault "/dev/sda";
+        device = lib.mkDefault "/dev/nvme0n1";
         content = {
           # GPT = modern partition table (required for EFI/systemd-boot)
           type = "gpt";
