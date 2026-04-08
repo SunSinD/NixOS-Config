@@ -11,4 +11,4 @@ sudo nix --experimental-features "nix-command flakes" run \
   'github:nix-community/disko/latest#disko-install' -- \
   --flake 'github:SunSinD/Nixos-Config#SunSD' \
   --write-efi-boot-entries \
-  --disk main /dev/sda
+  --disk main /dev/nvme0n1
