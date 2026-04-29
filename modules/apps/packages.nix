@@ -41,7 +41,8 @@
         wl-clipboard
         (tesseract.override { enableLanguages = [ "eng" ]; })
         libnotify
-        (python3.withPackages (ps: [ ps.pygobject3 ]))
+        (python3.withPackages (ps: [ ps.pygobject3 ps.pycairo ]))
+        gtk3
         zenity
       ];
     };

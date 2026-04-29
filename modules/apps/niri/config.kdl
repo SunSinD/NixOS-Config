@@ -97,6 +97,14 @@ layer-rule {
     place-within-backdrop true
 }
 
+window-rule {
+    match title="pin"
+    open-floating true
+    draw-border-with-background false
+    focus-ring { off; }
+    border { off; }
+    shadow { off; }
+}
 
 binds {
     Mod+Return { spawn "ghostty"; }

@@ -15,8 +15,8 @@
         enable           = true;
         enableCompletion = true;
         shellAliases = {
-          rebuild = "sudo nixos-rebuild switch --flake ~/nixconf#$(hostname) 2>&1 | grep -v '^warning:\\|Added input\\|Removed input\\|^$\\|copying path\\|^\\+'";
-          update  = "cd ~/nixconf && git fetch -q origin && git reset -q --hard origin/main && sudo nixos-rebuild switch --flake ~/nixconf#$(hostname) 2>&1 | grep -v '^warning:\\|Added input\\|Removed input\\|^$\\|copying path\\|^\\+'";
+          rebuild = "sudo nixos-rebuild switch --flake ~/nixconf#$(hostname) > /tmp/_build.log 2>&1 && echo '  ✓ Rebuilt!' || (echo '  ✗ Failed:' && grep -i error /tmp/_build.log | head -5)";
+          update  = "bash ~/nixconf/scripts/update.sh";
         };
       };
     };
