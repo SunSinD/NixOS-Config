@@ -16,7 +16,7 @@
         enableCompletion = true;
         shellAliases = {
           rebuild = "sudo nixos-rebuild switch --flake ~/nixconf#$(hostname)";
-          update  = "git -C ~/nixconf pull --autostash --rebase && sudo nixos-rebuild switch --flake ~/nixconf#$(hostname)";
+          update  = "cd ~/nixconf && git fetch origin && git reset --hard origin/main && sudo nixos-rebuild switch --flake ~/nixconf#$(hostname)";
         };
       };
     };
