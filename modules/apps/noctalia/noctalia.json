@@ -11,7 +11,7 @@
     "capsuleColorKey": "none",
     "widgetSpacing": 6,
     "contentPadding": 2,
-    "fontScale": 1,
+    "fontScale": 1.1,
     "enableExclusionZoneInset": true,
     "backgroundOpacity": 0.95,
     "useSeparateOpacity": false,
@@ -29,12 +29,12 @@
       "left": [
         {
           "clockColor": "none",
-          "customFont": "",
+          "customFont": "Bold",
           "formatHorizontal": "HH:mm ddd, MMM dd",
           "formatVertical": "HH mm",
           "id": "Clock",
           "tooltipFormat": "HH:mm ddd, MMM dd",
-          "useCustomFont": false
+          "useCustomFont": true
         },
         {
           "compactMode": true,
