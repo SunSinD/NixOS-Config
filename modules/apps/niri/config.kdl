@@ -14,12 +14,13 @@ input {
     mouse
 }
 
-output "Acer Technologies XV320QU LV 13110DBDC4200" {
-    mode "2560x1440@170.071"
+// To find your exact monitor name, run: niri msg outputs
+output "ASUS VG279QM" {
+    mode "1920x1080@280.000"
 }
 
 cursor {
-    xcursor-theme "catppuccin-mocha-mauve-cursors"
+    xcursor-theme "catppuccin-mocha-lavender-cursors"
     xcursor-size 24
 }
 
@@ -43,7 +44,7 @@ layout {
         off
 
         width 3
-        active-color "#89b4fa"
+        active-color "#b0b0b0"
 
         inactive-color "#00000077"
     }
@@ -56,7 +57,7 @@ layout {
 
         inactive-color "#00000000"
 
-        active-color "#89b3fa"
+        active-color "#b0b0b0"
     }
 }
 
@@ -75,14 +76,14 @@ window-rule {
 }
 
 window-rule {
-    match app-id=r"(?i)helium"
+    match app-id=r"(?i)vivaldi"
     match app-id=r"(?i)zed"
     match app-id=r"(?i)electron"
     open-maximized true
 }
 
 window-rule {
-    match app-id=r"(?i)helium"
+    match app-id=r"(?i)vivaldi"
     open-on-workspace "1"
 }
 
@@ -98,7 +99,7 @@ layer-rule {
 
 binds {
     Mod+Return { spawn "ghostty"; }
-    Mod+B      { spawn "helium"; }
+    Mod+B      { spawn "vivaldi"; }
     Mod+D      { spawn "equibop"; }
     Mod+Z      { spawn "zeditor"; }
 

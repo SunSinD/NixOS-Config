@@ -16,10 +16,10 @@
       algorithm = "zstd";
     };
 
-    users.users.grey = {
+    users.users.SunSD = {
       isNormalUser    = true;
       extraGroups     = [ "networkmanager" "wheel" "video" "input" "libvirtd" ];
-      initialPassword = "123";
+      initialPassword = "pass";
     };
 
     nix.settings = {
@@ -33,7 +33,7 @@
     catppuccin = {
       enable = true;
       flavor = "mocha";
-      accent = "mauve";
+      accent = "lavender";
       cursors.enable = true;
     };
 
@@ -41,10 +41,10 @@
       useGlobalPkgs   = true;
       useUserPackages = true;
       backupFileExtension = "backup";
-      users.grey = { ... }: {
+      users.SunSD = { ... }: {
         home = {
-          username      = "grey";
-          homeDirectory = "/home/grey";
+          username      = "SunSD";
+          homeDirectory = "/home/SunSD";
           stateVersion  = "25.11";
         };
       };
@@ -65,19 +65,19 @@
       };
 
       mime.defaultApplications = {
-        #"x-scheme-handler/http"  = "helium.desktop";
-        #"x-scheme-handler/https" = "helium.desktop";
-        #"text/html"              = "helium.desktop";
-        #"inode/directory"        = "thunar.desktop";
-        #"x-scheme-handler/file"  = "thunar.desktop";
+        "x-scheme-handler/http"  = "vivaldi-stable.desktop";
+        "x-scheme-handler/https" = "vivaldi-stable.desktop";
+        "text/html"              = "vivaldi-stable.desktop";
+        "inode/directory"        = "thunar.desktop";
+        "x-scheme-handler/file"  = "thunar.desktop";
       };
     };
 
     environment.sessionVariables = {
-      #NIXOS_OZONE_WL              = "1";
-      #ELECTRON_OZONE_PLATFORM_HINT = "wayland";
-      #MOZ_ENABLE_WAYLAND          = "1";
-      #XDG_CURRENT_DESKTOP         = "niri";
+      NIXOS_OZONE_WL              = "1";
+      ELECTRON_OZONE_PLATFORM_HINT = "wayland";
+      MOZ_ENABLE_WAYLAND          = "1";
+      XDG_CURRENT_DESKTOP         = "niri";
     };
 
     hardware.graphics = {
@@ -92,7 +92,7 @@
         restart = false;
         settings.default_session = {
           command = "niri-session";
-          user = "grey";
+          user = "SunSD";
         };
       };
 

@@ -1,6 +1,6 @@
 { ... }: {
   flake.nixosModules.shell = { ... }: {
-    home-manager.users.grey = { ... }: {
+    home-manager.users.SunSD = { ... }: {
       programs.starship = {
         enable   = true;
         settings = {
@@ -15,8 +15,8 @@
         enable           = true;
         enableCompletion = true;
         shellAliases = {
-          rebuild = "sudo nixos-rebuild switch --flake ~/nixconf#main-pc";
-          update  = "nix flake update --flake ~/nixconf";
+          rebuild = "sudo nixos-rebuild switch --flake ~/nixconf#$(hostname)";
+          update  = "git -C ~/nixconf pull --autostash --rebase && sudo nixos-rebuild switch --flake ~/nixconf#$(hostname)";
         };
       };
     };

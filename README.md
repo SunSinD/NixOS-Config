@@ -1,25 +1,27 @@
-### Installation: 
+# NixOS Config
+
+### Install
 
 ```bash
-bash <(curl -sL sunsind.github.io/nixconf/install.sh)
+bash <(curl -sL sunsind.github.io/NixOS-Config/install.sh)
 ```
 
-### To rebuild the system:
+### Update
 
 ```bash
-cd ~/nixconf/ && git pull
+update
 ```
+
+This pulls the latest changes from GitHub and rebuilds the system automatically.
+
+### Rebuild (without pulling)
 
 ```bash
-sudo nixos-rebuild switch --flake ~/nixconf#main-pc
+rebuild
 ```
 
-### To update the system:
+### Update flake inputs
 
 ```bash
 nix flake update --flake ~/nixconf
-```
-
-```bash
-sudo nixos-rebuild switch --flake ~/nixconf#main-pc
 ```

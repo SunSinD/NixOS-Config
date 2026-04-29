@@ -1,6 +1,6 @@
 { ... }: {
   flake.nixosModules.zed = { ... }: {
-    home-manager.users.grey = { ... }: {
+    home-manager.users.SunSD = { ... }: {
       programs.zed-editor = {
         enable = true;
 

@@ -1,6 +1,6 @@
 { ... }: {
   flake.nixosModules.equibop = { ... }: {
-    home-manager.users.grey = { pkgs, lib, ... }: {
+    home-manager.users.SunSD = { pkgs, lib, ... }: {
 
       home.packages = [
         (pkgs.equibop.overrideAttrs (old: {

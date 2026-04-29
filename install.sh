@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="https://github.com/greyxp1/nixconf.git"
+REPO="https://github.com/SunSinD/NixOS-Config.git"
 WORK_DIR="/tmp/nixconf"
 HOST="${1:-}"
 
@@ -134,7 +134,7 @@ sudo nixos-install \
   --option trusted-public-keys  "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc= cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
 
 # ── 6. Persist config on installed system ─────────────────────────────────────
-sudo cp -rT "$WORK_DIR" /mnt/home/nixconf
+sudo cp -rT "$WORK_DIR" /mnt/home/SunSD/nixconf
 
 echo "==> Done! Rebooting..."
 sudo reboot
