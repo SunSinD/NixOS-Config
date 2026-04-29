@@ -91,6 +91,7 @@
     };
 
     boot.loader.systemd-boot.configurationLimit = 2;
+    boot.loader.timeout = 0;
     boot.consoleLogLevel = 0;
     boot.kernelParams = [ "quiet" "udev.log_level=3" ];
 
