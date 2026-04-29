@@ -87,7 +87,12 @@
       ELECTRON_OZONE_PLATFORM_HINT = "wayland";
       MOZ_ENABLE_WAYLAND          = "1";
       XDG_CURRENT_DESKTOP         = "niri";
+      GTK_THEME                   = "Adwaita:dark";
     };
+
+    boot.loader.systemd-boot.configurationLimit = 2;
+    boot.consoleLogLevel = 0;
+    boot.kernelParams = [ "quiet" "udev.log_level=3" ];
 
     hardware.graphics = {
       enable      = true;
