@@ -120,18 +120,18 @@ sudo nix --extra-experimental-features "nix-command flakes" \
   run 'github:nix-community/disko/latest' -- \
   --mode destroy,format,mount \
   --yes-wipe-all-disks \
-  "$DISKO_CONFIG" 2>&1 | grep -v "^copying path\|^building\|^fetching\|^downloading" || true
+  "$DISKO_CONFIG" &>/dev/null || true
 
 rm -f "$DISKO_CONFIG"
 
-# ── 5. Install ────────────────────────────────────────────────────────────────
-echo "==> Installing NixOS ($HOST)..."
+echo "==> Installing NixOS ($HOST)... (this may take 10-20 minutes)"
 sudo nixos-install \
   --root /mnt \
   --flake "$WORK_DIR#$HOST" \
   --no-root-passwd \
   --option substituters         "https://cache.nixos.org https://attic.xuyh0120.win/lantian https://cache.garnix.io" \
-  --option trusted-public-keys  "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc= cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
+  --option trusted-public-keys  "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc= cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=" \
+  2>&1 | grep -v "^warning:\|^\+\|^$\|Removed input" || true
 
 # ── 6. Persist config on installed system ─────────────────────────────────────
 DEST="/mnt/home/SunSD/nixconf"
