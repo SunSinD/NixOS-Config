@@ -1,4 +1,4 @@
-{ inputs, ... }: {
+{ ... }: {
   flake.nixosModules.packages = { pkgs, ... }: {
     home-manager.users.SunSD = { pkgs, ... }: {
       home.packages = with pkgs; [

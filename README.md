@@ -3,7 +3,7 @@
 ### Install
 
 ```bash
-bash <(curl -sL sunsind.github.io/NixOS-Config/install.sh)
+bash <(curl -sL raw.githubusercontent.com/SunSinD/NixOS-Config/main/install.sh)
 ```
 
 ### Update
