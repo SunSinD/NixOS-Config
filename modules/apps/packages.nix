@@ -40,9 +40,8 @@
         slurp
         wl-clipboard
         (tesseract.override { enableLanguages = [ "eng" ]; })
+        imagemagick
         libnotify
-        (python3.withPackages (ps: [ ps.pygobject3 ps.pycairo ]))
-        gtk3
         zenity
       ];
     };
