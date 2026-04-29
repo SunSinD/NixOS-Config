@@ -43,7 +43,7 @@
       enable = true;
       flavor = "mocha";
       accent = "lavender";
-      cursors.enable = true;
+      cursors.enable = false;
     };
 
     home-manager = {
