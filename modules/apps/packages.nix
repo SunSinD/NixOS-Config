@@ -41,7 +41,7 @@
         wl-clipboard
         (tesseract.override { enableLanguages = [ "eng" ]; })
         libnotify
-        swayimg
+        (python3.withPackages (ps: [ ps.pygobject3 ]))
         zenity
       ];
     };
