@@ -8,6 +8,8 @@
 
     time.timeZone                          = "America/Montreal";
     networking.networkmanager.enable       = true;
+    networking.nameservers                = [ "1.1.1.1" "8.8.8.8" ];
+    services.resolved.enable              = true;
     hardware.enableRedistributableFirmware = true;
     nixpkgs.config.allowUnfree            = true;
 
