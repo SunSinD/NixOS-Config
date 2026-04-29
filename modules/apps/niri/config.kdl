@@ -1,0 +1,297 @@
+input {
+    keyboard {
+        xkb {
+            layout "us"
+            options "caps:escape"
+        }
+        repeat-delay 250
+        repeat-rate 50
+        numlock
+    }
+    touchpad {
+        natural-scroll
+    }
+    mouse
+}
+
+output "Acer Technologies XV320QU LV 13110DBDC4200" {
+    mode "2560x1440@170.071"
+}
+
+cursor {
+    xcursor-theme "catppuccin-mocha-mauve-cursors"
+    xcursor-size 24
+}
+
+hotkey-overlay {
+    skip-at-startup
+}
+
+prefer-no-csd
+
+debug {
+    honor-xdg-activation-with-invalid-serial
+}
+
+workspace "1"
+workspace "2"
+workspace "3"
+
+layout {
+    gaps 10
+    focus-ring {
+        off
+
+        width 3
+        active-color "#89b4fa"
+
+        inactive-color "#00000077"
+    }
+    background-color "transparent"
+    shadow {
+        color "#00000077"
+    }
+    border {
+        width 3
+
+        inactive-color "#00000000"
+
+        active-color "#89b3fa"
+    }
+}
+
+overview {
+    workspace-shadow {
+
+
+        off
+    }
+}
+
+window-rule {
+    geometry-corner-radius 10
+    clip-to-geometry true
+    draw-border-with-background false
+}
+
+window-rule {
+    match app-id=r"(?i)helium"
+    match app-id=r"(?i)zed"
+    match app-id=r"(?i)electron"
+    open-maximized true
+}
+
+window-rule {
+    match app-id=r"(?i)helium"
+    open-on-workspace "1"
+}
+
+window-rule {
+    match app-id=r"(?i)electron"
+    open-on-workspace "3"
+}
+
+layer-rule {
+    match namespace=r"^noctalia-wallpaper.*"
+    place-within-backdrop true
+}
+
+binds {
+    Mod+Return { spawn "ghostty"; }
+    Mod+B      { spawn "helium"; }
+    Mod+D      { spawn "equibop"; }
+    Mod+Z      { spawn "zeditor"; }
+
+    Mod+P     { spawn "noctalia-shell" "ipc" "call" "sessionMenu" "toggle"; }
+    Mod+C     { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
+    Mod+Space { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
+    Mod+O     { spawn "noctalia-shell" "ipc" "call" "bar" "toggle"; }
+
+    XF86AudioRaiseVolume { spawn "noctalia-shell" "ipc" "call" "volume" "increase"; }
+    XF86AudioLowerVolume { spawn "noctalia-shell" "ipc" "call" "volume" "decrease"; }
+    XF86AudioMute        { spawn "noctalia-shell" "ipc" "call" "volume" "muteOutput"; }
+
+    Mod+Q       { close-window; }
+    Mod+F       { maximize-column; }
+    Mod+Shift+F { fullscreen-window; }
+    Mod+T       { toggle-window-floating; }
+    Mod+Tab     { toggle-overview; }
+    Print       { screenshot; }
+
+    Mod+H { focus-column-left; }
+    Mod+L { focus-column-right; }
+    Mod+J { focus-window-down; }
+    Mod+K { focus-window-up; }
+
+    Mod+Shift+H { move-column-left; }
+    Mod+Shift+L { move-column-right; }
+    Mod+Shift+J { move-window-down; }
+    Mod+Shift+K { move-window-up; }
+
+    Mod+Ctrl+H { set-column-width "-5%"; }
+    Mod+Ctrl+L { set-column-width "+5%"; }
+    Mod+Ctrl+J { set-window-height "-5%"; }
+    Mod+Ctrl+K { set-window-height "+5%"; }
+
+    Mod+Alt+J { focus-workspace-down; }
+    Mod+Alt+K { focus-workspace-up; }
+
+    Mod+Alt+Shift+J { move-column-to-workspace-down; }
+    Mod+Alt+Shift+K { move-column-to-workspace-up; }
+
+    Mod+WheelScrollUp        { focus-workspace-up; }
+    Mod+WheelScrollDown      { focus-workspace-down; }
+    Mod+Shift+WheelScrollUp  { focus-column-left; }
+    Mod+Shift+WheelScrollDown { focus-column-right; }
+}
+
+spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP=niri"
+spawn-at-startup "noctalia-shell"
+spawn-at-startup "equibop"
+spawn-at-startup "niri" "msg" "action" "focus-workspace" "2"
+
+animations {
+    // Uncomment while tuning.
+    slowdown 1.5
+
+
+    window-open {
+        duration-ms 260
+        // close to a polished macOS-style ease-out feel
+        curve "cubic-bezier" 0.22 1.0 0.36 1.0
+
+        custom-shader r"
+            vec4 open_color(vec3 coords_geo, vec3 size_geo) {
+                float p = niri_clamped_progress;
+
+                // Slight up-to-down settle.
+                float slide_px = (1.0 - p) * 60.0;
+                float slide_geo = slide_px / max(size_geo.x, 1.0);
+
+                // Very subtle scale-up into place.
+                float scale = 0.985 + 0.015 * p;
+
+                vec2 uv = coords_geo.xy;
+                uv -= vec2(0.5, 0.5);
+                uv /= scale;
+                uv += vec2(0.5, 0.5);
+
+                uv.y -= slide_geo;
+
+                vec3 coords_tex = niri_geo_to_tex * vec3(uv, 1.0);
+                vec4 color = texture2D(niri_tex, coords_tex.st);
+
+                // Gentle fade-in.
+                color *= p;
+
+                return color;
+            }
+        "
+    }
+
+    window-close {
+        duration-ms 180
+        // quick, clean exit
+        curve "cubic-bezier" 0.32 0.0 0.67 0.0
+
+        custom-shader r"
+            vec4 close_color(vec3 coords_geo, vec3 size_geo) {
+                float p = niri_clamped_progress;
+                float inv = 1.0 - p;
+
+                // Slight downward departure.
+                float slide_px = p * 40.0;
+                float slide_geo = slide_px / max(size_geo.x, 1.0);
+
+                // Tiny scale-down on exit.
+                float scale = 1.0 - 0.012 * p;
+
+                vec2 uv = coords_geo.xy;
+                uv -= vec2(0.5, 0.5);
+                uv /= scale;
+                uv += vec2(0.5, 0.5);
+
+                uv.y -= slide_geo;
+
+                vec3 coords_tex = niri_geo_to_tex * vec3(uv, 1.0);
+                vec4 color = texture2D(niri_tex, coords_tex.st);
+
+                color *= inv;
+                return color;
+            }
+        "
+    }
+
+    window-resize {
+        // Resizes should feel soft but controlled.
+        spring damping-ratio=1.0 stiffness=720 epsilon=0.0001
+
+        custom-shader r"
+            vec4 resize_color(vec3 coords_curr_geo, vec3 size_curr_geo) {
+                // Show the next texture, but with a very mild softening
+                // toward the edges during motion for a less harsh resize feel.
+                vec3 coords_tex_next = niri_geo_to_tex_next * coords_curr_geo;
+                vec4 color = texture2D(niri_tex_next, coords_tex_next.st);
+
+                vec2 uv = coords_curr_geo.xy;
+                float edge =
+                    min(min(uv.x, 1.0 - uv.x), min(uv.y, 1.0 - uv.y));
+
+                float vignette = smoothstep(0.0, 0.06, edge);
+                color.rgb *= mix(0.985, 1.0, vignette);
+
+                return color;
+            }
+        "
+    }
+
+// ***animations below do not use a shaders ***
+// these are not required
+
+
+    workspace-switch {
+        // Smooth, composed, no bounce.
+        spring damping-ratio=1.0 stiffness=760 epsilon=0.0001
+    }
+    
+    horizontal-view-movement {
+        // Main "camera glide" for scrollable movement.
+        spring damping-ratio=1.0 stiffness=640 epsilon=0.0001
+    }
+
+    window-movement {
+        // Individual windows shift with a slightly tighter response
+        // than the camera, so it feels organized.
+        spring damping-ratio=1.0 stiffness=700 epsilon=0.0001
+    }
+
+    config-notification-open-close {
+        // Less playful, more refined than the default underdamped feel.
+        spring damping-ratio=1.0 stiffness=820 epsilon=0.001
+    }
+
+    exit-confirmation-open-close {
+        spring damping-ratio=1.0 stiffness=560 epsilon=0.01
+    }
+
+    screenshot-ui-open {
+        duration-ms 220
+        curve "cubic-bezier" 0.22 1.0 0.36 1.0
+    }
+
+    overview-open-close {
+        // Overview should feel smooth and premium, not springy/bouncy.
+        spring damping-ratio=1.0 stiffness=620 epsilon=0.0001
+    }
+
+    recent-windows-close {
+        spring damping-ratio=1.0 stiffness=680 epsilon=0.001
+    }
+}
+environment
+
+gestures {
+    hot-corners {
+        off
+    }
+}
