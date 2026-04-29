@@ -203,24 +203,7 @@
         "type": "github"
       }
     },
-    "flake-utils": {
-      "inputs": {
-        "systems": "systems"
-      },
-      "locked": {
-        "lastModified": 1731533236,
-        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
+
     "gitignore": {
       "inputs": {
         "nixpkgs": [
@@ -243,28 +226,7 @@
         "type": "github"
       }
     },
-    "helium": {
-      "inputs": {
-        "flake-compat": "flake-compat",
-        "flake-utils": "flake-utils",
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1777191375,
-        "narHash": "sha256-h87r5Y4MZsknMyEmeuRUukPDYDwUgsXSMbG5m2bTn5I=",
-        "owner": "AlvaroParker",
-        "repo": "helium-nix",
-        "rev": "1b1f294b1aa77952a4654838d3e292b514069699",
-        "type": "github"
-      },
-      "original": {
-        "owner": "AlvaroParker",
-        "repo": "helium-nix",
-        "type": "github"
-      }
-    },
+
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -644,7 +606,7 @@
         "catppuccin": "catppuccin",
         "disko": "disko",
         "flake-parts": "flake-parts",
-        "helium": "helium",
+
         "home-manager": "home-manager",
         "import-tree": "import-tree",
         "lanzaboote": "lanzaboote",
@@ -677,21 +639,7 @@
         "type": "github"
       }
     },
-    "systems": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
+
     "systems_2": {
       "locked": {
         "lastModified": 1689347949,
