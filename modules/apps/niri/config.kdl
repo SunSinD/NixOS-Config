@@ -110,7 +110,8 @@ binds {
     Mod+Z      { spawn "zeditor"; }
     Mod+E      { spawn "thunar"; }
 
-    Mod+P     { spawn "noctalia-shell" "ipc" "call" "sessionMenu" "toggle"; }
+    Mod+P       { spawn "bash" "-c" "systemctl poweroff"; }
+    Mod+Shift+P { spawn "bash" "-c" "systemctl reboot"; }
     Mod+C     { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
     Mod+Space { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
     Mod+O     { spawn "noctalia-shell" "ipc" "call" "bar" "toggle"; }
