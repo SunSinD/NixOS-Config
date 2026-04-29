@@ -41,7 +41,7 @@
         wl-clipboard
         (tesseract.override { enableLanguages = [ "eng" ]; })
         libnotify
-        imv
+        swayimg
       ];
     };
   };
