@@ -39,7 +39,8 @@
         grim
         slurp
         wl-clipboard
-        tesseract
+        (tesseract.override { enableLanguages = [ "eng" ]; })
+        tessdata
         libnotify
         imv
       ];

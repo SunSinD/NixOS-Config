@@ -8,8 +8,13 @@
 
     time.timeZone                          = "America/Montreal";
     networking.networkmanager.enable       = true;
-    networking.nameservers                = [ "1.1.1.1" "8.8.8.8" ];
-    services.resolved.enable              = true;
+    networking.networkmanager.dns          = "systemd-resolved";
+    networking.nameservers                = [ "1.1.1.1" "8.8.8.8" "1.0.0.1" "8.8.4.4" ];
+    services.resolved = {
+      enable       = true;
+      dnssec       = "false";
+      fallbackDns  = [ "1.1.1.1" "8.8.8.8" ];
+    };
     hardware.enableRedistributableFirmware = true;
     nixpkgs.config.allowUnfree            = true;
 

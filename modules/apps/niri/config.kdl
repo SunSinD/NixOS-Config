@@ -37,6 +37,7 @@ debug {
 workspace "1"
 workspace "2"
 workspace "3"
+workspace "4"
 
 layout {
     gaps 10
@@ -104,9 +105,10 @@ window-rule {
 
 binds {
     Mod+Return { spawn "ghostty"; }
-    Mod+B      { spawn "vivaldi"; }
+    Mod+B      { spawn "vivaldi" "--password-store=basic"; }
     Mod+D      { spawn "equibop"; }
     Mod+Z      { spawn "zeditor"; }
+    Mod+E      { spawn "thunar"; }
 
     Mod+P     { spawn "noctalia-shell" "ipc" "call" "sessionMenu" "toggle"; }
     Mod+C     { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
@@ -134,13 +136,13 @@ binds {
 
     // ── ShareX-style binds ─────────────────────────────────────────────────
     // Insert = capture region → save to ~/Screenshots + clipboard
-    Insert { spawn "bash" "-c" "mkdir -p ~/Screenshots && F=~/Screenshots/$(date +%Y%m%d_%H%M%S).png && grim -g \"$(slurp)\" $F && wl-copy < $F && notify-send 'Screenshot' 'Saved & copied'"; }
+    Insert { spawn "bash" "-c" "mkdir -p ~/Screenshots && F=~/Screenshots/screenshot_$(date +%Y%m%d_%H%M%S).png && grim -g \"$(slurp -b 00000040 -c b0b0b0 -w 2)\" $F && wl-copy < $F && notify-send -t 2000 'Screenshot' 'Saved & copied'"; }
 
-    // Alt+T   = OCR region → text to clipboard
-    Alt+T  { spawn "bash" "-c" "grim -g \"$(slurp)\" /tmp/_ocr.png && tesseract /tmp/_ocr.png /tmp/_ocr -l eng 2>/dev/null && wl-copy < /tmp/_ocr.txt && notify-send 'OCR' \"$(cat /tmp/_ocr.txt)\" && rm -f /tmp/_ocr.png /tmp/_ocr.txt"; }
+    // Alt+T = OCR region → text to clipboard
+    Alt+T  { spawn "bash" "-c" "grim -g \"$(slurp -b 00000040 -c b0b0b0 -w 2)\" /tmp/_ocr.png && tesseract /tmp/_ocr.png /tmp/_ocr -l eng --psm 6 2>/dev/null && wl-copy < /tmp/_ocr.txt && notify-send -t 3000 'OCR' \"$(head -c 200 /tmp/_ocr.txt)\" && rm -f /tmp/_ocr.png /tmp/_ocr.txt"; }
 
-    // Delete  = pin region to screen (always-on-top floating window)
-    Delete { spawn "bash" "-c" "grim -g \"$(slurp)\" /tmp/_pin_$(date +%s).png && imv /tmp/_pin_*.png"; }
+    // Delete = pin region to screen (floating window at captured size)
+    Delete { spawn "bash" "-c" "F=/tmp/_pin_$(date +%s).png && grim -g \"$(slurp -b 00000040 -c b0b0b0 -w 2)\" $F && imv -W fit $F"; }
 
     Mod+H { focus-column-left; }
     Mod+L { focus-column-right; }
