@@ -1,12 +1,12 @@
 { ... }: {
   flake.nixosModules.git = { pkgs, ... }: {
-    home-manager.users.grey = { ... }: {
+    home-manager.users.SunSD = { ... }: {
       programs.git = {
         enable = true;
 
         settings.user = {
-          name  = "greyxp1";
-          email = "greyxp999@gmail.com";
+          name  = "SunSinD";
+          email = "SunpreetSingh22@outlook.com";
         };
 
         settings = {

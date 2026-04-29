@@ -1,6 +1,6 @@
 { ... }: {
   flake.nixosModules.ghostty = { ... }: {
-    home-manager.users.grey = { ... }: {
+    home-manager.users.SunSD = { ... }: {
       programs.ghostty = {
         enable                = true;
         enableBashIntegration = true;

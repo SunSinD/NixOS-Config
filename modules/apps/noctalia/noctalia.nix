@@ -1,6 +1,6 @@
 { inputs, ... }: {
   flake.nixosModules.noctalia = { ... }: {
-    home-manager.users.grey = { ... }: {
+    home-manager.users.SunSD = { ... }: {
       imports = [ inputs.noctalia.homeModules.default ];
 
       programs.noctalia-shell = {

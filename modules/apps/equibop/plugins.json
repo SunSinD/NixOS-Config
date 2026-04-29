@@ -372,7 +372,7 @@
     "CrashHandler": {
       "attemptToNavigateToHome": false,
       "attemptToPreventCrashes": true,
-      "enabled": false
+      "enabled": true
     },
     "CustomCommands": {
       "enabled": false,
@@ -543,7 +543,7 @@
       "enableEmojiBypass": true,
       "enableStickerBypass": true,
       "enableStreamQualityBypass": true,
-      "enabled": false,
+      "enabled": true,
       "hyperLinkText": "{{NAME}}",
       "stickerSize": 160,
       "transformCompoundSentence": false,
@@ -571,7 +571,7 @@
       "searchOption": "hostandpath"
     },
     "FavouriteAnything": {
-      "enabled": false
+      "enabled": true
     },
     "FileUpload": {
       "apngToGif": false,
@@ -629,7 +629,7 @@
       "volume": 10
     },
     "FixYoutubeEmbeds": {
-      "enabled": false,
+      "enabled": true,
       "youtubeDescription": false
     },
     "FollowVoiceUser": {
@@ -772,7 +772,7 @@
       "findInServer": true
     },
     "ILoveSpam": {
-      "enabled": false
+      "enabled": true
     },
     "IRememberYou": {
       "enabled": false
@@ -801,7 +801,7 @@
       "permanentlyIgnoredUsers": ""
     },
     "ImageFilename": {
-      "enabled": false,
+      "enabled": true,
       "showFullUrl": false
     },
     "ImageLink": {
@@ -1012,7 +1012,7 @@
       "cacheLimit": 1000,
       "cacheMessagesFromServers": false,
       "clearLogsOnRestart": false,
-      "enabled": false,
+      "enabled": true,
       "hideMessageFromMessageLoggers": false,
       "hideMessageFromMessageLoggersDeletedMessage": "redacted eh",
       "ignoreBots": false,
@@ -1157,7 +1157,7 @@
       "inlineVideo": true
     },
     "NoNitroUpsell": {
-      "enabled": false
+      "enabled": true
     },
     "NoOnboardingDelay": {
       "enabled": false
@@ -1195,7 +1195,7 @@
       "enabled": false
     },
     "NoTypingAnimation": {
-      "enabled": false
+      "enabled": true
     },
     "NoUnblockToJump": {
       "enabled": false
@@ -1326,7 +1326,7 @@
       "disableQuestsGiftInventoryRelocationNotice": true,
       "disableQuestsPageSponsoredBanner": false,
       "disableQuestsPopupAboveAccountPanel": true,
-      "enabled": false,
+      "enabled": true,
       "expiredSubsort": "Expiring DESC",
       "fetchingQuestsAlert": "discodo",
       "fetchingQuestsAlertVolume": 100,
@@ -1442,7 +1442,7 @@
       "visualStyle": "overlay"
     },
     "RelationshipNotifier": {
-      "enabled": false,
+      "enabled": true,
       "friendRequestCancels": true,
       "friends": true,
       "groups": true,
@@ -1757,7 +1757,7 @@
       "location": "PANEL"
     },
     "SpotifyCrack": {
-      "enabled": false,
+      "enabled": true,
       "keepSpotifyActivityOnIdle": false,
       "noSpotifyAutoPause": true
     },
@@ -2000,7 +2000,7 @@
       "uncollapseSettingsByDefault": false
     },
     "ValidReply": {
-      "enabled": false
+      "enabled": true
     },
     "ValidUser": {
       "enabled": false
@@ -2043,7 +2043,7 @@
       "volume": 1
     },
     "ViewIcons": {
-      "enabled": false,
+      "enabled": true,
       "format": "webp",
       "imgSize": "1024"
     },
@@ -2081,7 +2081,7 @@
       "soundboardVolume": 0.5
     },
     "VoiceChatDoubleClick": {
-      "enabled": false
+      "enabled": true
     },
     "VoiceChatUtilities": {
       "enabled": false,
@@ -2089,7 +2089,7 @@
       "waitSeconds": 2
     },
     "VoiceDownload": {
-      "enabled": false
+      "enabled": true
     },
     "VoiceJoinMessages": {
       "allowedFriends": "",
@@ -2114,7 +2114,7 @@
     },
     "VoiceRejoin": {
       "applyOnlyToDms": false,
-      "enabled": false,
+      "enabled": true,
       "preventReconnectIfCallEnded": "both",
       "rejoinDelay": 2,
       "rejoinTimeout": 30
@@ -2153,7 +2153,7 @@
       "enabled": false
     },
     "WhosWatching": {
-      "enabled": false,
+      "enabled": true,
       "showPanel": true
     },
     "WigglyText": {
@@ -2182,7 +2182,7 @@
       "webSocketPort": 42070
     },
     "YoutubeAdblock": {
-      "enabled": false
+      "enabled": true
     },
     "WebRichPresence": {
       "enabled": false

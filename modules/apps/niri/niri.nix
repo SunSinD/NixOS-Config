@@ -7,7 +7,7 @@
       package = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
     };
 
-    home-manager.users.grey = { ... }: {
+    home-manager.users.SunSD = { ... }: {
       programs.niri.config = builtins.readFile ./config.kdl;
 
       home.packages = [

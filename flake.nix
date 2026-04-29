@@ -1,5 +1,5 @@
 {
-  description = "Modular NixOS Configuration";
+  description = "NixOS Configuration";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -24,11 +24,6 @@
 
     lanzaboote = {
       url = "github:nix-community/lanzaboote/v1.0.0";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    helium = {
-      url = "github:AlvaroParker/helium-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

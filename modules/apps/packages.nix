@@ -1,6 +1,6 @@
 { inputs, ... }: {
   flake.nixosModules.packages = { pkgs, ... }: {
-    home-manager.users.grey = { pkgs, ... }: {
+    home-manager.users.SunSD = { pkgs, ... }: {
       home.packages = with pkgs; [
         # ── CLI tools ──────────────────────────────────────────────────────────
         neovim
@@ -27,7 +27,7 @@
         virtio-win
         win-spice
 
-        inputs.helium.packages.${pkgs.stdenv.hostPlatform.system}.default
+        vivaldi
         gpu-screen-recorder
         obsidian
         mpv
