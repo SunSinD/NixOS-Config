@@ -19,8 +19,10 @@
     users.users.SunSD = {
       isNormalUser    = true;
       extraGroups     = [ "networkmanager" "wheel" "video" "input" "libvirtd" ];
-      initialPassword = "pass";
+      initialHashedPassword = "";
     };
+
+    security.sudo.wheelNeedsPassword = false;
 
     nix.settings = {
       trusted-users         = [ "root" "@wheel" ];
@@ -105,11 +107,11 @@
       flatpak.enable = true;
       upower.enable = true;
       power-profiles-daemon.enable = true;
-      #gnome.gnome-keyring.enable = true;
+      gnome.gnome-keyring.enable = true;
       dbus.enable = true;
     };
 
-    #security.pam.services.greetd.enableGnomeKeyring = true;
+    security.pam.services.greetd.enableGnomeKeyring = true;
 
     virtualisation = {
       libvirtd = {
