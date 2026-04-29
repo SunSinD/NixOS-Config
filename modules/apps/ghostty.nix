@@ -5,7 +5,7 @@
         enable                = true;
         enableBashIntegration = true;
         settings = {
-          background-opacity = "0.81";
+          background-opacity = "0.65";
         };
       };
     };
