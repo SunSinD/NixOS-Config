@@ -117,16 +117,24 @@ binds {
     XF86AudioLowerVolume { spawn "noctalia-shell" "ipc" "call" "volume" "decrease"; }
     XF86AudioMute        { spawn "noctalia-shell" "ipc" "call" "volume" "muteOutput"; }
 
-    Mod+Q       { close-window; }
+    Mod+W       { close-window; }
     Mod+F       { maximize-column; }
     Mod+Shift+F { fullscreen-window; }
     Mod+T       { toggle-window-floating; }
     Mod+Tab     { toggle-overview; }
-    Print       { screenshot; }
+
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+Shift+1 { move-column-to-workspace 1; }
+    Mod+Shift+2 { move-column-to-workspace 2; }
+    Mod+Shift+3 { move-column-to-workspace 3; }
+    Mod+Shift+4 { move-column-to-workspace 4; }
 
     // ── ShareX-style binds ─────────────────────────────────────────────────
-    // Insert  = capture region → clipboard
-    Insert { spawn "bash" "-c" "grim -g \"$(slurp)\" - | wl-copy && notify-send 'Screenshot' 'Copied to clipboard'"; }
+    // Insert = capture region → save to ~/Screenshots + clipboard
+    Insert { spawn "bash" "-c" "mkdir -p ~/Screenshots && F=~/Screenshots/$(date +%Y%m%d_%H%M%S).png && grim -g \"$(slurp)\" $F && wl-copy < $F && notify-send 'Screenshot' 'Saved & copied'"; }
 
     // Alt+T   = OCR region → text to clipboard
     Alt+T  { spawn "bash" "-c" "grim -g \"$(slurp)\" /tmp/_ocr.png && tesseract /tmp/_ocr.png /tmp/_ocr -l eng 2>/dev/null && wl-copy < /tmp/_ocr.txt && notify-send 'OCR' \"$(cat /tmp/_ocr.txt)\" && rm -f /tmp/_ocr.png /tmp/_ocr.txt"; }
