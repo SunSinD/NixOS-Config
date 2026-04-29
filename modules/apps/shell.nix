@@ -15,8 +15,8 @@
         enable           = true;
         enableCompletion = true;
         shellAliases = {
-          rebuild = "sudo nixos-rebuild switch --flake ~/nixconf#$(hostname)";
-          update  = "cd ~/nixconf && git fetch origin && git reset --hard origin/main && sudo nixos-rebuild switch --flake ~/nixconf#$(hostname)";
+          rebuild = "sudo nixos-rebuild switch --flake ~/nixconf#$(hostname) 2>&1 | grep -v '^warning:\\|^$\\|Added input\\|Removed input'";
+          update  = "cd ~/nixconf && git fetch origin && git reset --hard origin/main && sudo nixos-rebuild switch --flake ~/nixconf#$(hostname) 2>&1 | grep -v '^warning:\\|^$\\|Added input\\|Removed input'";
         };
       };
     };
