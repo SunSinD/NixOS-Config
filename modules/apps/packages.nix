@@ -28,11 +28,20 @@
         win-spice
 
         vivaldi
+        obs-studio
         gpu-screen-recorder
         obsidian
         mpv
         thunar
         codex
+
+        # ── Screenshot / OCR / Pin ─────────────────────────────────────────────
+        grim
+        slurp
+        wl-clipboard
+        tesseract
+        libnotify
+        imv
       ];
     };
   };
