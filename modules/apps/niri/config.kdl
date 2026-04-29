@@ -115,8 +115,8 @@ binds {
     Mod+Z      { spawn "zeditor"; }
     Mod+E      { spawn "thunar"; }
 
-    Mod+P       { spawn "bash" "-c" "zenity --question --title=Shutdown --text='Shut down now?' --width=200 2>/dev/null && systemctl poweroff"; }
-    Mod+Shift+P { spawn "bash" "-c" "zenity --question --title=Reboot --text='Reboot now?' --width=200 2>/dev/null && systemctl reboot"; }
+    Mod+P       { spawn "bash" "-c" "GTK_THEME=Adwaita:dark zenity --question --title=' ' --text='Shut down?' --ok-label=Yes --cancel-label=No --width=280 --icon-name= 2>/dev/null && systemctl poweroff"; }
+    Mod+Shift+P { spawn "bash" "-c" "GTK_THEME=Adwaita:dark zenity --question --title=' ' --text='Reboot?' --ok-label=Yes --cancel-label=No --width=280 --icon-name= 2>/dev/null && systemctl reboot"; }
     Mod+C     { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
     Mod+Space { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
     Mod+O     { spawn "noctalia-shell" "ipc" "call" "bar" "toggle"; }
