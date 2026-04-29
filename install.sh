@@ -134,7 +134,11 @@ sudo nixos-install \
   --option trusted-public-keys  "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc= cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
 
 # ── 6. Persist config on installed system ─────────────────────────────────────
-sudo cp -rT "$WORK_DIR" /mnt/home/SunSD/nixconf
+DEST="/mnt/home/SunSD/nixconf"
+sudo mkdir -p "$(dirname "$DEST")"
+sudo cp -rT "$WORK_DIR" "$DEST"
+sudo chown -R 1000:1000 "$DEST"
+cd "$DEST" && sudo -u "#1000" git remote set-url origin https://github.com/SunSinD/NixOS-Config.git 2>/dev/null || true
 
 echo "==> Done! Rebooting..."
 sudo reboot
