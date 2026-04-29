@@ -359,10 +359,6 @@
       },
       {
         "enabled": true,
-        "id": "shortcuts-card"
-      },
-      {
-        "enabled": true,
         "id": "audio-card"
       },
       {
