@@ -345,9 +345,6 @@
         },
         {
           "id": "Bluetooth"
-        },
-        {
-          "id": "Notifications"
         }
       ],
       "right": []
@@ -356,6 +353,10 @@
       {
         "enabled": true,
         "id": "profile-card"
+      },
+      {
+        "enabled": true,
+        "id": "shortcuts-card"
       },
       {
         "enabled": true,
