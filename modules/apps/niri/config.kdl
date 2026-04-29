@@ -97,6 +97,11 @@ layer-rule {
     place-within-backdrop true
 }
 
+window-rule {
+    match app-id=r"(?i)imv"
+    open-floating true
+}
+
 binds {
     Mod+Return { spawn "ghostty"; }
     Mod+B      { spawn "vivaldi"; }
@@ -118,6 +123,16 @@ binds {
     Mod+T       { toggle-window-floating; }
     Mod+Tab     { toggle-overview; }
     Print       { screenshot; }
+
+    // ── ShareX-style binds ─────────────────────────────────────────────────
+    // Insert  = capture region → clipboard
+    Insert { spawn "bash" "-c" "grim -g \"$(slurp)\" - | wl-copy && notify-send 'Screenshot' 'Copied to clipboard'"; }
+
+    // Alt+T   = OCR region → text to clipboard
+    Alt+T  { spawn "bash" "-c" "grim -g \"$(slurp)\" /tmp/_ocr.png && tesseract /tmp/_ocr.png /tmp/_ocr -l eng 2>/dev/null && wl-copy < /tmp/_ocr.txt && notify-send 'OCR' \"$(cat /tmp/_ocr.txt)\" && rm -f /tmp/_ocr.png /tmp/_ocr.txt"; }
+
+    // Delete  = pin region to screen (always-on-top floating window)
+    Delete { spawn "bash" "-c" "grim -g \"$(slurp)\" /tmp/_pin_$(date +%s).png && imv /tmp/_pin_*.png"; }
 
     Mod+H { focus-column-left; }
     Mod+L { focus-column-right; }
