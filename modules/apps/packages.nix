@@ -17,6 +17,7 @@
         adwaita-icon-theme
         hicolor-icon-theme
         dconf
+        bibata-cursors
 
         # ── Virtualisation ─────────────────────────────────────────────────────
         virt-manager
