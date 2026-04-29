@@ -1,7 +1,7 @@
 ### Installation: 
 
 ```bash
-bash <(curl -sL greyxp1.github.io/nixconf/install.sh)
+bash <(curl -sL sunsind.github.io/nixconf/install.sh)
 ```
 
 ### To rebuild the system:
