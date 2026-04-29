@@ -43,7 +43,7 @@
         (tesseract.override { enableLanguages = [ "eng" ]; })
         imagemagick
         libnotify
-        zenity
+        fuzzel
       ];
     };
   };

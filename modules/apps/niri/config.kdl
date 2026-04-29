@@ -115,8 +115,8 @@ binds {
     Mod+Z      { spawn "zeditor"; }
     Mod+E      { spawn "thunar"; }
 
-    Mod+P       { spawn "bash" "-c" "bash ~/nixconf/scripts/confirm.sh 'Shut down?' && systemctl poweroff"; }
-    Mod+Shift+P { spawn "bash" "-c" "bash ~/nixconf/scripts/confirm.sh 'Reboot?' && systemctl reboot"; }
+    Mod+P       { spawn "bash" "-c" "printf 'Yes\\nNo' | fuzzel --dmenu --prompt 'Shut down?  ' --width 18 --lines 2 --font 'sans:size=13' --background-color=181825ff --text-color=cdd6f4ff --selection-color=313244ff --selection-text-color=cdd6f4ff --border-color=45475aff --border-radius=12 --border-width=1 | grep -q '^Yes$' && systemctl poweroff"; }
+    Mod+Shift+P { spawn "bash" "-c" "printf 'Yes\\nNo' | fuzzel --dmenu --prompt 'Reboot?  ' --width 18 --lines 2 --font 'sans:size=13' --background-color=181825ff --text-color=cdd6f4ff --selection-color=313244ff --selection-text-color=cdd6f4ff --border-color=45475aff --border-radius=12 --border-width=1 | grep -q '^Yes$' && systemctl reboot"; }
     Mod+C     { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
     Mod+Space { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
     Mod+O     { spawn "noctalia-shell" "ipc" "call" "bar" "toggle"; }
