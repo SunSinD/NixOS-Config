@@ -42,6 +42,7 @@
         (tesseract.override { enableLanguages = [ "eng" ]; })
         libnotify
         swayimg
+        zenity
       ];
     };
   };
