@@ -115,8 +115,8 @@ binds {
     Mod+Z      { spawn "zeditor"; }
     Mod+E      { spawn "thunar"; }
 
-    Mod+P       { spawn "bash" "-c" "printf 'Shut down\\nCancel' | fuzzel --dmenu --prompt '' --width 14 --lines 2 --font 'sans:size=13' --background-color=181825ff --text-color=cdd6f4ff --match-color=cdd6f4ff --selection-color=313244ff --selection-text-color=cdd6f4ff --border-color=45475aff --border-radius=12 --border-width=1 --inner-pad=12 --horizontal-pad=24 | grep -q 'Shut down' && systemctl poweroff"; }
-    Mod+Shift+P { spawn "bash" "-c" "printf 'Reboot\\nCancel' | fuzzel --dmenu --prompt '' --width 14 --lines 2 --font 'sans:size=13' --background-color=181825ff --text-color=cdd6f4ff --match-color=cdd6f4ff --selection-color=313244ff --selection-text-color=cdd6f4ff --border-color=45475aff --border-radius=12 --border-width=1 --inner-pad=12 --horizontal-pad=24 | grep -q 'Reboot' && systemctl reboot"; }
+    Mod+P       { spawn "bash" "-c" "systemctl poweroff"; }
+    Mod+Shift+P { spawn "bash" "-c" "systemctl reboot"; }
     Mod+C     { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
     Mod+Space { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
     Mod+O     { spawn "noctalia-shell" "ipc" "call" "bar" "toggle"; }
