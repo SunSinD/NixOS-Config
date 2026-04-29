@@ -40,7 +40,6 @@
         slurp
         wl-clipboard
         (tesseract.override { enableLanguages = [ "eng" ]; })
-        tessdata
         libnotify
         imv
       ];
