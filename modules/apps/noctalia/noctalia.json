@@ -303,7 +303,7 @@
         "darkMode": true,
         "generationMethod": "tonal-spot",
         "paletteColors": ["#c8c8c8", "#909090", "#a0a0a0", "#d4d4d4"],
-        "path": "/home/SunSD/nixconf/assets/wallpapers/default.png",
+        "path": "/home/SunSD/nixconf/assets/wallpapers/clouds.jpg",
         "useWallpaperColors": false
       }
     ]
@@ -347,53 +347,10 @@
           "id": "Bluetooth"
         },
         {
-          "id": "AirplaneMode"
-        },
-        {
           "id": "Notifications"
-        },
-        {
-          "id": "NoctaliaPerformance"
         }
       ],
-      "right": [
-        {
-          "defaultSettings": {
-            "audioCodec": "opus",
-            "audioSource": "default_output",
-            "colorRange": "limited",
-            "copyToClipboard": false,
-            "customReplayDuration": "30",
-            "directory": "",
-            "filenamePattern": "recording_yyyyMMdd_HHmmss",
-            "frameRate": "60",
-            "hideInactive": false,
-            "iconColor": "none",
-            "quality": "very_high",
-            "replayDuration": "30",
-            "replayEnabled": false,
-            "replayStorage": "ram",
-            "resolution": "original",
-            "restorePortalSession": false,
-            "showCursor": true,
-            "videoCodec": "h264",
-            "videoSource": "portal"
-          },
-          "id": "plugin:screen-recorder"
-        },
-        {
-          "id": "WallpaperSelector"
-        },
-        {
-          "id": "KeepAwake"
-        },
-        {
-          "id": "PowerProfile"
-        },
-        {
-          "id": "NightLight"
-        }
-      ]
+      "right": []
     },
     "cards": [
       {
@@ -411,14 +368,6 @@
       {
         "enabled": true,
         "id": "brightness-card"
-      },
-      {
-        "enabled": true,
-        "id": "weather-card"
-      },
-      {
-        "enabled": true,
-        "id": "media-sysmon-card"
       }
     ]
   },
