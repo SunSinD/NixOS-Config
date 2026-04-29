@@ -11,9 +11,9 @@
     networking.networkmanager.dns          = "systemd-resolved";
     networking.nameservers                = [ "1.1.1.1" "8.8.8.8" "1.0.0.1" "8.8.4.4" ];
     services.resolved = {
-      enable       = true;
-      dnssec       = "false";
-      fallbackDns  = [ "1.1.1.1" "8.8.8.8" ];
+      enable   = true;
+      settings.Resolve.DNSSEC       = "false";
+      settings.Resolve.FallbackDNS  = [ "1.1.1.1" "8.8.8.8" ];
     };
     hardware.enableRedistributableFirmware = true;
     nixpkgs.config.allowUnfree            = true;
@@ -97,7 +97,6 @@
     services = {
       greetd = {
         enable = true;
-        useTextGreeter = true;
         restart = false;
         settings.default_session = {
           command = "niri-session";
