@@ -10,6 +10,7 @@
       modules = [
         ({ pkgs, ... }: {
           networking.hostName = "vm";
+          custom.secureBoot.enable = false;
 
           # ── Disk ───────────────────────────────────────────────────────────────
           # VirtIO block device — standard for QEMU/KVM
