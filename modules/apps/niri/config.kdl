@@ -39,6 +39,9 @@ workspace "3"
 
 layout {
     gaps 10
+    struts {
+        top 52
+    }
     focus-ring {
         off
 
