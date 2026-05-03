@@ -37,7 +37,6 @@ debug {
 workspace "1"
 workspace "2"
 workspace "3"
-workspace "4"
 
 layout {
     gaps 10
@@ -134,11 +133,9 @@ binds {
     Mod+1 { focus-workspace 1; }
     Mod+2 { focus-workspace 2; }
     Mod+3 { focus-workspace 3; }
-    Mod+4 { focus-workspace 4; }
     Mod+Shift+1 { move-column-to-workspace 1; }
     Mod+Shift+2 { move-column-to-workspace 2; }
     Mod+Shift+3 { move-column-to-workspace 3; }
-    Mod+Shift+4 { move-column-to-workspace 4; }
 
     // ── ShareX-style binds ─────────────────────────────────────────────────
     // Insert = capture region → save to ~/Screenshots + clipboard
@@ -147,8 +144,8 @@ binds {
     // Alt+T = OCR region -> text to clipboard (upscaled for accuracy)
     Alt+T  { spawn "bash" "-c" "grim -g \"$(slurp -b 00000040 -c b0b0b0 -w 2)\" /tmp/_ocr.png && convert /tmp/_ocr.png -resize 200% -colorspace Gray -sharpen 0x1 /tmp/_ocr_up.png && tesseract /tmp/_ocr_up.png /tmp/_ocr -l eng --oem 1 --psm 3 2>/dev/null && TEXT=$(sed '/^$/d' /tmp/_ocr.txt | sed 's/[[:space:]]*$//') && printf '%s' \"$TEXT\" | wl-copy && notify-send -t 3000 'OCR - Copied' \"$TEXT\" && rm -f /tmp/_ocr.png /tmp/_ocr_up.png /tmp/_ocr.txt"; }
 
-    // Delete = pin region to screen (press Q or Win+W to close)
-    Delete { spawn "bash" "-c" "F=/tmp/_pin_$(date +%s).png && grim -g \"$(slurp -b 00000040 -c b0b0b0 -w 2)\" $F && mpv --image-display-duration=inf --no-border --ontop --no-osc --really-quiet --title=_pin_ $F"; }
+    // Mod+Delete = pin region to screen. Mouse wheel zooms image; Q or Mod+W closes it.
+    Mod+Delete { spawn "bash" "-c" "F=/tmp/_pin_$(date +%s).png; I=/tmp/_pin_input_$(date +%s).conf; printf '%s\n' 'WHEEL_UP add video-zoom 0.1' 'WHEEL_DOWN add video-zoom -0.1' 'MBTN_LEFT cycle pause' 'q quit' > $I; grim -g \"$(slurp -b 00000040 -c b0b0b0 -w 2)\" $F && mpv --image-display-duration=inf --no-border --ontop --no-osc --really-quiet --title=_pin_ --input-conf=$I $F"; }
 
     Mod+H { focus-column-left; }
     Mod+L { focus-column-right; }
@@ -165,21 +162,12 @@ binds {
     Mod+Ctrl+J { set-window-height "-5%"; }
     Mod+Ctrl+K { set-window-height "+5%"; }
 
-    Mod+Alt+J { focus-workspace-down; }
-    Mod+Alt+K { focus-workspace-up; }
-
-    Mod+Alt+Shift+J { move-column-to-workspace-down; }
-    Mod+Alt+Shift+K { move-column-to-workspace-up; }
-
-    Mod+WheelScrollUp        { focus-workspace-up; }
-    Mod+WheelScrollDown      { focus-workspace-down; }
     Mod+Shift+WheelScrollUp  { focus-column-left; }
     Mod+Shift+WheelScrollDown { focus-column-right; }
 }
 
 spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP=niri"
 spawn-at-startup "noctalia-shell"
-spawn-at-startup "equibop"
 spawn-at-startup "niri" "msg" "action" "focus-workspace" "2"
 
 animations {

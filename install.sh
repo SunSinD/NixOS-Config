@@ -38,31 +38,29 @@ trap cleanup EXIT
 # Host selection
 if [[ -z "$HOST" || "$HOST" == "--help" || "$HOST" == "-h" ]]; then
   echo "Select a host to install:"
-  echo "  [0] thinkpad - ThinkPad laptop, portable UEFI boot, standard kernel"
-  echo "  [1] generic  - full desktop, portable hardware config, standard kernel"
-  echo "  [2] main-pc  - desktop-only, AMD/Nvidia, CachyOS kernel, Secure Boot"
-  echo "  [3] vm       - full desktop, QEMU/SPICE guest tools, standard kernel"
+  echo "  [0] main-pc - desktop-only, AMD/Nvidia, CachyOS kernel, Secure Boot"
+  echo "  [1] vm      - full desktop, QEMU/SPICE guest tools, standard kernel"
+  echo "  [2] generic - portable laptop/desktop config, standard kernel"
   read -rp "Choice (number): " HOST_CHOICE
   case "$HOST_CHOICE" in
-    0) HOST="thinkpad" ;;
-    1) HOST="generic"  ;;
-    2) HOST="main-pc"  ;;
-    3) HOST="vm"       ;;
+    0) HOST="main-pc" ;;
+    1) HOST="vm"      ;;
+    2) HOST="generic" ;;
     *) echo "ERROR: Invalid choice."; exit 1 ;;
   esac
 fi
 
 case "$HOST" in
-  thinkpad|generic|main-pc|vm) ;;
+  main-pc|vm|generic) ;;
   *)
-    echo "ERROR: Unknown host '$HOST'. Choose: thinkpad, generic, main-pc, or vm."
+    echo "ERROR: Unknown host '$HOST'. Choose: main-pc, vm, or generic."
     exit 1 ;;
 esac
 
 MACHINE="$(detect_machine | tr '\n' ' ' || true)"
 if [[ "$HOST" == "main-pc" && "$MACHINE" == *ThinkPad* ]]; then
   echo "ERROR: This machine looks like a ThinkPad: $MACHINE"
-  echo "main-pc is desktop-only (AMD/Nvidia/CachyOS/Secure Boot). Use: thinkpad"
+  echo "main-pc is desktop-only (AMD/Nvidia/CachyOS/Secure Boot). Use: generic"
   exit 1
 fi
 
