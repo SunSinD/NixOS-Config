@@ -116,7 +116,7 @@ binds {
 
     Mod+P       { spawn "bash" "-c" "systemctl poweroff"; }
     Mod+Shift+P { spawn "bash" "-c" "systemctl reboot"; }
-    Mod+I       { spawn "niri" "msg" "action" "quit" "--skip-confirmation"; }
+    Mod+I       { spawn "noctalia-shell" "ipc" "call" "lockScreen" "lock"; }
     Mod+C     { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
     Mod+Space { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
     Mod+O     { spawn "noctalia-shell" "ipc" "call" "bar" "toggle"; }
@@ -170,7 +170,7 @@ binds {
 spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP=niri"
 spawn-at-startup "swaybg" "-i" "/home/SunSD/Pictures/Wallpapers/clouds.jpg" "-m" "fill"
 spawn-at-startup "noctalia-shell"
-spawn-at-startup "bash" "-c" "sleep 1; noctalia-shell ipc call bar showBar"
+spawn-at-startup "bash" "-c" "sleep 2; noctalia-shell ipc call wallpaper set /home/SunSD/Pictures/Wallpapers/clouds.jpg all"
 spawn-at-startup "niri" "msg" "action" "focus-workspace" "2"
 
 animations {
