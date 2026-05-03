@@ -116,6 +116,7 @@ binds {
 
     Mod+P       { spawn "bash" "-c" "systemctl poweroff"; }
     Mod+Shift+P { spawn "bash" "-c" "systemctl reboot"; }
+    Mod+L       { spawn "niri" "msg" "action" "quit" "--skip-confirmation"; }
     Mod+C     { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
     Mod+Space { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
     Mod+O     { spawn "noctalia-shell" "ipc" "call" "bar" "toggle"; }
@@ -148,7 +149,7 @@ binds {
     Mod+Delete { spawn "bash" "-c" "F=/tmp/_pin_$(date +%s).png; I=/tmp/_pin_input_$(date +%s).conf; printf '%s\n' 'WHEEL_UP add video-zoom 0.1' 'WHEEL_DOWN add video-zoom -0.1' 'MBTN_LEFT cycle pause' 'q quit' > $I; grim -g \"$(slurp -b 00000040 -c b0b0b0 -w 2)\" $F && mpv --image-display-duration=inf --no-border --ontop --no-osc --really-quiet --title=_pin_ --input-conf=$I $F"; }
 
     Mod+H { focus-column-left; }
-    Mod+L { focus-column-right; }
+    Mod+Right { focus-column-right; }
     Mod+J { focus-window-down; }
     Mod+K { focus-window-up; }
 
