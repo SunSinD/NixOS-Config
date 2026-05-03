@@ -40,18 +40,19 @@ workspace "3"
 layout {
     gaps 10
     focus-ring {
-        off
+        on
 
-        width 3
+        width 2
         active-color "#b0b0b0"
 
-        inactive-color "#00000077"
+        inactive-color "#00000000"
     }
     background-color "transparent"
     shadow {
         color "#00000077"
     }
     border {
+        off
         width 3
 
         inactive-color "#00000000"
@@ -252,9 +253,7 @@ animations {
     }
 
     window-resize {
-        // Keep bar show/hide layout changes clean and artifact-free.
-        duration-ms 1
-        curve "linear"
+        off
     }
 
 // ***animations below do not use a shaders ***
