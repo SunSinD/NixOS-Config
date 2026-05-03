@@ -11,7 +11,7 @@
     "capsuleColorKey": "none",
     "widgetSpacing": 6,
     "contentPadding": 6,
-    "fontScale": 1.08,
+    "fontScale": 1.14,
     "enableExclusionZoneInset": true,
     "backgroundOpacity": 0.52,
     "useSeparateOpacity": true,
@@ -29,7 +29,7 @@
       "left": [
         {
           "clockColor": "none",
-          "customFont": "Sans Serif",
+          "customFont": "Sans Serif Bold",
           "formatHorizontal": "HH:mm",
           "formatVertical": "HH mm",
           "id": "Clock",
