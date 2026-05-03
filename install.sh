@@ -4,6 +4,13 @@ set -euo pipefail
 REPO="https://github.com/SunSinD/NixOS-Config.git"
 WORK_DIR="/tmp/nixconf"
 HOST="${1:-}"
+DISKO_CONFIG=""
+INSTALL_SUBSTITUTERS="https://cache.nixos.org https://niri.cachix.org https://attic.xuyh0120.win/lantian https://cache.garnix.io"
+INSTALL_TRUSTED_KEYS="cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964= lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc= cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
+
+filter_install_output() {
+  sed -E '/^warning:/d;/^\+/d;/^[[:space:]]*$/d;/(Added|Adding|Removed) input/d'
+}
 
 detect_machine() {
   local file value
@@ -77,6 +84,8 @@ build_systemd_loader() {
 
 cleanup() {
   local status=$?
+  [[ -n "$DISKO_CONFIG" ]] && rm -f "$DISKO_CONFIG"
+
   if [[ "$status" -ne 0 ]]; then
     echo "==> Install failed. Leaving /mnt mounted for debugging."
     echo "==> Useful checks: findmnt /mnt /mnt/boot; sudo find /mnt/boot -maxdepth 5 -type f"
@@ -121,7 +130,9 @@ rm -rf "$WORK_DIR"
 git clone -q "$REPO" "$WORK_DIR"
 cd "$WORK_DIR"
 
-exec < /dev/tty
+if [[ -r /dev/tty ]]; then
+  exec < /dev/tty
+fi
 
 # Require UEFI
 if [[ ! -d /sys/firmware/efi/efivars ]]; then
@@ -211,9 +222,11 @@ sudo nix --extra-experimental-features "nix-command flakes" \
   run 'github:nix-community/disko/latest' -- \
   --mode destroy,format,mount \
   --yes-wipe-all-disks \
-  "$DISKO_CONFIG"
+  "$DISKO_CONFIG" \
+  2>&1 | filter_install_output
 
 rm -f "$DISKO_CONFIG"
+DISKO_CONFIG=""
 
 if ! findmnt /mnt >/dev/null; then
   echo "ERROR: disko finished but /mnt is not mounted."
@@ -230,9 +243,9 @@ sudo nixos-install \
   --root /mnt \
   --flake "$WORK_DIR#$HOST" \
   --no-root-passwd \
-  --option substituters         "https://cache.nixos.org https://attic.xuyh0120.win/lantian https://cache.garnix.io" \
-  --option trusted-public-keys  "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc= cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=" \
-  2>&1 | sed '/^warning:/d;/^+/d;/^$/d;/Removed input/d'
+  --option substituters         "$INSTALL_SUBSTITUTERS" \
+  --option trusted-public-keys  "$INSTALL_TRUSTED_KEYS" \
+  2>&1 | filter_install_output
 
 echo "==> Verifying EFI boot files..."
 if [[ ! -s /mnt/boot/EFI/BOOT/BOOTX64.EFI ]]; then

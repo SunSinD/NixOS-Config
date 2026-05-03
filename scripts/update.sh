@@ -41,6 +41,6 @@ echo ""
 if [ "$RC" -eq 0 ]; then
   echo "  System updated. Reboot to apply changes."
 else
-  echo "  Build failed. Run 'sudo nixos-rebuild switch --flake ~/nixconf#vm --show-trace' for details."
+  echo "  Build failed. Run 'sudo nixos-rebuild switch --flake ~/nixconf#$(hostname) --show-trace' for details."
 fi
 echo ""
