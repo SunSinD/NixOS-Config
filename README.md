@@ -1,6 +1,6 @@
 # NixOS Config
 
-### WiFi
+### Wi-Fi
 
 ```bash
 nmcli device wifi connect "wifi" password "password"
