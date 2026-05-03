@@ -3,7 +3,7 @@ set -euo pipefail
 
 HOST="${1:-$(hostname)}"
 CONFIG="$HOME/nixconf/modules/nixos/hosts/$HOST/configuration.nix"
-STATE="$HOME/nixconf/modules/nixos/secure-boot-state.nix"
+STATE="$HOME/nixconf/modules/nixos/secure-boot-state.json"
 
 if [[ ! -f "$CONFIG" ]]; then
   echo "ERROR: Host config not found: $CONFIG"
@@ -23,7 +23,7 @@ fi
 
 cat > "$STATE" << 'EOF'
 {
-  enable = true;
+  "enable": true
 }
 EOF
 
