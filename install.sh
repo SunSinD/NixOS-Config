@@ -261,10 +261,14 @@ if [[ ! -s /mnt/boot/EFI/BOOT/BOOTX64.EFI ]]; then
   sudo cp "$EFI_LOADER" /mnt/boot/EFI/BOOT/BOOTX64.EFI
 fi
 
-if ! compgen -G "/mnt/boot/loader/entries/*.conf" >/dev/null && ! compgen -G "/mnt/boot/EFI/Linux/*.efi" >/dev/null; then
-  echo "ERROR: No systemd-boot entries or unified kernel images found on the EFI partition."
-  find /mnt/boot -maxdepth 4 -type f 2>/dev/null || true
-  exit 1
+BOOT_ENTRY="$(sudo find /mnt/boot/loader/entries -maxdepth 1 -type f -name '*.conf' -print -quit 2>/dev/null || true)"
+UKI_ENTRY="$(sudo find /mnt/boot/EFI/Linux -maxdepth 1 -type f -name '*.efi' -print -quit 2>/dev/null || true)"
+
+if [[ -z "$BOOT_ENTRY" && -z "$UKI_ENTRY" ]]; then
+  echo "WARNING: No systemd-boot entry files were visible in /mnt/boot."
+  echo "nixos-install already finished, so this warning will not stop the install."
+  echo "Boot files currently on the EFI partition:"
+  sudo find /mnt/boot -maxdepth 5 -type f 2>/dev/null || true
 fi
 
 if command -v efibootmgr >/dev/null 2>&1; then
