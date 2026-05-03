@@ -44,10 +44,14 @@
             initrd.supportedFilesystems = [ "btrfs" ];
 
             loader = {
-              efi.canTouchEfiVariables = true;
-              timeout = 0;
-              systemd-boot = {
+              efi.canTouchEfiVariables = false;
+              timeout = 3;
+              systemd-boot.enable = lib.mkForce false;
+              grub = {
                 enable = true;
+                device = "nodev";
+                efiSupport = true;
+                efiInstallAsRemovable = true;
                 configurationLimit = 10;
               };
             };
