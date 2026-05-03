@@ -59,7 +59,7 @@ case "$HOST" in
     exit 1 ;;
 esac
 
-MACHINE="$(detect_machine | tr '\n' ' ')"
+MACHINE="$(detect_machine | tr '\n' ' ' || true)"
 if [[ "$HOST" == "main-pc" && "$MACHINE" == *ThinkPad* ]]; then
   echo "ERROR: This machine looks like a ThinkPad: $MACHINE"
   echo "main-pc is desktop-only (AMD/Nvidia/CachyOS/Secure Boot). Use: thinkpad"
