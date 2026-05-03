@@ -20,11 +20,11 @@
 
         xdg.enable = true;
 
-        home.file.".local/share/applications/spotify.desktop".text = ''
+        home.file.".local/share/applications/spotx.desktop".text = ''
           [Desktop Entry]
           Name=Spotify
           GenericName=Music Player
-          Comment=Spotify desktop client patched by SpotX-Bash when available
+          Comment=Spotify desktop client patched by SpotX-Bash
           Exec=flatpak run com.spotify.Client %U
           Icon=com.spotify.Client
           Terminal=false
@@ -33,20 +33,10 @@
           MimeType=x-scheme-handler/spotify;
         '';
 
-        home.file.".local/share/applications/spotx.desktop".text = ''
-          [Desktop Entry]
-          Name=SpotX
-          GenericName=Spotify Patcher
-          Comment=Apply SpotX-Bash to Spotify
-          Exec=spotx -fch
-          Icon=com.spotify.Client
-          Terminal=true
-          Type=Application
-          Categories=Utility;Audio;
-        '';
-
         home.activation.spotifySpotX = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
           FLATPAK="${pkgs.flatpak}/bin/flatpak"
+
+          rm -f "$HOME/.local/share/applications/spotify.desktop"
 
           if [ -x "$FLATPAK" ]; then
             "$FLATPAK" remote-add --user --if-not-exists flathub \
