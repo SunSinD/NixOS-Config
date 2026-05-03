@@ -16,26 +16,6 @@
               --replace-fail 'readonly property string noctaliaDefaultWallpaper: Quickshell.shellDir + "/Assets/Wallpaper/noctalia.png"' 'readonly property string noctaliaDefaultWallpaper: "/home/SunSD/Pictures/Wallpapers/clouds.jpg"' \
               --replace-fail 'root.currentWallpapers = wallpaperCacheAdapter.wallpapers || {};' 'root.currentWallpapers = {};' \
               --replace-fail 'root.defaultWallpaper = wallpaperCacheAdapter.defaultWallpaper;' 'root.defaultWallpaper = root.noctaliaDefaultWallpaper;'
-            substituteInPlace Modules/MainScreen/BarContentWindow.qml \
-              --replace-fail 'property bool windowVisible: !isHidden' 'property bool windowVisible: !isHidden
-  readonly property bool fadeHidden: isHidden || !BarService.effectivelyVisible' \
-              --replace-fail 'visible: contentLoaded && windowVisible && BarService.effectivelyVisible' 'visible: contentLoaded && windowVisible' \
-              --replace-fail 'if (barWindow.isHidden)
-        barWindow.windowVisible = false;' 'if (barWindow.fadeHidden)
-        barWindow.windowVisible = false;' \
-              --replace-fail 'if (BarService.effectivelyVisible && !barWindow.isHidden && !barWindow.contentLoaded) {
-        barWindow.contentLoaded = true;
-      }' 'if (BarService.effectivelyVisible) {
-        windowHideTimer.stop();
-        barWindow.windowVisible = true;
-        if (!barWindow.contentLoaded) {
-          barWindow.contentLoaded = true;
-        }
-      } else {
-        windowHideTimer.restart();
-      }' \
-              --replace-fail 'opacity: barWindow.isHidden ? 0 : 1' 'opacity: barWindow.fadeHidden ? 0 : 1' \
-              --replace-fail 'enabled: barWindow.autoHide' 'enabled: true'
           '';
         }));
         settings = builtins.fromJSON (builtins.readFile ./noctalia.json);
