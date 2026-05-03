@@ -50,6 +50,10 @@ find_efi_loader() {
     [[ -f "$file" ]] && { printf '%s\n' "$file"; return 0; }
   done < <(find /mnt/nix/store -path '*/lib/systemd/boot/efi/systemd-bootx64.efi' -type f 2>/dev/null)
 
+  while IFS= read -r file; do
+    [[ -f "$file" ]] && { printf '%s\n' "$file"; return 0; }
+  done < <(find /nix/store /run/current-system/sw -path '*/lib/systemd/boot/efi/systemd-bootx64.efi' -type f 2>/dev/null)
+
   return 1
 }
 
@@ -103,7 +107,7 @@ echo "==> Firmware: UEFI"
 
 if [[ "$HOST" != "main-pc" ]] && secure_boot_enabled; then
   echo "ERROR: Secure Boot is enabled."
-  echo "$HOST uses standard systemd-boot, which most firmware will reject with Secure Boot enabled."
+  echo "$HOST uses an unsigned EFI bootloader, which most firmware will reject with Secure Boot enabled."
   echo "Disable Secure Boot in firmware setup, then run this installer again."
   exit 1
 fi
@@ -225,8 +229,8 @@ if [[ ! -f /mnt/boot/EFI/BOOT/BOOTX64.EFI ]]; then
   sudo cp "$EFI_LOADER" /mnt/boot/EFI/BOOT/BOOTX64.EFI
 fi
 
-if [[ ! -d /mnt/boot/loader/entries && ! -d /mnt/boot/EFI/Linux ]]; then
-  echo "ERROR: No systemd-boot entries or unified kernel images found on the EFI partition."
+if [[ ! -f /mnt/boot/grub/grub.cfg && ! -d /mnt/boot/loader/entries && ! -d /mnt/boot/EFI/Linux ]]; then
+  echo "ERROR: No GRUB config, systemd-boot entries, or unified kernel images found on the EFI partition."
   find /mnt/boot -maxdepth 4 -type f 2>/dev/null || true
   exit 1
 fi
