@@ -512,7 +512,7 @@
       "showYourOwnActivityButtons": false
     },
     "EquicordToolbox": {
-      "enabled": true,
+      "enabled": false,
       "showPluginMenu": false
     },
     "Equissant": {
@@ -2264,7 +2264,7 @@
   },
   "themeLinks": [],
   "themes": {},
-  "transparent": true,
+  "transparent": false,
   "useQuickCSS": true,
   "useQuickCss": true,
   "eagerPatches": false,

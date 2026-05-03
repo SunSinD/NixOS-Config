@@ -255,7 +255,7 @@
     "clipboardWatchTextCommand": "wl-paste --type text --watch cliphist store",
     "clipboardWatchImageCommand": "wl-paste --type image --watch cliphist store",
     "position": "center",
-    "pinnedApps": ["vivaldi-stable.desktop", "equibop.desktop", "dev.zed.Zed.desktop", "zeditor.desktop", "zed.desktop"],
+    "pinnedApps": ["vivaldi-stable.desktop", "equibop.desktop", "spotify.desktop", "dev.zed.Zed.desktop", "zeditor.desktop", "zed.desktop"],
     "sortByMostUsed": false,
     "terminalCommand": "alacritty -e",
     "customLaunchPrefixEnabled": false,
