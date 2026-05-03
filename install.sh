@@ -57,7 +57,32 @@ find_efi_loader() {
   return 1
 }
 
+build_systemd_loader() {
+  local out
+
+  out="$(
+    nix --extra-experimental-features "nix-command flakes" \
+      build --no-link --print-out-paths 'nixpkgs#systemd' 2>/dev/null \
+    || nix --extra-experimental-features "nix-command flakes" \
+      build --no-link --print-out-paths 'github:NixOS/nixpkgs/nixos-unstable#systemd'
+  )"
+
+  if [[ -f "$out/lib/systemd/boot/efi/systemd-bootx64.efi" ]]; then
+    printf '%s\n' "$out/lib/systemd/boot/efi/systemd-bootx64.efi"
+    return 0
+  fi
+
+  return 1
+}
+
 cleanup() {
+  local status=$?
+  if [[ "$status" -ne 0 ]]; then
+    echo "==> Install failed. Leaving /mnt mounted for debugging."
+    echo "==> Useful checks: findmnt /mnt /mnt/boot; sudo find /mnt/boot -maxdepth 5 -type f"
+    return
+  fi
+
   sudo umount -R /mnt 2>/dev/null || true
 }
 trap cleanup EXIT
@@ -65,7 +90,7 @@ trap cleanup EXIT
 # Host selection
 if [[ -z "$HOST" || "$HOST" == "--help" || "$HOST" == "-h" ]]; then
   echo "Select a host to install:"
-  echo "  [0] main-pc - desktop-only, AMD/Nvidia, CachyOS kernel, Secure Boot"
+  echo "  [0] main-pc - desktop-only, AMD/Nvidia, CachyOS kernel"
   echo "  [1] vm      - full desktop, QEMU/SPICE guest tools, standard kernel"
   echo "  [2] generic - portable laptop/desktop config, standard kernel"
   read -rp "Choice (number): " HOST_CHOICE
@@ -210,12 +235,17 @@ sudo nixos-install \
   2>&1 | sed '/^warning:/d;/^+/d;/^$/d;/Removed input/d'
 
 echo "==> Verifying EFI boot files..."
-if [[ ! -f /mnt/boot/EFI/BOOT/BOOTX64.EFI ]]; then
+if [[ ! -s /mnt/boot/EFI/BOOT/BOOTX64.EFI ]]; then
   EFI_LOADER="$(find_efi_loader || true)"
 
   if [[ -z "$EFI_LOADER" ]] && command -v bootctl >/dev/null 2>&1; then
     sudo bootctl --esp-path=/mnt/boot install || true
     EFI_LOADER="$(find_efi_loader || true)"
+  fi
+
+  if [[ -z "$EFI_LOADER" ]]; then
+    echo "==> Fetching systemd-boot EFI loader..."
+    EFI_LOADER="$(build_systemd_loader || true)"
   fi
 
   if [[ -z "$EFI_LOADER" ]]; then
@@ -226,11 +256,13 @@ if [[ ! -f /mnt/boot/EFI/BOOT/BOOTX64.EFI ]]; then
   fi
 
   sudo mkdir -p /mnt/boot/EFI/BOOT
+  sudo mkdir -p /mnt/boot/EFI/systemd
+  sudo cp "$EFI_LOADER" /mnt/boot/EFI/systemd/systemd-bootx64.efi
   sudo cp "$EFI_LOADER" /mnt/boot/EFI/BOOT/BOOTX64.EFI
 fi
 
-if [[ ! -f /mnt/boot/grub/grub.cfg && ! -d /mnt/boot/loader/entries && ! -d /mnt/boot/EFI/Linux ]]; then
-  echo "ERROR: No GRUB config, systemd-boot entries, or unified kernel images found on the EFI partition."
+if ! compgen -G "/mnt/boot/loader/entries/*.conf" >/dev/null && ! compgen -G "/mnt/boot/EFI/Linux/*.efi" >/dev/null; then
+  echo "ERROR: No systemd-boot entries or unified kernel images found on the EFI partition."
   find /mnt/boot -maxdepth 4 -type f 2>/dev/null || true
   exit 1
 fi

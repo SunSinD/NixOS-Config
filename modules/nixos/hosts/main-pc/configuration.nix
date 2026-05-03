@@ -10,6 +10,7 @@
       modules = [
         ({ pkgs, lib, ... }: {
           networking.hostName = "main-pc";
+          custom.secureBoot.enable = false;
 
           # ── Disk ───────────────────────────────────────────────────────────────
           # Only needed for manual disko re-runs. Install script overrides this.
@@ -53,18 +54,8 @@
               efi.canTouchEfiVariables = true;
               timeout                  = 0;
               systemd-boot = {
-                enable             = lib.mkForce false;
+                enable             = true;
                 configurationLimit = 10;
-              };
-            };
-
-            lanzaboote = {
-              autoGenerateKeys.enable = true;
-              enable    = true;
-              pkiBundle = "/var/lib/sbctl";
-              autoEnrollKeys = {
-                enable     = true;
-                autoReboot = true;
               };
             };
 
@@ -80,17 +71,7 @@
           systemd.network.wait-online.enable = false;
 
           # ── Secure boot keys ───────────────────────────────────────────────────
-          system.activationScripts.sbctl-keys = {
-            text = ''
-              if [ ! -d /var/lib/sbctl ]; then
-                ${pkgs.sbctl}/bin/sbctl create-keys
-              fi
-            '';
-          };
-
-          environment.systemPackages = [ pkgs.sbctl ];
         })
-        inputs.lanzaboote.nixosModules.lanzaboote
       ] ++ builtins.attrValues inputs.self.nixosModules;
     }
   );

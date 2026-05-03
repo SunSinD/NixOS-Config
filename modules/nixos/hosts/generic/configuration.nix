@@ -46,16 +46,14 @@
             loader = {
               efi.canTouchEfiVariables = false;
               timeout = 3;
-              systemd-boot.enable = lib.mkForce false;
-              grub = {
+              systemd-boot = {
                 enable = true;
-                device = "nodev";
-                efiSupport = true;
-                efiInstallAsRemovable = true;
                 configurationLimit = 10;
               };
             };
           };
+
+          custom.secureBoot.enable = false;
         })
       ] ++ builtins.attrValues inputs.self.nixosModules;
     }

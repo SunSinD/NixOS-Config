@@ -1,11 +1,18 @@
 #!/usr/bin/env bash
 # Clean system update with organized phases.
 cd ~/nixconf || exit 1
+SECURE_BOOT_STATE=""
+if [ -f modules/nixos/secure-boot-state.nix ]; then
+  SECURE_BOOT_STATE="$(cat modules/nixos/secure-boot-state.nix)"
+fi
 
 # Phase 1: Sync
 echo ""
 echo "  Syncing with GitHub..."
 git fetch -q origin && git reset -q --hard origin/main
+if [ -n "$SECURE_BOOT_STATE" ]; then
+  printf '%s\n' "$SECURE_BOOT_STATE" > modules/nixos/secure-boot-state.nix
+fi
 echo "  Done."
 echo ""
 
