@@ -2,7 +2,6 @@ input {
     keyboard {
         xkb {
             layout "us"
-            options "caps:escape"
         }
         repeat-delay 250
         repeat-rate 50
@@ -79,6 +78,8 @@ window-rule {
     match app-id=r"(?i)vivaldi"
     match app-id=r"(?i)zed"
     match app-id=r"(?i)electron"
+    match app-id=r"(?i)equibop"
+    match app-id=r"(?i)discord"
     open-maximized true
 }
 
@@ -89,6 +90,12 @@ window-rule {
 
 window-rule {
     match app-id=r"(?i)electron"
+    open-on-workspace "3"
+}
+
+window-rule {
+    match app-id=r"(?i)equibop"
+    match app-id=r"(?i)discord"
     open-on-workspace "3"
 }
 
@@ -168,7 +175,6 @@ binds {
 }
 
 spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP=niri"
-spawn-at-startup "swaybg" "-i" "/home/SunSD/Pictures/Wallpapers/clouds.jpg" "-m" "fill"
 spawn-at-startup "bash" "-c" "rm -f ~/.cache/noctalia/wallpapers.json; exec noctalia-shell"
 spawn-at-startup "bash" "-c" "sleep 2; noctalia-shell ipc call wallpaper set /home/SunSD/Pictures/Wallpapers/clouds.jpg all"
 spawn-at-startup "niri" "msg" "action" "focus-workspace" "2"
