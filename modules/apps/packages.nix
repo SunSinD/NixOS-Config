@@ -12,7 +12,6 @@
         zip
         unzip
         wget
-        jq
 
         # ── Theming ────────────────────────────────────────────────────────────
         adwaita-icon-theme
