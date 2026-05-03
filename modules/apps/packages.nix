@@ -44,6 +44,7 @@
         imagemagick
         libnotify
         fuzzel
+        swaybg
       ];
     };
   };

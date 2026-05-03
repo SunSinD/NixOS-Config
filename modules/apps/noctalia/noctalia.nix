@@ -1,10 +1,19 @@
 { inputs, ... }: {
-  flake.nixosModules.noctalia = { ... }: {
+  flake.nixosModules.noctalia = { pkgs, lib, ... }: {
     home-manager.users.SunSD = { ... }: {
       imports = [ inputs.noctalia.homeModules.default ];
 
+      home.file."Pictures/Wallpapers/clouds.jpg".source =
+        ../../../assets/wallpapers/clouds.jpg;
+
       programs.noctalia-shell = {
         enable   = true;
+        package = lib.mkForce (inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
+          postPatch = (old.postPatch or "") + ''
+            substituteInPlace Modules/Bar/Widgets/Workspace.qml \
+              --replace-fail 'targetList.push(workspaceData);' 'if (workspaceData.idx <= 3) targetList.push(workspaceData);'
+          '';
+        }));
         settings = builtins.fromJSON (builtins.readFile ./noctalia.json);
         colors   = builtins.fromJSON (builtins.readFile ./colors.json);
 
