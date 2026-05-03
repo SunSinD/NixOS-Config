@@ -61,7 +61,7 @@ layout {
     }
 }
 
-include "/home/SunSD/nixconf/modules/apps/niri/bar-state.kdl"
+include optional=true "/home/SunSD/nixconf/modules/apps/niri/bar-state.kdl"
 
 overview {
     workspace-shadow {
