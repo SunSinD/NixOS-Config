@@ -172,6 +172,8 @@ body,
 
 /* Belt-and-suspenders fallback if the toolbox button survives cached settings. */
 [aria-label*="Equicord Toolbox"],
-[title*="Equicord Toolbox"] {
+[title*="Equicord Toolbox"],
+[class*="toolbar_"] > *:has([aria-label*="Equicord Toolbox"]),
+[class*="toolbar_"] > *:has([title*="Equicord Toolbox"]) {
     display: none !important;
 }

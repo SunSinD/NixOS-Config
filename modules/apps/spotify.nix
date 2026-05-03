@@ -1,6 +1,6 @@
 { ... }: {
-  flake.nixosModules.spotify = { pkgs, lib, ... }: {
-    home-manager.users.SunSD = { ... }:
+  flake.nixosModules.spotify = { pkgs, ... }: {
+    home-manager.users.SunSD = { lib, ... }:
       let
         spotx = pkgs.writeShellApplication {
           name = "spotx";
@@ -20,17 +20,30 @@
 
         xdg.enable = true;
 
-        xdg.desktopEntries.spotify = {
-          name = "Spotify";
-          genericName = "Music Player";
-          comment = "Spotify desktop client patched by SpotX-Bash when available";
-          exec = "flatpak run com.spotify.Client %U";
-          icon = "com.spotify.Client";
-          terminal = false;
-          type = "Application";
-          categories = [ "Audio" "Music" "Player" "AudioVideo" ];
-          mimeType = [ "x-scheme-handler/spotify" ];
-        };
+        home.file.".local/share/applications/spotify.desktop".text = ''
+          [Desktop Entry]
+          Name=Spotify
+          GenericName=Music Player
+          Comment=Spotify desktop client patched by SpotX-Bash when available
+          Exec=flatpak run com.spotify.Client %U
+          Icon=com.spotify.Client
+          Terminal=false
+          Type=Application
+          Categories=Audio;Music;Player;AudioVideo;
+          MimeType=x-scheme-handler/spotify;
+        '';
+
+        home.file.".local/share/applications/spotx.desktop".text = ''
+          [Desktop Entry]
+          Name=SpotX
+          GenericName=Spotify Patcher
+          Comment=Apply SpotX-Bash to Spotify
+          Exec=spotx -fch
+          Icon=com.spotify.Client
+          Terminal=true
+          Type=Application
+          Categories=Utility;Audio;
+        '';
 
         home.activation.spotifySpotX = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
           FLATPAK="${pkgs.flatpak}/bin/flatpak"
