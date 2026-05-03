@@ -8,7 +8,7 @@
       };
 
       modules = [
-        ({ pkgs, ... }: {
+        ({ pkgs, lib, ... }: {
           networking.hostName = "generic";
 
           # ── Disk ───────────────────────────────────────────────────────────────
@@ -17,8 +17,25 @@
 
           # ── Hardware ───────────────────────────────────────────────────────────
           # Broad module coverage for unknown hardware
-          boot.initrd.availableKernelModules = [ "ahci" "xhci_pci" "nvme" "usb_storage" "usbhid" "sd_mod" "virtio_pci" "virtio_blk" ];
+          boot.initrd.availableKernelModules = [
+            "ahci"
+            "xhci_pci"
+            "thunderbolt"
+            "nvme"
+            "usb_storage"
+            "uas"
+            "usbhid"
+            "sd_mod"
+            "sdhci_pci"
+            "mmc_block"
+            "virtio_pci"
+            "virtio_blk"
+          ];
           boot.kernelModules                 = [ "kvm-amd" "kvm-intel" ];
+          hardware.cpu.amd.updateMicrocode   = lib.mkDefault true;
+          hardware.cpu.intel.updateMicrocode = lib.mkDefault true;
+          services.fstrim.enable             = true;
+          services.fwupd.enable              = true;
 
           # ── Boot ───────────────────────────────────────────────────────────────
           boot = {
