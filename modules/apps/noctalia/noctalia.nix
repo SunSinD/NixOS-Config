@@ -12,6 +12,10 @@
           postPatch = (old.postPatch or "") + ''
             substituteInPlace Modules/Bar/Widgets/Workspace.qml \
               --replace-fail 'targetList.push(workspaceData);' 'if (workspaceData.idx <= 3) targetList.push(workspaceData);'
+            substituteInPlace Services/UI/WallpaperService.qml \
+              --replace-fail 'readonly property string noctaliaDefaultWallpaper: Quickshell.shellDir + "/Assets/Wallpaper/noctalia.png"' 'readonly property string noctaliaDefaultWallpaper: "/home/SunSD/Pictures/Wallpapers/clouds.jpg"' \
+              --replace-fail 'root.currentWallpapers = wallpaperCacheAdapter.wallpapers || {};' 'root.currentWallpapers = {};' \
+              --replace-fail 'root.defaultWallpaper = wallpaperCacheAdapter.defaultWallpaper;' 'root.defaultWallpaper = root.noctaliaDefaultWallpaper;'
           '';
         }));
         settings = builtins.fromJSON (builtins.readFile ./noctalia.json);
