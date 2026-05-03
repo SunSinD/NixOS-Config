@@ -12,6 +12,15 @@ nmcli device wifi connect "wifi" password "password"
 bash <(curl -sL raw.githubusercontent.com/SunSinD/NixOS-Config/main/install.sh)
 ```
 
+For a ThinkPad, use the ThinkPad host directly:
+
+```bash
+bash <(curl -sL raw.githubusercontent.com/SunSinD/NixOS-Config/main/install.sh) thinkpad
+```
+
+`main-pc` is desktop-specific and uses AMD/Nvidia/CachyOS/Secure Boot settings.
+For `thinkpad` and `generic`, disable Secure Boot in firmware setup before installing.
+
 ### Update
 
 ```bash
