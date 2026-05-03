@@ -167,6 +167,7 @@ binds {
 }
 
 spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP=niri"
+spawn-at-startup "swaybg" "-i" "/home/SunSD/Pictures/Wallpapers/clouds.jpg" "-m" "fill"
 spawn-at-startup "noctalia-shell"
 spawn-at-startup "niri" "msg" "action" "focus-workspace" "2"
 
