@@ -1,7 +1,7 @@
 { inputs, ... }: {
   flake.nixosModules.secure-boot = { config, pkgs, lib, ... }:
   let
-    secureBootState = import ./secure-boot-state.nix;
+    secureBootState = builtins.fromJSON (builtins.readFile ./secure-boot-state.json);
     secureBootEnabled = config.custom.secureBoot.enable || (secureBootState.enable or false);
   in {
     imports = [
