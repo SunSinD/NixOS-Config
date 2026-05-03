@@ -46,6 +46,8 @@
       cursors.enable = false;
     };
 
+    fonts.packages = with pkgs; [ inter ];
+
     home-manager = {
       useGlobalPkgs   = true;
       useUserPackages = true;

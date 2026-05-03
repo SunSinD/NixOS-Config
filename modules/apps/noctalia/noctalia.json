@@ -11,9 +11,9 @@
     "capsuleColorKey": "none",
     "widgetSpacing": 6,
     "contentPadding": 6,
-    "fontScale": 1.18,
-    "enableExclusionZoneInset": true,
-    "backgroundOpacity": 0.52,
+    "fontScale": 1.2,
+    "enableExclusionZoneInset": false,
+    "backgroundOpacity": 0.81,
     "useSeparateOpacity": true,
     "marginVertical": 4,
     "marginHorizontal": 4,
@@ -29,7 +29,7 @@
       "left": [
         {
           "clockColor": "none",
-          "customFont": "Sans Serif Black",
+          "customFont": "Inter Black",
           "formatHorizontal": "HH:mm",
           "formatVertical": "HH mm",
           "id": "Clock",
@@ -112,7 +112,7 @@
     "screenRadiusRatio": 1,
     "animationSpeed": 1,
     "animationDisabled": false,
-    "compactLockScreen": false,
+    "compactLockScreen": true,
     "lockScreenAnimations": false,
     "lockOnSuspend": true,
     "showSessionButtonsOnLockScreen": false,
@@ -131,8 +131,8 @@
     "lockScreenCountdownDuration": 10000,
     "autoStartAuth": false,
     "allowPasswordWithFprintd": false,
-    "clockStyle": "custom",
-    "clockFormat": "hh\\nmm",
+    "clockStyle": "digital",
+    "clockFormat": "HH:mm",
     "passwordChars": false,
     "lockScreenMonitors": [],
     "lockScreenBlur": 0,
@@ -150,7 +150,7 @@
     "smoothScrollEnabled": true
   },
   "ui": {
-    "fontDefault": "Sans Serif",
+    "fontDefault": "Inter",
     "fontFixed": "monospace",
     "fontDefaultScale": 1,
     "fontFixedScale": 1,
@@ -165,14 +165,14 @@
   },
   "location": {
     "name": "Laval",
-    "weatherEnabled": true,
-    "weatherShowEffects": true,
+    "weatherEnabled": false,
+    "weatherShowEffects": false,
     "weatherTaliaMascotAlways": false,
     "useFahrenheit": false,
     "use12hourFormat": true,
     "showWeekNumberInCalendar": false,
     "showCalendarEvents": true,
-    "showCalendarWeather": true,
+    "showCalendarWeather": false,
     "analogClockInCalendar": true,
     "firstDayOfWeek": -1,
     "hideWeatherTimezone": false,
@@ -190,7 +190,7 @@
         "id": "calendar-month-card"
       },
       {
-        "enabled": true,
+        "enabled": false,
         "id": "weather-card"
       }
     ]
@@ -219,8 +219,8 @@
     "panelPosition": "follow_bar",
     "hideWallpaperFilenames": false,
     "useOriginalImages": false,
-    "overviewBlur": 0.4,
-    "overviewTint": 0.6,
+    "overviewBlur": 0,
+    "overviewTint": 0,
     "useWallhaven": false,
     "wallhavenQuery": "",
     "wallhavenSorting": "relevance",
@@ -325,7 +325,7 @@
     "externalMonitor": "resources || missioncenter || jdsystemmonitor || corestats || system-monitoring-center || gnome-system-monitor || plasma-systemmonitor || mate-system-monitor || ukui-system-monitor || deepin-system-monitor || pantheon-system-monitor"
   },
   "noctaliaPerformance": {
-    "disableWallpaper": true,
+    "disableWallpaper": false,
     "disableDesktopWidgets": true
   },
   "dock": {
