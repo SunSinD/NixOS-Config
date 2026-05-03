@@ -23,7 +23,7 @@
             substituteInPlace Modules/Panels/Launcher/Providers/ApplicationsProvider.qml \
               --replace-fail 'return pinnedApps.some(pinnedId => normalizeAppId(pinnedId) === normalizedId);' 'const normalizedName = normalizeAppId(app.name || "");
     const normalizedExec = normalizeAppId(getExecutableName(app));
-    const defaultPinned = ["vivaldi", "equibop", "zed", "zeditor"];
+    const defaultPinned = ["vivaldi", "equibop", "spotify", "zed", "zeditor"];
     return pinnedApps.some(pinnedId => normalizeAppId(pinnedId) === normalizedId)
       || defaultPinned.some(pinnedId => normalizedId.includes(pinnedId) || normalizedName.includes(pinnedId) || normalizedExec.includes(pinnedId));' \
               --replace-fail 'showsCategories = true;' 'showsCategories = false;' \

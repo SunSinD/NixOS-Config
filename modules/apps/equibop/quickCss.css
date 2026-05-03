@@ -21,7 +21,7 @@ body {
     font-weight: 400; /* normal text font weight. DOES NOT AFFECT BOLD TEXT */
 
     /* sizes */
-    --gap: 12px; /* spacing between panels */
+    --gap: 6px; /* spacing between panels */
     --divider-thickness: 4px; /* thickness of unread messages divider and highlighted message borders */
     --border-thickness: 1px; /* thickness of borders around main panels. DOES NOT AFFECT OTHER BORDERS */
 
@@ -53,14 +53,14 @@ body {
     --dms-background-color: linear-gradient(70deg, var(--bg-3), var(--bg-2), var(--bg-1)); /* fixed color/gradient (css background property) */
 
     /* background image options */
-    --background-image: on; /* off: no background image, on: enable background image (must set url variable below) */
-    --background-image-url: url('https://i.imgur.com/0pUG3gw.png'); /* url of the background image */
+    --background-image: off; /* off: no background image, on: enable background image (must set url variable below) */
+    --background-image-url: url(''); /* url of the background image */
 
     /* transparency/blur options */
     /* NOTE: TO USE TRANSPARENCY/BLUR, YOU MUST HAVE TRANSPARENT BG COLORS. FOR EXAMPLE: --bg-4: hsla(220, 15%, 10%, 0.7); */
-    --transparency-tweaks: on; /* off: no changes, on: remove some elements for better transparency */
-    --remove-bg-layer: on; /* off: no changes, on: remove the base --bg-3 layer for use with window transparency (WILL OVERRIDE BACKGROUND IMAGE) */
-    --panel-blur: on; /* off: no changes, on: blur the background of panels */
+    --transparency-tweaks: off; /* off: no changes, on: remove some elements for better transparency */
+    --remove-bg-layer: off; /* off: no changes, on: remove the base --bg-3 layer for use with window transparency (WILL OVERRIDE BACKGROUND IMAGE) */
+    --panel-blur: off; /* off: no changes, on: blur the background of panels */
     --blur-amount: 20px; /* amount of blur */
     --bg-floating: hsla(0, 0%, 13%, 0.9); /* set this to a more opaque color if floating panels look too transparent. only applies if panel blur is on  */
 
@@ -85,10 +85,10 @@ body {
     --text-5: hsl(0, 0%, 35%); /* muted channels/chats and timestamps */
 
     /* background and dark colors */
-    --bg-1: hsla(0, 0%, 20%, 0.6); /* dark buttons when clicked */
-    --bg-2: hsla(0, 0%, 16%, 0.6); /* dark buttons */
-    --bg-3: hsla(0, 0%, 13%, 0.6); /* spacing, secondary elements */
-    --bg-4: hsla(0, 0%, 10%, 0.81); /* main background color */
+    --bg-1: hsla(0, 0%, 20%, 0.95); /* dark buttons when clicked */
+    --bg-2: hsla(0, 0%, 16%, 0.95); /* dark buttons */
+    --bg-3: hsla(0, 0%, 13%, 0.98); /* spacing, secondary elements */
+    --bg-4: hsla(0, 0%, 10%, 1); /* main background color */
     --hover: hsla(0, 0%, 40%, 0.1); /* channels and buttons when hovered */
     --active: hsla(0, 0%, 40%, 0.2); /* channels and buttons when clicked or selected */
     --active-2: hsla(0, 0%, 40%, 0.3); /* extra state for transparent buttons */
@@ -155,4 +155,23 @@ body {
     --purple-3: oklch(65% 0 0);
     --purple-4: oklch(60% 0 0);
     --purple-5: oklch(55% 0 0);
+}
+
+/* Keep the client dark and opaque instead of showing wallpaper through panel gaps. */
+html,
+body,
+#app-mount,
+[class*="bg_"] {
+    background: var(--bg-4) !important;
+}
+
+/* Hide Discord's Nitro discount banner; it can sit under Equicord controls. */
+#app-mount [class*="notice_"] {
+    display: none !important;
+}
+
+/* Belt-and-suspenders fallback if the toolbox button survives cached settings. */
+[aria-label*="Equicord Toolbox"],
+[title*="Equicord Toolbox"] {
+    display: none !important;
 }
