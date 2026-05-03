@@ -21,9 +21,9 @@
     "frameRadius": 10,
     "outerCorners": false,
     "hideOnOverview": false,
-    "displayMode": "auto_hide",
-    "autoHideDelay": 600000,
-    "autoShowDelay": 120,
+    "displayMode": "always_visible",
+    "autoHideDelay": 500,
+    "autoShowDelay": 150,
     "showOnWorkspaceSwitch": false,
     "widgets": {
       "left": [
@@ -197,7 +197,7 @@
   },
   "wallpaper": {
     "enabled": true,
-    "overviewEnabled": true,
+    "overviewEnabled": false,
     "directory": "~/Pictures/Wallpapers/",
     "monitorDirectories": [],
     "enableMultiMonitorDirectories": false,
