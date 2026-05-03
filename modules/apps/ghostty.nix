@@ -6,6 +6,7 @@
         enableBashIntegration = true;
         settings = {
           background-opacity = "0.65";
+          resize-overlay = "never";
         };
       };
     };
