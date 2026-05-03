@@ -11,7 +11,7 @@
     "capsuleColorKey": "none",
     "widgetSpacing": 6,
     "contentPadding": 6,
-    "fontScale": 1.14,
+    "fontScale": 1.18,
     "enableExclusionZoneInset": true,
     "backgroundOpacity": 0.52,
     "useSeparateOpacity": true,
@@ -21,15 +21,15 @@
     "frameRadius": 10,
     "outerCorners": false,
     "hideOnOverview": false,
-    "displayMode": "always_visible",
-    "autoHideDelay": 500,
-    "autoShowDelay": 150,
-    "showOnWorkspaceSwitch": true,
+    "displayMode": "auto_hide",
+    "autoHideDelay": 600000,
+    "autoShowDelay": 120,
+    "showOnWorkspaceSwitch": false,
     "widgets": {
       "left": [
         {
           "clockColor": "none",
-          "customFont": "Sans Serif Bold",
+          "customFont": "Sans Serif Black",
           "formatHorizontal": "HH:mm",
           "formatVertical": "HH mm",
           "id": "Clock",
@@ -196,8 +196,8 @@
     ]
   },
   "wallpaper": {
-    "enabled": false,
-    "overviewEnabled": false,
+    "enabled": true,
+    "overviewEnabled": true,
     "directory": "~/Pictures/Wallpapers/",
     "monitorDirectories": [],
     "enableMultiMonitorDirectories": false,
