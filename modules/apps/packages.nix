@@ -16,6 +16,7 @@
         # ── Theming ────────────────────────────────────────────────────────────
         adwaita-icon-theme
         hicolor-icon-theme
+        papirus-icon-theme
         dconf
         bibata-cursors
 
@@ -46,6 +47,14 @@
         fuzzel
         swaybg
       ];
+
+      gtk = {
+        enable = true;
+        iconTheme = {
+          name = "Papirus-Dark";
+          package = pkgs.papirus-icon-theme;
+        };
+      };
     };
   };
 }
