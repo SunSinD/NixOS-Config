@@ -30,6 +30,29 @@ secure_boot_enabled() {
   return 1
 }
 
+find_efi_loader() {
+  local file
+
+  for file in \
+    /mnt/boot/EFI/systemd/systemd-bootx64.efi \
+    /mnt/boot/EFI/BOOT/BOOTX64.EFI
+  do
+    [[ -f "$file" ]] && { printf '%s\n' "$file"; return 0; }
+  done
+
+  if compgen -G "/mnt/boot/EFI/NixOS-boot/*.efi" >/dev/null; then
+    mapfile -t NIXOS_BOOTLOADERS < <(compgen -G "/mnt/boot/EFI/NixOS-boot/*.efi")
+    printf '%s\n' "${NIXOS_BOOTLOADERS[0]}"
+    return 0
+  fi
+
+  while IFS= read -r file; do
+    [[ -f "$file" ]] && { printf '%s\n' "$file"; return 0; }
+  done < <(find /mnt/nix/store -path '*/lib/systemd/boot/efi/systemd-bootx64.efi' -type f 2>/dev/null)
+
+  return 1
+}
+
 cleanup() {
   sudo umount -R /mnt 2>/dev/null || true
 }
@@ -184,17 +207,22 @@ sudo nixos-install \
 
 echo "==> Verifying EFI boot files..."
 if [[ ! -f /mnt/boot/EFI/BOOT/BOOTX64.EFI ]]; then
-  sudo mkdir -p /mnt/boot/EFI/BOOT
-  if [[ -f /mnt/boot/EFI/systemd/systemd-bootx64.efi ]]; then
-    sudo cp /mnt/boot/EFI/systemd/systemd-bootx64.efi /mnt/boot/EFI/BOOT/BOOTX64.EFI
-  elif compgen -G "/mnt/boot/EFI/NixOS-boot/*.efi" >/dev/null; then
-    mapfile -t NIXOS_BOOTLOADERS < <(compgen -G "/mnt/boot/EFI/NixOS-boot/*.efi")
-    sudo cp "${NIXOS_BOOTLOADERS[0]}" /mnt/boot/EFI/BOOT/BOOTX64.EFI
-  else
+  EFI_LOADER="$(find_efi_loader || true)"
+
+  if [[ -z "$EFI_LOADER" ]] && command -v bootctl >/dev/null 2>&1; then
+    sudo bootctl --esp-path=/mnt/boot install || true
+    EFI_LOADER="$(find_efi_loader || true)"
+  fi
+
+  if [[ -z "$EFI_LOADER" ]]; then
     echo "ERROR: No EFI loader found to install as fallback /EFI/BOOT/BOOTX64.EFI."
     find /mnt/boot/EFI -maxdepth 3 -type f 2>/dev/null || true
+    find /mnt/nix/store -path '*/lib/systemd/boot/efi/*.efi' -type f 2>/dev/null | head -n 20 || true
     exit 1
   fi
+
+  sudo mkdir -p /mnt/boot/EFI/BOOT
+  sudo cp "$EFI_LOADER" /mnt/boot/EFI/BOOT/BOOTX64.EFI
 fi
 
 if [[ ! -d /mnt/boot/loader/entries && ! -d /mnt/boot/EFI/Linux ]]; then
