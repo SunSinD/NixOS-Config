@@ -36,7 +36,7 @@ echo "Next:"
 echo "  1. Reboot into firmware setup."
 echo "  2. Put Secure Boot into Setup Mode."
 echo "  3. Boot NixOS again."
-echo "  4. Run: sudo sbctl enroll-keys --microsoft"
+echo "  4. Run: finish-install"
 echo "  5. Reboot and enable Secure Boot if firmware did not enable it automatically."
 echo ""
 sudo sbctl verify || true
