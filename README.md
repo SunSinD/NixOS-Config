@@ -1,5 +1,11 @@
 # NixOS Config
 
+### WiFi
+
+```bash
+nmcli device wifi connect "wifi" password "password"
+```
+
 ### Install
 
 ```bash
