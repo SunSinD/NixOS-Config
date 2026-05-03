@@ -11,7 +11,7 @@
         package = lib.mkForce (inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
           postPatch = (old.postPatch or "") + ''
             substituteInPlace Modules/Bar/Widgets/Workspace.qml \
-              --replace-fail 'targetList.push(workspaceData);' 'if (workspaceData.idx <= 4) targetList.push(workspaceData);'
+              --replace-fail 'targetList.push(workspaceData);' 'if (workspaceData.idx <= 3) targetList.push(workspaceData);'
             substituteInPlace Services/UI/WallpaperService.qml \
               --replace-fail 'readonly property string noctaliaDefaultWallpaper: Quickshell.shellDir + "/Assets/Wallpaper/noctalia.png"' 'readonly property string noctaliaDefaultWallpaper: "/home/SunSD/Pictures/Wallpapers/clouds.jpg"' \
               --replace-fail 'root.currentWallpapers = wallpaperCacheAdapter.wallpapers || {};' 'root.currentWallpapers = {};' \
@@ -23,13 +23,24 @@
             substituteInPlace Modules/Panels/Launcher/Providers/ApplicationsProvider.qml \
               --replace-fail 'return pinnedApps.some(pinnedId => normalizeAppId(pinnedId) === normalizedId);' 'const normalizedName = normalizeAppId(app.name || "");
     const normalizedExec = normalizeAppId(getExecutableName(app));
-    const defaultPinned = ["vivaldi", "equibop", "spotify", "spotx", "zed", "zeditor"];
+    const defaultPinned = ["equibop", "spotx", "vivaldi", "zed", "zeditor"];
     return pinnedApps.some(pinnedId => normalizeAppId(pinnedId) === normalizedId)
       || defaultPinned.some(pinnedId => normalizedId.includes(pinnedId) || normalizedName.includes(pinnedId) || normalizedExec.includes(pinnedId));' \
               --replace-fail 'showsCategories = true;' 'showsCategories = false;' \
               --replace-fail 'let filteredEntries = entries;' 'let filteredEntries = entries;
+    filteredEntries = filteredEntries.filter(app => {
+      const normalizedId = normalizeAppId(app.id || app.desktopId || "");
+      const normalizedName = normalizeAppId(app.name || "");
+      const normalizedExec = normalizeAppId(getExecutableName(app));
+      const isSpotifyEntry = normalizedId.includes("spotify")
+        || normalizedName === "spotify"
+        || normalizedExec.includes("spotify");
+      const isPreferredSpotify = normalizedId.includes("spotx")
+        || normalizedExec.includes("spotx");
+      return !isSpotifyEntry || isPreferredSpotify;
+    });
     if (!isSearching) {
-      filteredEntries = entries.filter(app => isAppPinned(app));
+      filteredEntries = filteredEntries.filter(app => isAppPinned(app));
     }'
           '';
         }));
