@@ -11,7 +11,7 @@
     "capsuleColorKey": "none",
     "widgetSpacing": 6,
     "contentPadding": 6,
-    "fontScale": 1,
+    "fontScale": 1.08,
     "enableExclusionZoneInset": true,
     "backgroundOpacity": 0.52,
     "useSeparateOpacity": true,
@@ -29,12 +29,12 @@
       "left": [
         {
           "clockColor": "none",
-          "customFont": "",
+          "customFont": "Sans Serif",
           "formatHorizontal": "HH:mm",
           "formatVertical": "HH mm",
           "id": "Clock",
           "tooltipFormat": "HH:mm ddd, MMM dd",
-          "useCustomFont": false
+          "useCustomFont": true
         }
       ],
       "center": [
@@ -80,7 +80,7 @@
         },
         {
           "deviceNativePath": "__default__",
-          "displayMode": "graphic-clean",
+          "displayMode": "icon-always",
           "hideIfIdle": false,
           "hideIfNotDetected": true,
           "id": "Battery",
@@ -196,7 +196,7 @@
     ]
   },
   "wallpaper": {
-    "enabled": true,
+    "enabled": false,
     "overviewEnabled": false,
     "directory": "~/Pictures/Wallpapers/",
     "monitorDirectories": [],
@@ -212,9 +212,9 @@
     "automationEnabled": false,
     "wallpaperChangeMode": "sequential",
     "randomIntervalSec": 3600,
-    "transitionDuration": 1500,
+    "transitionDuration": 0,
     "transitionType": ["stripes", "honeycomb"],
-    "skipStartupTransition": false,
+    "skipStartupTransition": true,
     "transitionEdgeSmoothness": 0.05,
     "panelPosition": "follow_bar",
     "hideWallpaperFilenames": false,
