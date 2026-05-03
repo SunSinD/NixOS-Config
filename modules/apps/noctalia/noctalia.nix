@@ -12,12 +12,6 @@
           postPatch = (old.postPatch or "") + ''
             substituteInPlace Modules/Bar/Widgets/Workspace.qml \
               --replace-fail 'targetList.push(workspaceData);' 'if (workspaceData.idx <= 3) targetList.push(workspaceData);'
-            substituteInPlace Modules/Bar/Widgets/Clock.qml \
-              --replace-fail 'return barFontSize;' 'return Math.round(barFontSize * 1.12);' \
-              --replace-fail 'applyUiScale: false
-              color: textColor' 'applyUiScale: false
-              font.weight: Font.Bold
-              color: textColor'
           '';
         }));
         settings = builtins.fromJSON (builtins.readFile ./noctalia.json);
