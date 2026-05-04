@@ -1,5 +1,7 @@
 { ... }: {
   flake.nixosModules.packages = { pkgs, ... }: {
+    security.pam.services.swaylock = {};
+
     home-manager.users.SunSD = { pkgs, ... }: {
       home.packages = with pkgs; [
         # ── CLI tools ──────────────────────────────────────────────────────────
@@ -45,6 +47,7 @@
         grim
         slurp
         wl-clipboard
+        swaylock
         (tesseract.override { enableLanguages = [ "eng" ]; })
         imagemagick
         libnotify

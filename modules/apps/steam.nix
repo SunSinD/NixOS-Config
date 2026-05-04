@@ -15,7 +15,7 @@
           text = ''
             export XDG_SESSION_TYPE="''${XDG_SESSION_TYPE:-wayland}"
             export XDG_CURRENT_DESKTOP="''${XDG_CURRENT_DESKTOP:-niri}"
-            exec steam "$@"
+            exec steam -vgui "$@"
           '';
         })
       ];

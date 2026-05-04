@@ -206,7 +206,7 @@
           Name=OBS Studio
           GenericName=Streaming/Recording Software
           Comment=Free and Open Source Streaming/Recording Software
-          Exec=obs
+          Exec=obs-studio
           Icon=obs-studio-clean
           Terminal=false
           Type=Application
@@ -216,10 +216,10 @@
         ".local/share/icons/hicolor/scalable/apps/obs-studio-clean.svg".text = ''
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
             <rect width="128" height="128" rx="18" fill="#101014"/>
-            <g fill="#f5f5f5">
-              <path d="M63 18c18 7 29 23 29 43-11-10-25-13-41-7 0-16 4-28 12-36z"/>
-              <path d="M104 72c-13 16-32 21-51 14 12-8 20-21 21-37 15 7 25 15 30 23z"/>
-              <path d="M27 91c-6-20 1-38 21-50-2 15 4 29 18 39-13 9-26 13-39 11z"/>
+            <g fill="#e8e8e8">
+              <path d="M65 21c15 9 22 24 19 42-9-8-21-11-36-8 0-15 6-27 17-34z"/>
+              <path d="M101 73c-12 13-28 17-46 11 11-8 18-19 19-34 14 5 23 13 27 23z"/>
+              <path d="M28 88c-3-17 4-32 20-43-1 14 5 26 17 36-12 8-25 10-37 7z"/>
             </g>
           </svg>
         '';
