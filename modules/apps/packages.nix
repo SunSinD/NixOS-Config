@@ -39,6 +39,7 @@
         thunar
         codex
         pavucontrol
+        xwayland-satellite
 
         # ── Screenshot / OCR / Pin ─────────────────────────────────────────────
         grim
