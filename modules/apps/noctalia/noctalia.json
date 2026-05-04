@@ -216,7 +216,7 @@
   "calendar": {
     "cards": [
       {
-        "enabled": true,
+        "enabled": false,
         "id": "calendar-header-card"
       },
       {
@@ -300,6 +300,8 @@
     "pinnedApps": [
       "equibop.desktop",
       "spotx.desktop",
+      "steam.desktop",
+      "google-chrome-fresh.desktop",
       "vivaldi-stable.desktop",
       "dev.zed.Zed.desktop",
       "zeditor.desktop",

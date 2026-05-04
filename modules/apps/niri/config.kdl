@@ -120,7 +120,7 @@ binds {
     Mod+B      { spawn "vivaldi" "--password-store=basic"; }
     Mod+D      { spawn "equibop"; }
     Mod+Z      { spawn "zeditor"; }
-    Mod+E      { spawn "thunar"; }
+    Mod+E      { spawn "thunar" "/home/SunSD/Files"; }
 
     Mod+P       { spawn "bash" "-c" "systemctl poweroff"; }
     Mod+Shift+P { spawn "bash" "-c" "systemctl reboot"; }
@@ -161,8 +161,13 @@ binds {
 
     Mod+H { focus-column-left; }
     Mod+L { focus-column-right; }
-    Mod+J { focus-window-down; }
-    Mod+K { focus-window-up; }
+    Mod+J { focus-window-or-workspace-down; }
+    Mod+K { focus-window-or-workspace-up; }
+
+    Mod+Left  { set-column-width "50%"; }
+    Mod+Right { set-column-width "50%"; }
+    Mod+Up    { maximize-column; }
+    Mod+Down  { set-window-height "50%"; }
 
     Mod+Shift+H { move-column-left; }
     Mod+Shift+L { move-column-right; }

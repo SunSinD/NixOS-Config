@@ -30,6 +30,7 @@
         win-spice
 
         vivaldi
+        google-chrome
         obs-studio
         gpu-screen-recorder
         obsidian
