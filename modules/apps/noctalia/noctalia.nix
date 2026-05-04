@@ -26,7 +26,7 @@
             substituteInPlace Modules/Panels/Launcher/Providers/ApplicationsProvider.qml \
               --replace-fail 'return pinnedApps.some(pinnedId => normalizeAppId(pinnedId) === normalizedId);' 'const normalizedName = normalizeAppId(app.name || "");
     const normalizedExec = normalizeAppId(getExecutableName(app));
-    const defaultPinned = ["equibop", "spotx", "vivaldi", "zed", "zeditor"];
+    const defaultPinned = ["equibop", "spotx", "steam", "google-chrome-fresh", "vivaldi", "zed", "zeditor"];
     return pinnedApps.some(pinnedId => normalizeAppId(pinnedId) === normalizedId)
       || defaultPinned.some(pinnedId => normalizedId.includes(pinnedId) || normalizedName.includes(pinnedId) || normalizedExec.includes(pinnedId));' \
               --replace-fail 'showsCategories = true;' 'showsCategories = false;' \
@@ -40,7 +40,12 @@
         || normalizedExec.includes("spotify");
       const isPreferredSpotify = normalizedId.includes("spotx")
         || normalizedExec.includes("spotx");
-      return !isSpotifyEntry || isPreferredSpotify;
+      const isChromeEntry = normalizedId.includes("google-chrome")
+        || normalizedName === "google chrome"
+        || normalizedExec.includes("google-chrome");
+      const isPreferredChrome = normalizedId.includes("google-chrome-fresh");
+      return (!isSpotifyEntry || isPreferredSpotify)
+        && (!isChromeEntry || isPreferredChrome);
     });
     if (!isSearching) {
       filteredEntries = filteredEntries.filter(app => isAppPinned(app));
