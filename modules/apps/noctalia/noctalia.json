@@ -9,16 +9,16 @@
     "showCapsule": true,
     "capsuleOpacity": 0.86,
     "capsuleColorKey": "none",
-    "widgetSpacing": 8,
-    "contentPadding": 2,
-    "fontScale": 1.05,
+    "widgetSpacing": 10,
+    "contentPadding": 4,
+    "fontScale": 1.14,
     "enableExclusionZoneInset": true,
     "backgroundOpacity": 0,
     "useSeparateOpacity": false,
-    "marginVertical": 8,
-    "marginHorizontal": 8,
-    "frameThickness": 6,
-    "frameRadius": 14,
+    "marginVertical": 9,
+    "marginHorizontal": 9,
+    "frameThickness": 7,
+    "frameRadius": 16,
     "outerCorners": false,
     "hideOnOverview": false,
     "displayMode": "always_visible",
@@ -27,18 +27,6 @@
     "showOnWorkspaceSwitch": true,
     "widgets": {
       "left": [
-        {
-          "id": "Launcher",
-          "icon": "search",
-          "useDistroLogo": false,
-          "colorizeSystemIcon": "none",
-          "enableColorization": false,
-          "iconColor": "none"
-        },
-        {
-          "id": "WallpaperSelector",
-          "iconColor": "none"
-        },
         {
           "id": "Workspace",
           "characterCount": 2,
@@ -50,10 +38,10 @@
           "fontWeight": "bold",
           "groupedBorderOpacity": 0,
           "hideUnoccupied": false,
-          "iconScale": 0.85,
+          "iconScale": 0.95,
           "labelMode": "none",
           "occupiedColor": "secondary",
-          "pillSize": 0.62,
+          "pillSize": 0.68,
           "showApplications": false,
           "showApplicationsHover": false,
           "showBadge": true,
@@ -94,10 +82,10 @@
         },
         {
           "id": "Battery",
-          "displayMode": "graphic-clean",
+          "displayMode": "graphic",
           "deviceNativePath": "__default__",
-          "showPowerProfiles": true,
-          "showNoctaliaPerformance": true,
+          "showPowerProfiles": false,
+          "showNoctaliaPerformance": false,
           "hideIfNotDetected": true,
           "hideIfIdle": false
         },
@@ -117,15 +105,6 @@
           "iconColor": "none",
           "showUnreadBadge": true,
           "unreadBadgeColor": "primary"
-        },
-        {
-          "id": "ControlCenter",
-          "useDistroLogo": false,
-          "icon": "noctalia",
-          "customIconPath": "",
-          "colorizeDistroLogo": false,
-          "colorizeSystemIcon": "none",
-          "enableColorization": false
         }
       ]
     },
@@ -135,7 +114,7 @@
     "middleClickAction": "none",
     "middleClickFollowMouse": false,
     "middleClickCommand": "",
-    "rightClickAction": "controlCenter",
+    "rightClickAction": "none",
     "rightClickFollowMouse": true,
     "rightClickCommand": "",
     "screenOverrides": []
@@ -349,58 +328,32 @@
     "position": "close_to_bar_button",
     "diskPath": "/",
     "shortcuts": {
-      "left": [
-        {
-          "id": "Network"
-        },
-        {
-          "id": "Bluetooth"
-        },
-        {
-          "id": "WallpaperSelector"
-        },
-        {
-          "id": "NoctaliaPerformance"
-        }
-      ],
-      "right": [
-        {
-          "id": "Notifications"
-        },
-        {
-          "id": "PowerProfile"
-        },
-        {
-          "id": "KeepAwake"
-        },
-        {
-          "id": "NightLight"
-        }
-      ]
+      "left": [],
+      "right": []
     },
     "cards": [
       {
-        "enabled": true,
+        "enabled": false,
         "id": "profile-card"
       },
       {
-        "enabled": true,
+        "enabled": false,
         "id": "shortcuts-card"
       },
       {
-        "enabled": true,
+        "enabled": false,
         "id": "audio-card"
       },
       {
-        "enabled": true,
+        "enabled": false,
         "id": "brightness-card"
       },
       {
-        "enabled": true,
+        "enabled": false,
         "id": "weather-card"
       },
       {
-        "enabled": true,
+        "enabled": false,
         "id": "media-sysmon-card"
       }
     ]
