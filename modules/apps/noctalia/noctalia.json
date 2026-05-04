@@ -26,87 +26,19 @@
     "autoShowDelay": 150,
     "showOnWorkspaceSwitch": true,
     "widgets": {
-      "left": [
-        {
-          "id": "Workspace",
-          "characterCount": 2,
-          "colorizeIcons": false,
-          "emptyColor": "secondary",
-          "enableScrollWheel": false,
-          "focusedColor": "primary",
-          "followFocusedScreen": false,
-          "fontWeight": "bold",
-          "groupedBorderOpacity": 0,
-          "hideUnoccupied": false,
-          "iconScale": 0.95,
-          "labelMode": "none",
-          "occupiedColor": "secondary",
-          "pillSize": 0.68,
-          "showApplications": false,
-          "showApplicationsHover": false,
-          "showBadge": true,
-          "showLabelsOnlyWhenOccupied": true,
-          "unfocusedIconsOpacity": 1
-        }
-      ],
+      "left": [],
       "center": [
         {
           "id": "Clock",
           "clockColor": "none",
           "customFont": "Inter Black",
-          "formatHorizontal": "HH:mm    ddd, MMM dd",
-          "formatVertical": "HH:mm",
-          "tooltipFormat": "HH:mm ddd, MMM dd",
+          "formatHorizontal": "h:mm AP",
+          "formatVertical": "h:mm AP",
+          "tooltipFormat": "h:mm AP    ddd, MMM dd",
           "useCustomFont": true
         }
       ],
-      "right": [
-        {
-          "id": "Network",
-          "displayMode": "onhover",
-          "iconColor": "none",
-          "textColor": "none"
-        },
-        {
-          "id": "Bluetooth",
-          "displayMode": "onhover",
-          "iconColor": "none",
-          "textColor": "none"
-        },
-        {
-          "id": "Volume",
-          "displayMode": "onhover",
-          "middleClickCommand": "pavucontrol",
-          "iconColor": "none",
-          "textColor": "none"
-        },
-        {
-          "id": "Battery",
-          "displayMode": "graphic",
-          "deviceNativePath": "__default__",
-          "showPowerProfiles": false,
-          "showNoctaliaPerformance": false,
-          "hideIfNotDetected": true,
-          "hideIfIdle": false
-        },
-        {
-          "id": "Tray",
-          "blacklist": [],
-          "colorizeIcons": false,
-          "chevronColor": "none",
-          "drawerEnabled": true,
-          "hidePassive": false,
-          "pinned": []
-        },
-        {
-          "id": "NotificationHistory",
-          "hideWhenZero": false,
-          "hideWhenZeroUnread": true,
-          "iconColor": "none",
-          "showUnreadBadge": true,
-          "unreadBadgeColor": "primary"
-        }
-      ]
+      "right": []
     },
     "mouseWheelAction": "none",
     "reverseScroll": false,
@@ -151,7 +83,7 @@
     "autoStartAuth": false,
     "allowPasswordWithFprintd": false,
     "clockStyle": "custom",
-    "clockFormat": "HH:mm",
+    "clockFormat": "h:mm AP",
     "passwordChars": false,
     "lockScreenMonitors": [],
     "lockScreenBlur": 0,
@@ -309,10 +241,10 @@
     "terminalCommand": "alacritty -e",
     "customLaunchPrefixEnabled": false,
     "customLaunchPrefix": "",
-    "viewMode": "list",
+    "viewMode": "grid",
     "showCategories": false,
     "iconMode": "tabler",
-    "showIconBackground": false,
+    "showIconBackground": true,
     "enableSettingsSearch": true,
     "enableWindowsSearch": true,
     "enableSessionSearch": true,
