@@ -36,6 +36,7 @@
         mpv
         thunar
         codex
+        pavucontrol
 
         # ── Screenshot / OCR / Pin ─────────────────────────────────────────────
         grim
