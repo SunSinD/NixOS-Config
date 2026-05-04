@@ -104,6 +104,11 @@ layer-rule {
     place-within-backdrop true
 }
 
+layer-rule {
+    match namespace=r"^(swaybg|wallpaper)$"
+    place-within-backdrop true
+}
+
 window-rule {
     match app-id=r"mpv"
     match title=r"(?i)_pin_"
@@ -117,9 +122,8 @@ window-rule {
 window-rule {
     match app-id=r"(?i)steam"
     open-floating true
-    default-column-width { proportion 0.82; }
-    default-window-height { proportion 0.82; }
-    default-floating-position x=0 y=0 relative-to="top"
+    default-column-width { proportion 0.72; }
+    default-window-height { proportion 0.72; }
 }
 
 binds {

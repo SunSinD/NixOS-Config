@@ -21,6 +21,9 @@
               if [ -f Modules/LockScreen/LockScreenHeader.qml ]; then
                 sed -i '0,/Rectangle {/s|Rectangle {|Rectangle { visible: false;|' Modules/LockScreen/LockScreenHeader.qml
               fi
+              if [ -f Modules/LockScreen/LockScreenBackground.qml ]; then
+                sed -i 's|source: resolvedWallpaperPath|source: "file:///home/SunSD/Pictures/Wallpapers/clouds.jpg"|' Modules/LockScreen/LockScreenBackground.qml
+              fi
             '';
           })
         );
