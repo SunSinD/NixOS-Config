@@ -21,7 +21,7 @@
 
           ui_font_size     = 16;
           buffer_font_size = 15;
-          theme            = "Noctalia Dark Transparent";
+          theme            = "One Dark";
         };
       };
     };

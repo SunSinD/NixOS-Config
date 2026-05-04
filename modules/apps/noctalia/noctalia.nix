@@ -23,6 +23,12 @@
               --replace-fail 'readonly property string noctaliaDefaultWallpaper: Quickshell.shellDir + "/Assets/Wallpaper/noctalia.png"' 'readonly property string noctaliaDefaultWallpaper: "/home/SunSD/Pictures/Wallpapers/clouds.jpg"' \
               --replace-fail 'root.currentWallpapers = wallpaperCacheAdapter.wallpapers || {};' 'root.currentWallpapers = {};' \
               --replace-fail 'root.defaultWallpaper = wallpaperCacheAdapter.defaultWallpaper;' 'root.defaultWallpaper = root.noctaliaDefaultWallpaper;'
+            if [ -f Modules/LockScreen/LockScreenHeader.qml ]; then
+              sed -i 's|pointSize: Style.fontSizeL|pointSize: Style.fontSizeXXL|g; s|color: Color.mSurface|color: "transparent"|g; s|border.width: Style.borderS|border.width: 0|g; s|width: Math.max(500, contentRow.implicitWidth + 32)|width: Math.max(320, contentRow.implicitWidth + 32)|g; s|height: Math.max(120, contentRow.implicitHeight + 32)|height: Math.max(110, contentRow.implicitHeight + 28)|g' Modules/LockScreen/LockScreenHeader.qml
+            fi
+            if [ -f Modules/LockScreen/LockScreenPanel.qml ]; then
+              sed -i 's|visible: Settings.data.general.compactLockScreen && (batteryIndicator.isReady || keyboardLayout.currentLayout !== "Unknown" || LockKeysService.capsLockOn)|visible: false|g' Modules/LockScreen/LockScreenPanel.qml
+            fi
             substituteInPlace Modules/Panels/Launcher/Providers/ApplicationsProvider.qml \
               --replace-fail 'return pinnedApps.some(pinnedId => normalizeAppId(pinnedId) === normalizedId);' 'const normalizedName = normalizeAppId(app.name || "");
     const normalizedExec = normalizeAppId(getExecutableName(app));

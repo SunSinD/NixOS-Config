@@ -29,10 +29,10 @@
 
         ".local/share/applications/google-chrome-fresh.desktop".text = ''
           [Desktop Entry]
-          Name=Google Chrome
+          Name=Chrome
           GenericName=Web Browser
           Comment=Clean dark Chrome profile
-          Exec=google-chrome-stable --password-store=basic --force-dark-mode --enable-features=WebUIDarkMode --no-first-run --no-default-browser-check --disable-sync --disable-features=SignInProfileCreationFlow,ChromeWhatsNewUI --user-data-dir=/home/SunSD/.local/share/google-chrome-fresh about:blank
+          Exec=google-chrome-stable --password-store=basic --force-dark-mode --enable-features=WebUIDarkMode,ForceDark --no-first-run --no-default-browser-check --disable-sync --disable-features=SignInProfileCreationFlow,ChromeWhatsNewUI --user-data-dir=/home/SunSD/.local/share/google-chrome-fresh chrome://newtab/
           Icon=google-chrome
           Terminal=false
           Type=Application
