@@ -52,13 +52,11 @@
     };
 
     catppuccin = {
-      enable = true;
-      flavor = "mocha";
-      accent = "lavender";
+      enable = false;
       cursors.enable = false;
     };
 
-    fonts.packages = with pkgs; [ inter jetbrains-mono ];
+    fonts.packages = with pkgs; [ inter jetbrains-mono noto-fonts-emoji ];
 
     home-manager = {
       useGlobalPkgs   = true;
@@ -135,6 +133,16 @@
       power-profiles-daemon.enable = true;
       gnome.gnome-keyring.enable = true;
       dbus.enable = true;
+      keyd = {
+        enable = true;
+        keyboards.default = {
+          ids = [ "*" ];
+          settings.main = {
+            leftmeta = "overload(meta, f13)";
+            rightmeta = "overload(meta, f13)";
+          };
+        };
+      };
     };
 
     security.pam.services.greetd.enableGnomeKeyring = true;

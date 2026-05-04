@@ -125,7 +125,11 @@ binds {
     Mod+P       { spawn "bash" "-c" "systemctl poweroff"; }
     Mod+Shift+P { spawn "bash" "-c" "systemctl reboot"; }
     Mod+I       { spawn "noctalia-shell" "ipc" "call" "lockScreen" "lock"; }
-    Mod+Space { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
+    F13       { spawn "vicinae" "toggle"; }
+    Mod+Space { spawn "vicinae" "toggle"; }
+    Mod+Period { spawn "vicinae" "deeplink" "vicinae://launch/core/search-emojis"; }
+    Mod+V      { spawn "vicinae" "deeplink" "vicinae://launch/clipboard/history"; }
+    Mod+Shift+W { spawn "noctalia-shell" "ipc" "call" "wallpaper" "toggle"; }
     Mod+O     { spawn "noctalia-shell" "ipc" "call" "bar" "toggle"; }
 
     XF86AudioRaiseVolume { spawn "noctalia-shell" "ipc" "call" "volume" "increase"; }
@@ -175,6 +179,7 @@ binds {
 }
 
 spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP=niri"
+spawn-at-startup "systemctl" "--user" "restart" "vicinae.service"
 spawn-at-startup "bash" "-c" "exec noctalia-shell"
 spawn-at-startup "niri" "msg" "action" "focus-workspace" "2"
 

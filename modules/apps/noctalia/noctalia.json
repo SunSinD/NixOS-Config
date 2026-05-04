@@ -7,11 +7,11 @@
     "density": "default",
     "showOutline": false,
     "showCapsule": true,
-    "capsuleOpacity": 0.86,
+    "capsuleOpacity": 0.78,
     "capsuleColorKey": "none",
-    "widgetSpacing": 10,
-    "contentPadding": 4,
-    "fontScale": 1.14,
+    "widgetSpacing": 11,
+    "contentPadding": 5,
+    "fontScale": 1.16,
     "enableExclusionZoneInset": true,
     "backgroundOpacity": 0,
     "useSeparateOpacity": false,
@@ -191,7 +191,7 @@
     "tooltipsEnabled": true,
     "scrollbarAlwaysVisible": false,
     "boxBorderEnabled": false,
-    "panelBackgroundOpacity": 0.86,
+    "panelBackgroundOpacity": 0.78,
     "translucentWidgets": true,
     "panelsAttachedToBar": true,
     "settingsPanelMode": "attached",
@@ -246,16 +246,12 @@
     "automationEnabled": false,
     "wallpaperChangeMode": "sequential",
     "randomIntervalSec": 3600,
-    "transitionDuration": 900,
+    "transitionDuration": 1000,
     "transitionType": [
-      "fade",
-      "disc",
-      "stripes",
-      "wipe",
-      "honeycomb"
+      "fade"
     ],
     "skipStartupTransition": true,
-    "transitionEdgeSmoothness": 0.05,
+    "transitionEdgeSmoothness": 0.08,
     "panelPosition": "follow_bar",
     "hideWallpaperFilenames": false,
     "useOriginalImages": true,
@@ -280,15 +276,16 @@
         "darkMode": true,
         "generationMethod": "tonal-spot",
         "paletteColors": [
-          "#c8c8c8",
-          "#909090",
-          "#a0a0a0",
-          "#d4d4d4"
+          "#f5f5f5",
+          "#d4d4d8",
+          "#a1a1aa",
+          "#34343a"
         ],
         "path": "/home/SunSD/Pictures/Wallpapers/clouds.jpg",
         "useWallpaperColors": false
       }
-    ]
+    ],
+    "useWallpaperColors": false
   },
   "appLauncher": {
     "enableClipboardHistory": false,

@@ -3,8 +3,10 @@
     home-manager.users.SunSD = { ... }: {
       imports = [ inputs.noctalia.homeModules.default ];
 
-      home.file."Pictures/Wallpapers/clouds.jpg".source =
-        ../../../assets/wallpapers/clouds.jpg;
+      home.file."Pictures/Wallpapers" = {
+        source = ../../../assets/wallpapers;
+        recursive = true;
+      };
 
       home.file.".cache/noctalia/wallpapers.json".text = builtins.toJSON {
         defaultWallpaper = "/home/SunSD/Pictures/Wallpapers/clouds.jpg";
