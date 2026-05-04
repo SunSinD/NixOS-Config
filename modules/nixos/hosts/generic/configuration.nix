@@ -35,7 +35,7 @@
           hardware.cpu.amd.updateMicrocode   = lib.mkDefault true;
           hardware.cpu.intel.updateMicrocode = lib.mkDefault true;
           services.fstrim.enable             = true;
-          services.fwupd.enable              = true;
+          services.fwupd.enable              = false;
 
           # ── Boot ───────────────────────────────────────────────────────────────
           boot = {
@@ -45,10 +45,10 @@
 
             loader = {
               efi.canTouchEfiVariables = false;
-              timeout = 3;
+              timeout = lib.mkForce 0;
               systemd-boot = {
                 enable = true;
-                configurationLimit = 10;
+                configurationLimit = lib.mkForce 1;
               };
             };
           };
