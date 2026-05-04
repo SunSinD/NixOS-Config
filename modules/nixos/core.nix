@@ -148,6 +148,9 @@
       };
     };
 
+    systemd.services.NetworkManager-wait-online.enable = false;
+    systemd.network.wait-online.enable = false;
+
     security.pam.services.greetd.enableGnomeKeyring = true;
 
     virtualisation = {
