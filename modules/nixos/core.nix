@@ -9,6 +9,7 @@
     time.timeZone                          = "America/Montreal";
     networking.networkmanager.enable       = true;
     networking.networkmanager.dns          = "systemd-resolved";
+    networking.networkmanager.wifi.powersave = false;
     networking.nameservers                = [ "1.1.1.1" "8.8.8.8" "1.0.0.1" "8.8.4.4" ];
     services.resolved = {
       enable   = true;
@@ -31,12 +32,23 @@
 
     security.sudo.wheelNeedsPassword = false;
 
+    hardware.bluetooth = {
+      enable = true;
+      powerOnBoot = true;
+      settings.General.Experimental = true;
+    };
+
+    services.blueman.enable = true;
+
     nix.settings = {
       trusted-users         = [ "root" "@wheel" ];
       experimental-features = [ "nix-command" "flakes" ];
 
-      extra-substituters        = [ "https://niri.cachix.org" ];
-      extra-trusted-public-keys = [ "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964=" ];
+      extra-substituters        = [ "https://niri.cachix.org" "https://noctalia.cachix.org" ];
+      extra-trusted-public-keys = [
+        "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
+        "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
+      ];
     };
 
     catppuccin = {
@@ -46,7 +58,7 @@
       cursors.enable = false;
     };
 
-    fonts.packages = with pkgs; [ inter ];
+    fonts.packages = with pkgs; [ inter jetbrains-mono ];
 
     home-manager = {
       useGlobalPkgs   = true;

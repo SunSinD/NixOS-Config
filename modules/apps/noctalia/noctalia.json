@@ -6,39 +6,41 @@
     "monitors": [],
     "density": "default",
     "showOutline": false,
-    "showCapsule": false,
-    "capsuleOpacity": 1,
+    "showCapsule": true,
+    "capsuleOpacity": 0.86,
     "capsuleColorKey": "none",
-    "widgetSpacing": 6,
-    "contentPadding": 6,
-    "fontScale": 1.2,
-    "enableExclusionZoneInset": false,
-    "backgroundOpacity": 0.92,
-    "useSeparateOpacity": true,
-    "marginVertical": 4,
-    "marginHorizontal": 4,
-    "frameThickness": 8,
-    "frameRadius": 10,
+    "widgetSpacing": 8,
+    "contentPadding": 2,
+    "fontScale": 1.05,
+    "enableExclusionZoneInset": true,
+    "backgroundOpacity": 0,
+    "useSeparateOpacity": false,
+    "marginVertical": 8,
+    "marginHorizontal": 8,
+    "frameThickness": 6,
+    "frameRadius": 14,
     "outerCorners": false,
     "hideOnOverview": false,
     "displayMode": "always_visible",
     "autoHideDelay": 500,
     "autoShowDelay": 150,
-    "showOnWorkspaceSwitch": false,
+    "showOnWorkspaceSwitch": true,
     "widgets": {
       "left": [
         {
-          "clockColor": "none",
-          "customFont": "Inter Black",
-          "formatHorizontal": "HH:mm",
-          "formatVertical": "HH:mm",
-          "id": "Clock",
-          "tooltipFormat": "HH:mm ddd, MMM dd",
-          "useCustomFont": true
-        }
-      ],
-      "center": [
+          "id": "Launcher",
+          "icon": "search",
+          "useDistroLogo": false,
+          "colorizeSystemIcon": "none",
+          "enableColorization": false,
+          "iconColor": "none"
+        },
         {
+          "id": "WallpaperSelector",
+          "iconColor": "none"
+        },
+        {
+          "id": "Workspace",
           "characterCount": 2,
           "colorizeIcons": false,
           "emptyColor": "secondary",
@@ -48,11 +50,10 @@
           "fontWeight": "bold",
           "groupedBorderOpacity": 0,
           "hideUnoccupied": false,
-          "iconScale": 1,
-          "id": "Workspace",
+          "iconScale": 0.85,
           "labelMode": "none",
           "occupiedColor": "secondary",
-          "pillSize": 0.6,
+          "pillSize": 0.62,
           "showApplications": false,
           "showApplicationsHover": false,
           "showBadge": true,
@@ -60,32 +61,71 @@
           "unfocusedIconsOpacity": 1
         }
       ],
+      "center": [
+        {
+          "id": "Clock",
+          "clockColor": "none",
+          "customFont": "Inter Black",
+          "formatHorizontal": "HH:mm    ddd, MMM dd",
+          "formatVertical": "HH:mm",
+          "tooltipFormat": "HH:mm ddd, MMM dd",
+          "useCustomFont": true
+        }
+      ],
       "right": [
         {
-          "blacklist": [],
-          "chevronColor": "none",
-          "colorizeIcons": false,
-          "drawerEnabled": false,
-          "hidePassive": false,
+          "id": "Network",
+          "displayMode": "onhover",
+          "iconColor": "none",
+          "textColor": "none"
+        },
+        {
+          "id": "Bluetooth",
+          "displayMode": "onhover",
+          "iconColor": "none",
+          "textColor": "none"
+        },
+        {
+          "id": "Volume",
+          "displayMode": "onhover",
+          "middleClickCommand": "pavucontrol",
+          "iconColor": "none",
+          "textColor": "none"
+        },
+        {
+          "id": "Battery",
+          "displayMode": "graphic-clean",
+          "deviceNativePath": "__default__",
+          "showPowerProfiles": true,
+          "showNoctaliaPerformance": true,
+          "hideIfNotDetected": true,
+          "hideIfIdle": false
+        },
+        {
           "id": "Tray",
+          "blacklist": [],
+          "colorizeIcons": false,
+          "chevronColor": "none",
+          "drawerEnabled": true,
+          "hidePassive": false,
           "pinned": []
         },
         {
+          "id": "NotificationHistory",
           "hideWhenZero": false,
           "hideWhenZeroUnread": true,
           "iconColor": "none",
-          "id": "NotificationHistory",
           "showUnreadBadge": true,
           "unreadBadgeColor": "primary"
         },
         {
-          "deviceNativePath": "__default__",
-          "displayMode": "icon-always",
-          "hideIfIdle": false,
-          "hideIfNotDetected": true,
-          "id": "Battery",
-          "showNoctaliaPerformance": false,
-          "showPowerProfiles": false
+          "id": "ControlCenter",
+          "useDistroLogo": false,
+          "icon": "noctalia",
+          "customIconPath": "",
+          "colorizeDistroLogo": false,
+          "colorizeSystemIcon": "none",
+          "enableColorization": false
         }
       ]
     },
@@ -138,13 +178,28 @@
     "lockScreenBlur": 0,
     "lockScreenTint": 0,
     "keybinds": {
-      "keyUp": ["Up"],
-      "keyDown": ["Down"],
-      "keyLeft": ["Left"],
-      "keyRight": ["Right"],
-      "keyEnter": ["Return", "Enter"],
-      "keyEscape": ["Esc"],
-      "keyRemove": ["Del"]
+      "keyUp": [
+        "Up"
+      ],
+      "keyDown": [
+        "Down"
+      ],
+      "keyLeft": [
+        "Left"
+      ],
+      "keyRight": [
+        "Right"
+      ],
+      "keyEnter": [
+        "Return",
+        "Enter"
+      ],
+      "keyEscape": [
+        "Esc"
+      ],
+      "keyRemove": [
+        "Del"
+      ]
     },
     "reverseScroll": false,
     "smoothScrollEnabled": true
@@ -157,10 +212,10 @@
     "tooltipsEnabled": true,
     "scrollbarAlwaysVisible": false,
     "boxBorderEnabled": false,
-    "panelBackgroundOpacity": 0.92,
+    "panelBackgroundOpacity": 0.86,
     "translucentWidgets": true,
     "panelsAttachedToBar": true,
-    "settingsPanelMode": "centered",
+    "settingsPanelMode": "attached",
     "settingsPanelSideBarCardStyle": false
   },
   "location": {
@@ -202,7 +257,7 @@
     "monitorDirectories": [],
     "enableMultiMonitorDirectories": false,
     "showHiddenFiles": false,
-    "viewMode": "recursive",
+    "viewMode": "single",
     "setWallpaperOnAllMonitors": true,
     "linkLightAndDarkWallpapers": true,
     "fillMode": "crop",
@@ -212,15 +267,21 @@
     "automationEnabled": false,
     "wallpaperChangeMode": "sequential",
     "randomIntervalSec": 3600,
-    "transitionDuration": 0,
-    "transitionType": ["stripes", "honeycomb"],
+    "transitionDuration": 900,
+    "transitionType": [
+      "fade",
+      "disc",
+      "stripes",
+      "wipe",
+      "honeycomb"
+    ],
     "skipStartupTransition": true,
     "transitionEdgeSmoothness": 0.05,
     "panelPosition": "follow_bar",
     "hideWallpaperFilenames": false,
-    "useOriginalImages": false,
-    "overviewBlur": 0,
-    "overviewTint": 0,
+    "useOriginalImages": true,
+    "overviewBlur": 0.18,
+    "overviewTint": 0.35,
     "useWallhaven": false,
     "wallhavenQuery": "",
     "wallhavenSorting": "relevance",
@@ -239,7 +300,12 @@
         "colorScheme": "Monochrome",
         "darkMode": true,
         "generationMethod": "tonal-spot",
-        "paletteColors": ["#c8c8c8", "#909090", "#a0a0a0", "#d4d4d4"],
+        "paletteColors": [
+          "#c8c8c8",
+          "#909090",
+          "#a0a0a0",
+          "#d4d4d4"
+        ],
         "path": "/home/SunSD/Pictures/Wallpapers/clouds.jpg",
         "useWallpaperColors": false
       }
@@ -255,7 +321,14 @@
     "clipboardWatchTextCommand": "wl-paste --type text --watch cliphist store",
     "clipboardWatchImageCommand": "wl-paste --type image --watch cliphist store",
     "position": "center",
-    "pinnedApps": ["equibop.desktop", "spotx.desktop", "vivaldi-stable.desktop", "dev.zed.Zed.desktop", "zeditor.desktop", "zed.desktop"],
+    "pinnedApps": [
+      "equibop.desktop",
+      "spotx.desktop",
+      "vivaldi-stable.desktop",
+      "dev.zed.Zed.desktop",
+      "zeditor.desktop",
+      "zed.desktop"
+    ],
     "sortByMostUsed": false,
     "terminalCommand": "alacritty -e",
     "customLaunchPrefixEnabled": false,
@@ -273,7 +346,7 @@
     "density": "default"
   },
   "controlCenter": {
-    "position": "bottom_right",
+    "position": "close_to_bar_button",
     "diskPath": "/",
     "shortcuts": {
       "left": [
@@ -282,9 +355,28 @@
         },
         {
           "id": "Bluetooth"
+        },
+        {
+          "id": "WallpaperSelector"
+        },
+        {
+          "id": "NoctaliaPerformance"
         }
       ],
-      "right": []
+      "right": [
+        {
+          "id": "Notifications"
+        },
+        {
+          "id": "PowerProfile"
+        },
+        {
+          "id": "KeepAwake"
+        },
+        {
+          "id": "NightLight"
+        }
+      ]
     },
     "cards": [
       {
@@ -293,11 +385,23 @@
       },
       {
         "enabled": true,
+        "id": "shortcuts-card"
+      },
+      {
+        "enabled": true,
         "id": "audio-card"
       },
       {
         "enabled": true,
         "id": "brightness-card"
+      },
+      {
+        "enabled": true,
+        "id": "weather-card"
+      },
+      {
+        "enabled": true,
+        "id": "media-sysmon-card"
       }
     ]
   },
@@ -360,10 +464,10 @@
     "indicatorOpacity": 0.6
   },
   "network": {
-    "bluetoothRssiPollingEnabled": false,
+    "bluetoothRssiPollingEnabled": true,
     "bluetoothRssiPollIntervalMs": 60000,
     "networkPanelView": "wifi",
-    "wifiDetailsViewMode": "list",
+    "wifiDetailsViewMode": "grid",
     "bluetoothDetailsViewMode": "grid",
     "bluetoothHideUnnamedDevices": false,
     "disableDiscoverability": false,
@@ -473,7 +577,11 @@
     "autoHideMs": 2000,
     "overlayLayer": true,
     "backgroundOpacity": 0.92,
-    "enabledTypes": [0, 1, 2],
+    "enabledTypes": [
+      0,
+      1,
+      2
+    ],
     "monitors": []
   },
   "audio": {

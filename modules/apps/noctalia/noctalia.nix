@@ -6,6 +6,11 @@
       home.file."Pictures/Wallpapers/clouds.jpg".source =
         ../../../assets/wallpapers/clouds.jpg;
 
+      home.file.".cache/noctalia/wallpapers.json".text = builtins.toJSON {
+        defaultWallpaper = "/home/SunSD/Pictures/Wallpapers/clouds.jpg";
+        wallpapers = {};
+      };
+
       programs.noctalia-shell = {
         enable   = true;
         package = lib.mkForce (inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
