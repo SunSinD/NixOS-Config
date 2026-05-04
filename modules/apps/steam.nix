@@ -27,7 +27,7 @@
           GenericName=Game Launcher
           Comment=Launch Steam
           Exec=steam-niri %U
-          Icon=steam
+          Icon=${pkgs.steam}/share/icons/hicolor/256x256/apps/steam.png
           Terminal=false
           Type=Application
           Categories=Network;FileTransfer;Game;

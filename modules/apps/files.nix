@@ -1,5 +1,5 @@
 { ... }: {
-  flake.nixosModules.files = { ... }: {
+  flake.nixosModules.files = { pkgs, ... }: {
     home-manager.users.SunSD = { config, ... }: {
       xdg = {
         enable = true;
@@ -68,11 +68,107 @@
           NoDisplay=true
         '';
 
+        ".local/share/applications/blueman-adapters.desktop".text = ''
+          [Desktop Entry]
+          Name=Bluetooth Adapters
+          Type=Application
+          NoDisplay=true
+        '';
+
+        ".local/share/applications/blueman-manager.desktop".text = ''
+          [Desktop Entry]
+          Name=Bluetooth Manager
+          Type=Application
+          NoDisplay=true
+        '';
+
+        ".local/share/applications/thunar-bulk-rename.desktop".text = ''
+          [Desktop Entry]
+          Name=Bulk Rename
+          Type=Application
+          NoDisplay=true
+        '';
+
+        ".local/share/applications/nvim.desktop".text = ''
+          [Desktop Entry]
+          Name=Neovim
+          Type=Application
+          NoDisplay=true
+        '';
+
+        ".local/share/applications/nirimod.desktop".text = ''
+          [Desktop Entry]
+          Name=NiriMod
+          Type=Application
+          NoDisplay=true
+        '';
+
+        ".local/share/applications/nixos-manual.desktop".text = ''
+          [Desktop Entry]
+          Name=NixOS Manual
+          Type=Application
+          NoDisplay=true
+        '';
+
+        ".local/share/applications/mpv.desktop".text = ''
+          [Desktop Entry]
+          Name=mpv Media Player
+          Type=Application
+          NoDisplay=true
+        '';
+
+        ".local/share/applications/remote-viewer.desktop".text = ''
+          [Desktop Entry]
+          Name=Remote Viewer
+          Type=Application
+          NoDisplay=true
+        '';
+
+        ".local/share/applications/thunar.desktop".text = ''
+          [Desktop Entry]
+          Name=Thunar File Manager
+          Type=Application
+          NoDisplay=true
+        '';
+
+        ".local/share/applications/thunar-settings.desktop".text = ''
+          [Desktop Entry]
+          Name=Thunar Preferences
+          Type=Application
+          NoDisplay=true
+        '';
+
+        ".local/share/applications/virt-manager.desktop".text = ''
+          [Desktop Entry]
+          Name=Virtual Machine Manager
+          Type=Application
+          NoDisplay=true
+        '';
+
+        ".local/share/applications/pavucontrol.desktop".text = ''
+          [Desktop Entry]
+          Name=Volume Control
+          Type=Application
+          NoDisplay=true
+        '';
+
+        ".local/share/applications/com.spotify.Client.desktop".text = ''
+          [Desktop Entry]
+          Name=Spotify
+          Type=Application
+          NoDisplay=true
+        '';
+
         ".local/share/applications/com.obsproject.Studio.desktop".text = ''
           [Desktop Entry]
           Name=OBS Studio
+          GenericName=Streaming/Recording Software
+          Comment=Free and Open Source Streaming/Recording Software
+          Exec=obs
+          Icon=${pkgs.obs-studio}/share/icons/hicolor/scalable/apps/com.obsproject.Studio.svg
+          Terminal=false
           Type=Application
-          NoDisplay=true
+          Categories=AudioVideo;Recorder;
         '';
       };
     };
