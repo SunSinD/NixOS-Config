@@ -1,5 +1,5 @@
 { inputs, ... }: {
-  flake.nixosModules.noctalia = { ... }: {
+  flake.nixosModules.noctalia = { pkgs, lib, ... }: {
     home-manager.users.SunSD = { ... }: {
       imports = [ inputs.noctalia.homeModules.default ];
 
@@ -15,6 +15,16 @@
 
       programs.noctalia-shell = {
         enable   = true;
+        package = lib.mkForce (inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
+          postPatch = (old.postPatch or "") + ''
+            if [ -f Modules/LockScreen/LockScreenHeader.qml ]; then
+              sed -i '/\/\/ Left side: Avatar/{n; s|Rectangle {|Rectangle { visible: false|;}' Modules/LockScreen/LockScreenHeader.qml
+              sed -i '/\/\/ Center: User Info Column/{n; s|ColumnLayout {|ColumnLayout { visible: false|;}' Modules/LockScreen/LockScreenHeader.qml
+              sed -i '/\/\/ Spacer to push time to the right/{n; n; s|Layout.fillWidth: true|Layout.preferredWidth: 0|;}' Modules/LockScreen/LockScreenHeader.qml
+              sed -i 's|pointSize: Style.fontSizeL|pointSize: Style.fontSizeXXL|g' Modules/LockScreen/LockScreenHeader.qml
+            fi
+          '';
+        }));
         settings = builtins.fromJSON (builtins.readFile ./noctalia.json);
         colors   = builtins.fromJSON (builtins.readFile ./colors.json);
 

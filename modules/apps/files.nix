@@ -53,6 +53,27 @@
           Type=Application
           NoDisplay=true
         '';
+
+        ".local/share/applications/btop.desktop".text = ''
+          [Desktop Entry]
+          Name=btop
+          Type=Application
+          NoDisplay=true
+        '';
+
+        ".local/share/applications/btop++.desktop".text = ''
+          [Desktop Entry]
+          Name=btop++
+          Type=Application
+          NoDisplay=true
+        '';
+
+        ".local/share/applications/com.obsproject.Studio.desktop".text = ''
+          [Desktop Entry]
+          Name=OBS Studio
+          Type=Application
+          NoDisplay=true
+        '';
       };
     };
   };
