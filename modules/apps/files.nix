@@ -103,6 +103,41 @@
           NoDisplay=true
         '';
 
+        ".local/share/applications/nirimod-bin.desktop".text = ''
+          [Desktop Entry]
+          Name=NiriMod
+          Type=Application
+          NoDisplay=true
+        '';
+
+        ".local/share/applications/ghostty.desktop".text = ''
+          [Desktop Entry]
+          Name=Ghostty
+          Type=Application
+          NoDisplay=true
+        '';
+
+        ".local/share/applications/com.mitchellh.ghostty.desktop".text = ''
+          [Desktop Entry]
+          Name=Ghostty
+          Type=Application
+          NoDisplay=true
+        '';
+
+        ".local/share/applications/obsidian.desktop".text = ''
+          [Desktop Entry]
+          Name=Obsidian
+          Type=Application
+          NoDisplay=true
+        '';
+
+        ".local/share/applications/md.obsidian.Obsidian.desktop".text = ''
+          [Desktop Entry]
+          Name=Obsidian
+          Type=Application
+          NoDisplay=true
+        '';
+
         ".local/share/applications/nixos-manual.desktop".text = ''
           [Desktop Entry]
           Name=NixOS Manual
@@ -152,6 +187,13 @@
           NoDisplay=true
         '';
 
+        ".local/share/applications/org.pulseaudio.pavucontrol.desktop".text = ''
+          [Desktop Entry]
+          Name=Volume Control
+          Type=Application
+          NoDisplay=true
+        '';
+
         ".local/share/applications/com.spotify.Client.desktop".text = ''
           [Desktop Entry]
           Name=Spotify
@@ -165,10 +207,21 @@
           GenericName=Streaming/Recording Software
           Comment=Free and Open Source Streaming/Recording Software
           Exec=obs
-          Icon=${pkgs.obs-studio}/share/icons/hicolor/scalable/apps/com.obsproject.Studio.svg
+          Icon=obs-studio-clean
           Terminal=false
           Type=Application
           Categories=AudioVideo;Recorder;
+        '';
+
+        ".local/share/icons/hicolor/scalable/apps/obs-studio-clean.svg".text = ''
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+            <rect width="128" height="128" rx="18" fill="#101014"/>
+            <g fill="#f5f5f5">
+              <path d="M63 18c18 7 29 23 29 43-11-10-25-13-41-7 0-16 4-28 12-36z"/>
+              <path d="M104 72c-13 16-32 21-51 14 12-8 20-21 21-37 15 7 25 15 30 23z"/>
+              <path d="M27 91c-6-20 1-38 21-50-2 15 4 29 18 39-13 9-26 13-39 11z"/>
+            </g>
+          </svg>
         '';
       };
     };
