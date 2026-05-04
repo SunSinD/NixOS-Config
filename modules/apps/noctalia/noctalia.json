@@ -151,7 +151,7 @@
     "autoStartAuth": false,
     "allowPasswordWithFprintd": false,
     "clockStyle": "custom",
-    "clockFormat": "h:mm AP",
+    "clockFormat": "h:mm",
     "passwordChars": false,
     "lockScreenMonitors": [],
     "lockScreenBlur": 0,
