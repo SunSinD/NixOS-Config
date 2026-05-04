@@ -1,5 +1,5 @@
 { inputs, ... }: {
-  flake.nixosModules.noctalia = { ... }: {
+  flake.nixosModules.noctalia = { pkgs, lib, ... }: {
     home-manager.users.SunSD = { ... }: {
       imports = [ inputs.noctalia.homeModules.default ];
 
@@ -14,9 +14,18 @@
       };
 
       programs.noctalia-shell = {
-        enable   = true;
+        enable = true;
+        package = lib.mkForce (
+          inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
+            postPatch = (old.postPatch or "") + ''
+              if [ -f Modules/LockScreen/LockScreenHeader.qml ]; then
+                sed -i '0,/Rectangle {/s|Rectangle {|Rectangle { visible: false;|' Modules/LockScreen/LockScreenHeader.qml
+              fi
+            '';
+          })
+        );
         settings = builtins.fromJSON (builtins.readFile ./noctalia.json);
-        colors   = builtins.fromJSON (builtins.readFile ./colors.json);
+        colors = builtins.fromJSON (builtins.readFile ./colors.json);
 
         plugins = {
           sources = [{

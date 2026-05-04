@@ -207,21 +207,10 @@
           GenericName=Streaming/Recording Software
           Comment=Free and Open Source Streaming/Recording Software
           Exec=obs
-          Icon=obs-studio-clean
+          Icon=${pkgs.obs-studio}/share/icons/hicolor/256x256/apps/com.obsproject.Studio.png
           Terminal=false
           Type=Application
           Categories=AudioVideo;Recorder;
-        '';
-
-        ".local/share/icons/hicolor/scalable/apps/obs-studio-clean.svg".text = ''
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-            <rect width="128" height="128" rx="18" fill="#101014"/>
-            <g fill="#e8e8e8">
-              <path d="M65 21c15 9 22 24 19 42-9-8-21-11-36-8 0-15 6-27 17-34z"/>
-              <path d="M101 73c-12 13-28 17-46 11 11-8 18-19 19-34 14 5 23 13 27 23z"/>
-              <path d="M28 88c-3-17 4-32 20-43-1 14 5 26 17 36-12 8-25 10-37 7z"/>
-            </g>
-          </svg>
         '';
       };
     };
