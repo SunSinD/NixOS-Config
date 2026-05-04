@@ -39,6 +39,20 @@
           Categories=Network;WebBrowser;
           StartupNotify=true
         '';
+
+        ".local/share/applications/google-chrome.desktop".text = ''
+          [Desktop Entry]
+          Name=Google Chrome
+          Type=Application
+          NoDisplay=true
+        '';
+
+        ".local/share/applications/google-chrome-stable.desktop".text = ''
+          [Desktop Entry]
+          Name=Google Chrome
+          Type=Application
+          NoDisplay=true
+        '';
       };
     };
   };
