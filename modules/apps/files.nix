@@ -206,7 +206,7 @@
           Name=OBS Studio
           GenericName=Streaming/Recording Software
           Comment=Free and Open Source Streaming/Recording Software
-          Exec=obs-studio
+          Exec=obs
           Icon=obs-studio-clean
           Terminal=false
           Type=Application

@@ -117,6 +117,9 @@ window-rule {
 window-rule {
     match app-id=r"(?i)steam"
     open-floating true
+    default-column-width { proportion 0.82; }
+    default-window-height { proportion 0.82; }
+    default-floating-position x=0 y=0 relative-to="top"
 }
 
 binds {
@@ -128,7 +131,7 @@ binds {
 
     Mod+P       { spawn "bash" "-c" "systemctl poweroff"; }
     Mod+Shift+P { spawn "bash" "-c" "systemctl reboot"; }
-    Mod+I       { spawn "swaylock" "--image" "/home/SunSD/Pictures/Wallpapers/clouds.jpg" "--scaling" "fill" "--indicator-radius" "72" "--indicator-thickness" "6" "--inside-color" "101014dd" "--ring-color" "f5f5f5" "--key-hl-color" "a3a3a3" "--line-color" "00000000" "--separator-color" "00000000"; }
+    Mod+I       { spawn "noctalia-shell" "ipc" "call" "lockScreen" "lock"; }
     F13       { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
     Mod+F13   { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
     Mod+Space { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
