@@ -1,5 +1,5 @@
 { inputs, ... }: {
-  flake.nixosModules.niri = { pkgs, lib, ... }: {
+  flake.nixosModules.niri = { pkgs, ... }: {
     imports = [ inputs.niri.nixosModules.niri ];
 
     programs.niri = {
@@ -9,18 +9,6 @@
 
     home-manager.users.SunSD = { ... }: {
       programs.niri.config = builtins.readFile ./config.kdl;
-
-      home.packages = [
-        (pkgs.symlinkJoin {
-          name  = "nirimod";
-          paths = [ inputs.nirimod.packages.${pkgs.stdenv.hostPlatform.system}.default ];
-          buildInputs = [ pkgs.makeWrapper ];
-          postBuild = ''
-            wrapProgram $out/bin/nirimod \
-              --run 'export NIRIMOD_CONFIG_DIR="$HOME/nixconf/modules/apps/niri"'
-          '';
-        })
-      ];
     };
   };
 }
