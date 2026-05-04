@@ -43,6 +43,9 @@
     nix.settings = {
       trusted-users         = [ "root" "@wheel" ];
       experimental-features = [ "nix-command" "flakes" ];
+      fallback              = true;
+      download-attempts     = 5;
+      connect-timeout       = 20;
 
       extra-substituters        = [ "https://niri.cachix.org" "https://noctalia.cachix.org" ];
       extra-trusted-public-keys = [

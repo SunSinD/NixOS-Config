@@ -19,7 +19,11 @@ echo ""
 # Phase 2: Build
 echo "  Building system..."
 echo ""
-sudo nixos-rebuild switch --flake ~/nixconf#"$(hostname)" 2>&1 | while IFS= read -r line; do
+sudo nixos-rebuild switch \
+  --option fallback true \
+  --option download-attempts 5 \
+  --option connect-timeout 20 \
+  --flake ~/nixconf#"$(hostname)" 2>&1 | while IFS= read -r line; do
   if [[ "$line" == *"building '"* ]]; then
     name=$(echo "$line" | sed "s|.*building '/nix/store/[^-]*-||;s|\.drv.*||")
     echo "    building $name..."
