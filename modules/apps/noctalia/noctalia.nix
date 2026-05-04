@@ -24,10 +24,36 @@
               --replace-fail 'root.currentWallpapers = wallpaperCacheAdapter.wallpapers || {};' 'root.currentWallpapers = {};' \
               --replace-fail 'root.defaultWallpaper = wallpaperCacheAdapter.defaultWallpaper;' 'root.defaultWallpaper = root.noctaliaDefaultWallpaper;'
             substituteInPlace Modules/LockScreen/LockScreenHeader.qml \
+              --replace-fail 'width: Math.max(500, contentRow.implicitWidth + 32)' 'width: Math.max(260, contentRow.implicitWidth + 32)' \
+              --replace-fail 'height: Math.max(120, contentRow.implicitHeight + 32)' 'height: Math.max(92, contentRow.implicitHeight + 24)' \
+              --replace-fail 'anchors.topMargin: 100' 'anchors.topMargin: Math.round(parent.height * 0.18)' \
+              --replace-fail 'color: Color.mSurface' 'color: "transparent"' \
+              --replace-fail 'border.width: Style.borderS' 'border.width: 0' \
+              --replace-fail '// Left side: Avatar
+    Rectangle {' '// Left side: Avatar
+    Rectangle {
+      visible: false' \
+              --replace-fail 'Layout.preferredWidth: 70' 'Layout.preferredWidth: 0' \
+              --replace-fail 'Layout.preferredHeight: 70' 'Layout.preferredHeight: 0' \
+              --replace-fail '// Center: User Info Column (left-aligned text)
+    ColumnLayout {' '// Center: User Info Column (left-aligned text)
+    ColumnLayout {
+      visible: false
+      Layout.preferredWidth: 0' \
+              --replace-fail '// Spacer to push time to the right
+    Item {
+      Layout.fillWidth: true
+    }' '// Spacer to push time to the right
+    Item {
+      visible: false
+      Layout.preferredWidth: 0
+    }' \
               --replace-fail 'showProgress: true' 'showProgress: false' \
               --replace-fail 'Layout.preferredWidth: Settings.data.general.clockStyle === "analog" ? 70 : (Settings.data.general.clockStyle === "custom" ? 90 : 70)' 'Layout.preferredWidth: Settings.data.general.clockStyle === "analog" ? 70 : (Settings.data.general.clockStyle === "custom" ? 190 : 70)' \
               --replace-fail 'Layout.preferredHeight: Settings.data.general.clockStyle === "analog" ? 70 : (Settings.data.general.clockStyle === "custom" ? 90 : 70)' 'Layout.preferredHeight: 76' \
               --replace-fail 'pointSize: Style.fontSizeL' 'pointSize: Style.fontSizeXXL'
+            substituteInPlace Modules/LockScreen/LockScreenPanel.qml \
+              --replace-fail 'visible: Settings.data.general.compactLockScreen && (batteryIndicator.isReady || keyboardLayout.currentLayout !== "Unknown" || LockKeysService.capsLockOn)' 'visible: false'
             substituteInPlace Modules/Panels/Launcher/Providers/ApplicationsProvider.qml \
               --replace-fail 'return pinnedApps.some(pinnedId => normalizeAppId(pinnedId) === normalizedId);' 'const normalizedName = normalizeAppId(app.name || "");
     const normalizedExec = normalizeAppId(getExecutableName(app));

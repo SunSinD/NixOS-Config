@@ -26,19 +26,87 @@
     "autoShowDelay": 150,
     "showOnWorkspaceSwitch": true,
     "widgets": {
-      "left": [],
+      "left": [
+        {
+          "id": "Workspace",
+          "characterCount": 2,
+          "colorizeIcons": false,
+          "emptyColor": "secondary",
+          "enableScrollWheel": false,
+          "focusedColor": "primary",
+          "followFocusedScreen": false,
+          "fontWeight": "bold",
+          "groupedBorderOpacity": 0,
+          "hideUnoccupied": false,
+          "iconScale": 0.95,
+          "labelMode": "none",
+          "occupiedColor": "secondary",
+          "pillSize": 0.68,
+          "showApplications": false,
+          "showApplicationsHover": false,
+          "showBadge": true,
+          "showLabelsOnlyWhenOccupied": true,
+          "unfocusedIconsOpacity": 1
+        }
+      ],
       "center": [
         {
           "id": "Clock",
           "clockColor": "none",
           "customFont": "Inter Black",
-          "formatHorizontal": "h:mm AP",
+          "formatHorizontal": "h:mm AP    ddd, MMM dd",
           "formatVertical": "h:mm AP",
-          "tooltipFormat": "h:mm AP    ddd, MMM dd",
+          "tooltipFormat": "h:mm AP ddd, MMM dd",
           "useCustomFont": true
         }
       ],
-      "right": []
+      "right": [
+        {
+          "id": "Network",
+          "displayMode": "onhover",
+          "iconColor": "none",
+          "textColor": "none"
+        },
+        {
+          "id": "Bluetooth",
+          "displayMode": "onhover",
+          "iconColor": "none",
+          "textColor": "none"
+        },
+        {
+          "id": "Volume",
+          "displayMode": "onhover",
+          "middleClickCommand": "pavucontrol",
+          "iconColor": "none",
+          "textColor": "none"
+        },
+        {
+          "id": "Battery",
+          "displayMode": "graphic",
+          "deviceNativePath": "__default__",
+          "showPowerProfiles": false,
+          "showNoctaliaPerformance": false,
+          "hideIfNotDetected": true,
+          "hideIfIdle": false
+        },
+        {
+          "id": "Tray",
+          "blacklist": [],
+          "colorizeIcons": false,
+          "chevronColor": "none",
+          "drawerEnabled": true,
+          "hidePassive": false,
+          "pinned": []
+        },
+        {
+          "id": "NotificationHistory",
+          "hideWhenZero": false,
+          "hideWhenZeroUnread": true,
+          "iconColor": "none",
+          "showUnreadBadge": true,
+          "unreadBadgeColor": "primary"
+        }
+      ]
     },
     "mouseWheelAction": "none",
     "reverseScroll": false,
