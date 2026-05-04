@@ -140,7 +140,7 @@ binds {
     Mod+F       { maximize-column; }
     Mod+Shift+F { fullscreen-window; }
     Mod+T       { toggle-window-floating; }
-    Mod+Tab     { spawn "bash" "-c" "niri msg action toggle-overview && notify-send -t 900 -a niri 'Overview'"; }
+    Mod+Tab     { spawn "bash" "-c" "niri msg action toggle-overview && notify-send -t 700 -a niri -h string:x-canonical-private-synchronous:overview -h int:transient:1 'Overview'"; }
 
     Mod+1 { focus-workspace 1; }
     Mod+2 { focus-workspace 2; }
