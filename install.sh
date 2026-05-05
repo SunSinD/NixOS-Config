@@ -88,7 +88,7 @@ build_systemd_loader() {
 required_target_disk_gib() {
   case "$HOST" in
     main-pc) printf '80\n' ;;
-    *)       printf '50\n' ;;
+    *)       printf '45\n' ;;
   esac
 }
 
@@ -307,6 +307,7 @@ prepare_install_workspace
 echo "==> Installing NixOS ($HOST)... (this may take 10-20 minutes)"
 sudo env TMPDIR="$INSTALL_TMPDIR" XDG_CACHE_HOME="$ROOT_CACHE_DIR" \
   nixos-install \
+  --no-write-lock-file \
   --root /mnt \
   --flake "$WORK_DIR#$HOST" \
   --no-root-passwd \
