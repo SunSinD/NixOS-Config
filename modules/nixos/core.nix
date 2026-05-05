@@ -42,13 +42,19 @@
       algorithm = "zstd";
     };
 
-    users.users.SunSD = {
-      isNormalUser    = true;
-      extraGroups     = [ "networkmanager" "wheel" "video" "input" "libvirtd" ];
-      initialHashedPassword = "";
+    users = {
+      mutableUsers = false;
+      users.SunSD = {
+        isNormalUser = true;
+        extraGroups  = [ "networkmanager" "wheel" "video" "input" "libvirtd" ];
+        hashedPassword = "";
+      };
     };
 
-    security.sudo.wheelNeedsPassword = false;
+    security = {
+      sudo.wheelNeedsPassword = false;
+      pam.services.login.allowNullPassword = true;
+    };
 
     hardware.bluetooth = {
       enable = true;
@@ -136,6 +142,8 @@
     };
 
     services = {
+      getty.autologinUser = "SunSD";
+
       greetd = {
         enable = true;
         restart = false;
