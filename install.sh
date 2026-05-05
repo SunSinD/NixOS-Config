@@ -14,9 +14,8 @@ INSTALL_TRUSTED_KEYS="cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDS
 INSTALL_MAX_JOBS=1
 INSTALL_CORES=1
 INSTALL_SWAP_SIZE="${INSTALL_SWAP_SIZE:-8G}"
-INSTALL_PROGRESS_INTERVAL="${INSTALL_PROGRESS_INTERVAL:-1}"
-INSTALL_PROGRESS_LOG_INTERVAL="${INSTALL_PROGRESS_LOG_INTERVAL:-10}"
-GREEN=$'\033[1;32m'
+INSTALL_PROGRESS_INTERVAL="${INSTALL_PROGRESS_INTERVAL:-20}"
+GREEN=$'\033[32m'
 RESET=$'\033[0m'
 NIX_FLAGS=(
   --extra-experimental-features "nix-command flakes"
@@ -29,7 +28,15 @@ NIX_FLAGS=(
 )
 
 filter_install_output() {
-  sed -u -E '/^warning:/d;/^\+/d;/^[[:space:]]*$/d;/(Added|Adding|Removed) input/d'
+  sed -u -E \
+    -e '/^warning:/d' \
+    -e '/^\+/d' \
+    -e '/^[[:space:]]*$/d' \
+    -e '/^(Added|Adding|Removed) input/d' \
+    -e '/^unpacking '\''github:/d' \
+    -e '/^copying path '\''\/nix\/store\//d' \
+    -e '/^building the flake in /d' \
+    -e '/^Create subvolume /d'
 }
 
 tty_printf() {
@@ -45,6 +52,10 @@ tty_printf() {
 
 status() {
   tty_printf '%b==>%b %s\n' "$GREEN" "$RESET" "$*"
+}
+
+progress() {
+  tty_printf '    %s\n' "$*"
 }
 
 elapsed_time() {
@@ -76,34 +87,24 @@ run_with_heartbeat() {
   local label="$1"
   shift
 
-  status "Starting: $label"
+  progress "$label started"
   "$@" &
   local pid=$!
-  local start now elapsed spinner_index spinner_chars spinner spinner_pos log_every
+  local start now elapsed
   start="$(date +%s)"
-  spinner_index=0
-  spinner_chars='|/-\'
-  log_every="$INSTALL_PROGRESS_LOG_INTERVAL"
 
   while kill -0 "$pid" 2>/dev/null; do
     sleep "$INSTALL_PROGRESS_INTERVAL"
     kill -0 "$pid" 2>/dev/null || break
     now="$(date +%s)"
     elapsed=$((now - start))
-    spinner_pos=$((spinner_index % ${#spinner_chars}))
-    spinner="${spinner_chars:spinner_pos:1}"
-    spinner_index=$((spinner_index + 1))
-
-    tty_printf '\r\033[K%b==>%b [%s] %s | elapsed %s | %s' \
-      "$GREEN" "$RESET" "$spinner" "$label" "$(elapsed_time "$elapsed")" "$(target_usage_summary)"
-
-    if (( log_every > 0 && elapsed > 0 && elapsed % log_every == 0 )); then
-      tty_printf '\n'
-    fi
+    progress "$label still running | elapsed $(elapsed_time "$elapsed") | $(target_usage_summary)"
   done
 
-  tty_printf '\r\033[K'
   wait "$pid"
+  now="$(date +%s)"
+  elapsed=$((now - start))
+  progress "$label finished in $(elapsed_time "$elapsed")"
 }
 
 detect_machine() {
@@ -233,16 +234,16 @@ format_and_mount_target() {
     exit 1
   fi
 
-  sudo mkfs.vfat -F 32 -n NIXBOOT "$efi_part"
-  sudo mkfs.btrfs -f -L nixos "$root_part"
+  sudo mkfs.vfat -F 32 -n NIXBOOT "$efi_part" >/dev/null
+  sudo mkfs.btrfs -f -L nixos "$root_part" >/dev/null
 
   sudo mkdir -p /mnt
   sudo mount "$root_part" /mnt
-  sudo btrfs subvolume create /mnt/@
-  sudo btrfs subvolume create /mnt/@nix
-  sudo btrfs subvolume create /mnt/@home
-  sudo btrfs subvolume create /mnt/@log
-  sudo btrfs subvolume create /mnt/@snapshots
+  sudo btrfs subvolume create /mnt/@ >/dev/null
+  sudo btrfs subvolume create /mnt/@nix >/dev/null
+  sudo btrfs subvolume create /mnt/@home >/dev/null
+  sudo btrfs subvolume create /mnt/@log >/dev/null
+  sudo btrfs subvolume create /mnt/@snapshots >/dev/null
   sudo umount /mnt
 
   sudo mount -o compress=zstd,noatime,subvol=@ "$root_part" /mnt
