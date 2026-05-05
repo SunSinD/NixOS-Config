@@ -20,10 +20,11 @@ NIX_FLAGS=(
   --option trusted-public-keys "$INSTALL_TRUSTED_KEYS"
   --option max-jobs "$INSTALL_MAX_JOBS"
   --option cores "$INSTALL_CORES"
+  --option fallback false
 )
 
 filter_install_output() {
-  sed -E '/^warning:/d;/^\+/d;/^[[:space:]]*$/d;/(Added|Adding|Removed) input/d'
+  sed -u -E '/^warning:/d;/^\+/d;/^[[:space:]]*$/d;/(Added|Adding|Removed) input/d'
 }
 
 detect_machine() {
@@ -363,6 +364,7 @@ prepare_install_workspace
 
 echo "==> Installing NixOS ($HOST)... (this may take 10-20 minutes)"
 echo "==> Nix build limits: max-jobs=$INSTALL_MAX_JOBS cores=$INSTALL_CORES"
+echo "==> If this sits on one path for a while, it is usually downloading or unpacking a large cache item."
 NIXOS_INSTALL_LOCK_ARGS=()
 if nixos-install --help 2>&1 | grep -q -- '--no-write-lock-file'; then
   NIXOS_INSTALL_LOCK_ARGS+=(--no-write-lock-file)
@@ -377,6 +379,7 @@ root_env nixos-install \
   --option trusted-public-keys  "$INSTALL_TRUSTED_KEYS" \
   --option max-jobs             "$INSTALL_MAX_JOBS" \
   --option cores                "$INSTALL_CORES" \
+  --option fallback             false \
   2>&1 | filter_install_output
 
 echo "==> Verifying EFI boot files..."
