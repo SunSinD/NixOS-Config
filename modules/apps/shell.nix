@@ -5,6 +5,8 @@
         enable   = true;
         settings = {
           add_newline         = false;
+          scan_timeout        = 1000;
+          command_timeout     = 1000;
           aws.disabled        = true;
           gcloud.disabled     = true;
           line_break.disabled = true;
