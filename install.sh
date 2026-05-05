@@ -11,11 +11,15 @@ HOST="${1:-}"
 DISKO_CONFIG=""
 INSTALL_SUBSTITUTERS="https://cache.nixos.org https://niri.cachix.org https://attic.xuyh0120.win/lantian https://cache.garnix.io"
 INSTALL_TRUSTED_KEYS="cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964= lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc= cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
+INSTALL_MAX_JOBS=2
+INSTALL_CORES=2
 NIX_FLAGS=(
   --extra-experimental-features "nix-command flakes"
   --store /mnt
   --option substituters "$INSTALL_SUBSTITUTERS"
   --option trusted-public-keys "$INSTALL_TRUSTED_KEYS"
+  --option max-jobs "$INSTALL_MAX_JOBS"
+  --option cores "$INSTALL_CORES"
 )
 
 filter_install_output() {
@@ -87,7 +91,7 @@ root_nix() {
 }
 
 build_systemd_loader() {
-  local out
+  local out physical_out
 
   out="$(
     root_nix build --no-link --print-out-paths 'nixpkgs#systemd' 2>/dev/null \
@@ -96,6 +100,12 @@ build_systemd_loader() {
 
   if [[ -f "$out/lib/systemd/boot/efi/systemd-bootx64.efi" ]]; then
     printf '%s\n' "$out/lib/systemd/boot/efi/systemd-bootx64.efi"
+    return 0
+  fi
+
+  physical_out="/mnt$out"
+  if [[ -f "$physical_out/lib/systemd/boot/efi/systemd-bootx64.efi" ]]; then
+    printf '%s\n' "$physical_out/lib/systemd/boot/efi/systemd-bootx64.efi"
     return 0
   fi
 
@@ -352,6 +362,7 @@ fi
 prepare_install_workspace
 
 echo "==> Installing NixOS ($HOST)... (this may take 10-20 minutes)"
+echo "==> Nix build limits: max-jobs=$INSTALL_MAX_JOBS cores=$INSTALL_CORES"
 NIXOS_INSTALL_LOCK_ARGS=()
 if nixos-install --help 2>&1 | grep -q -- '--no-write-lock-file'; then
   NIXOS_INSTALL_LOCK_ARGS+=(--no-write-lock-file)
@@ -364,6 +375,8 @@ root_env nixos-install \
   --no-root-passwd \
   --option substituters         "$INSTALL_SUBSTITUTERS" \
   --option trusted-public-keys  "$INSTALL_TRUSTED_KEYS" \
+  --option max-jobs             "$INSTALL_MAX_JOBS" \
+  --option cores                "$INSTALL_CORES" \
   2>&1 | filter_install_output
 
 echo "==> Verifying EFI boot files..."
