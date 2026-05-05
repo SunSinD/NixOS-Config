@@ -11,6 +11,11 @@ HOST="${1:-}"
 DISKO_CONFIG=""
 INSTALL_SUBSTITUTERS="https://cache.nixos.org https://niri.cachix.org https://attic.xuyh0120.win/lantian https://cache.garnix.io"
 INSTALL_TRUSTED_KEYS="cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964= lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc= cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
+NIX_FLAGS=(
+  --extra-experimental-features "nix-command flakes"
+  --option substituters "$INSTALL_SUBSTITUTERS"
+  --option trusted-public-keys "$INSTALL_TRUSTED_KEYS"
+)
 
 filter_install_output() {
   sed -E '/^warning:/d;/^\+/d;/^[[:space:]]*$/d;/(Added|Adding|Removed) input/d'
@@ -68,16 +73,24 @@ find_efi_loader() {
   return 1
 }
 
+root_env() {
+  sudo env \
+    HOME="$ROOT_HOME_DIR" \
+    TMPDIR="$INSTALL_TMPDIR" \
+    XDG_CACHE_HOME="$ROOT_CACHE_DIR" \
+    "$@"
+}
+
+root_nix() {
+  root_env nix "${NIX_FLAGS[@]}" "$@"
+}
+
 build_systemd_loader() {
   local out
 
   out="$(
-    HOME="$ROOT_HOME_DIR" XDG_CACHE_HOME="$ROOT_CACHE_DIR" TMPDIR="$INSTALL_TMPDIR" \
-      nix --extra-experimental-features "nix-command flakes" \
-        build --no-link --print-out-paths 'nixpkgs#systemd' 2>/dev/null \
-    || HOME="$ROOT_HOME_DIR" XDG_CACHE_HOME="$ROOT_CACHE_DIR" TMPDIR="$INSTALL_TMPDIR" \
-      nix --extra-experimental-features "nix-command flakes" \
-        build --no-link --print-out-paths 'github:NixOS/nixpkgs/nixos-unstable#systemd'
+    root_nix build --no-link --print-out-paths 'nixpkgs#systemd' 2>/dev/null \
+    || root_nix build --no-link --print-out-paths 'github:NixOS/nixpkgs/nixos-unstable#systemd'
   )"
 
   if [[ -f "$out/lib/systemd/boot/efi/systemd-bootx64.efi" ]]; then
@@ -138,11 +151,31 @@ check_target_free_space() {
   fi
 }
 
+redirect_live_root_nix_cache() {
+  sudo mkdir -p /root/.cache "$ROOT_CACHE_DIR/nix" "$ROOT_HOME_DIR/.cache"
+  sudo ln -sfn "$ROOT_CACHE_DIR/nix" "$ROOT_HOME_DIR/.cache/nix"
+
+  if [[ -e /root/.cache/nix && ! -L /root/.cache/nix ]]; then
+    sudo rm -rf "$ROOT_CACHE_DIR/live-root-nix-cache"
+    sudo mv /root/.cache/nix "$ROOT_CACHE_DIR/live-root-nix-cache" 2>/dev/null || sudo rm -rf /root/.cache/nix
+  fi
+
+  sudo ln -sfn "$ROOT_CACHE_DIR/nix" /root/.cache/nix
+}
+
+lock_flake_on_target() {
+  echo "==> Resolving flake inputs on target disk..."
+  root_nix flake lock "$WORK_DIR" 2>&1 | filter_install_output
+  show_target_space
+  check_target_free_space 20
+}
+
 prepare_install_workspace() {
   echo "==> Preparing install workspace on target disk..."
   sudo mkdir -p "$INSTALL_TMPDIR" "$USER_CACHE_DIR" "$ROOT_CACHE_DIR" "$ROOT_HOME_DIR"
   sudo chmod 1777 "$INSTALL_TMPDIR" "$USER_CACHE_DIR"
   sudo chmod 700 "$ROOT_CACHE_DIR" "$ROOT_HOME_DIR"
+  redirect_live_root_nix_cache
 
   export TMPDIR="$INSTALL_TMPDIR"
   export XDG_CACHE_HOME="$USER_CACHE_DIR"
@@ -152,6 +185,7 @@ prepare_install_workspace() {
   cd "$WORK_DIR"
   show_target_space
   check_target_free_space 25
+  lock_flake_on_target
 }
 
 cleanup() {
@@ -173,7 +207,7 @@ trap cleanup EXIT
 if [[ -z "$HOST" || "$HOST" == "--help" || "$HOST" == "-h" ]]; then
   echo "Select a host to install:"
   echo "  [0] main-pc - desktop-only, AMD/Nvidia, CachyOS kernel"
-  echo "  [1] vm      - full desktop, QEMU/SPICE guest tools, standard kernel"
+  echo "  [1] vm      - full desktop, QEMU/SPICE/VMware guest tools, standard kernel"
   echo "  [2] generic - portable laptop/desktop config, standard kernel"
   read -rp "Choice (number): " HOST_CHOICE
   case "$HOST_CHOICE" in
@@ -311,9 +345,13 @@ fi
 prepare_install_workspace
 
 echo "==> Installing NixOS ($HOST)... (this may take 10-20 minutes)"
-sudo env HOME="$ROOT_HOME_DIR" TMPDIR="$INSTALL_TMPDIR" XDG_CACHE_HOME="$ROOT_CACHE_DIR" \
-  nixos-install \
-  --no-write-lock-file \
+NIXOS_INSTALL_LOCK_ARGS=()
+if nixos-install --help 2>&1 | grep -q -- '--no-write-lock-file'; then
+  NIXOS_INSTALL_LOCK_ARGS+=(--no-write-lock-file)
+fi
+
+root_env nixos-install \
+  "${NIXOS_INSTALL_LOCK_ARGS[@]}" \
   --root /mnt \
   --flake "$WORK_DIR#$HOST" \
   --no-root-passwd \
