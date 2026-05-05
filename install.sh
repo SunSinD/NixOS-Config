@@ -14,7 +14,6 @@ INSTALL_TRUSTED_KEYS="cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDS
 NIX_FLAGS=(
   --extra-experimental-features "nix-command flakes"
   --store /mnt
-  --eval-store /mnt
   --option substituters "$INSTALL_SUBSTITUTERS"
   --option trusted-public-keys "$INSTALL_TRUSTED_KEYS"
 )
@@ -85,6 +84,12 @@ root_env() {
 
 root_nix() {
   root_env nix "${NIX_FLAGS[@]}" "$@"
+}
+
+enable_target_eval_store_if_supported() {
+  if root_env nix --extra-experimental-features "nix-command flakes" --help 2>&1 | grep -q -- '--eval-store'; then
+    NIX_FLAGS+=(--eval-store /mnt)
+  fi
 }
 
 build_systemd_loader() {
@@ -178,6 +183,7 @@ prepare_install_workspace() {
   sudo chmod 1777 "$INSTALL_TMPDIR" "$USER_CACHE_DIR"
   sudo chmod 700 "$ROOT_CACHE_DIR" "$ROOT_HOME_DIR"
   redirect_live_root_nix_cache
+  enable_target_eval_store_if_supported
 
   export TMPDIR="$INSTALL_TMPDIR"
   export XDG_CACHE_HOME="$USER_CACHE_DIR"
