@@ -165,6 +165,26 @@ check_target_free_space() {
   fi
 }
 
+fail_legacy_boot() {
+  echo "ERROR: This installer must be booted in UEFI mode."
+  echo
+  echo "Detected: BIOS/Legacy boot. Missing /sys/firmware/efi/efivars."
+  echo
+  if [[ "$MACHINE" =~ VMware ]]; then
+    echo "VMware fix:"
+    echo "  1. Power off the VM completely."
+    echo "  2. Open VM Settings > Options > Advanced."
+    echo "  3. Set Firmware type to UEFI."
+    echo "  4. Keep Secure Boot disabled."
+    echo "  5. Boot the NixOS ISO again and rerun this command."
+  else
+    echo "Fix:"
+    echo "  Enable UEFI boot in firmware settings, disable Legacy/CSM boot,"
+    echo "  then boot the NixOS ISO again."
+  fi
+  exit 1
+}
+
 enable_install_swap() {
   if swapon --show=NAME --noheadings | grep -qx "$INSTALL_SWAPFILE"; then
     return 0
@@ -288,8 +308,7 @@ fi
 
 # Require UEFI
 if [[ ! -d /sys/firmware/efi/efivars ]]; then
-  echo "ERROR: UEFI firmware required. BIOS/Legacy is not supported."
-  exit 1
+  fail_legacy_boot
 fi
 echo "==> Firmware: UEFI"
 
