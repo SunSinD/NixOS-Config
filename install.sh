@@ -85,6 +85,54 @@ build_systemd_loader() {
   return 1
 }
 
+required_target_disk_gib() {
+  case "$HOST" in
+    main-pc) printf '80\n' ;;
+    *)       printf '50\n' ;;
+  esac
+}
+
+check_target_disk_size() {
+  local disk_bytes disk_size required_bytes required_gib
+
+  required_gib="$(required_target_disk_gib)"
+  required_bytes=$((required_gib * 1024 * 1024 * 1024))
+  disk_bytes="$(lsblk -b -dn -o SIZE "$DEV" | tr -d '[:space:]')"
+
+  if [[ ! "$disk_bytes" =~ ^[0-9]+$ ]]; then
+    echo "WARNING: Could not determine size for $DEV; continuing."
+    return 0
+  fi
+
+  if (( disk_bytes < required_bytes )); then
+    disk_size="$(lsblk -dno SIZE "$DEV" | xargs)"
+    echo "ERROR: $HOST install needs at least ${required_gib}GiB of target disk space."
+    echo "Selected disk $DEV is only $disk_size."
+    echo "Increase the VM disk size, then rerun the installer."
+    exit 1
+  fi
+}
+
+show_target_space() {
+  echo "==> Filesystem space:"
+  df -h / /tmp /mnt /mnt/tmp /mnt/nix 2>/dev/null | awk 'NR == 1 || !seen[$1]++' || true
+}
+
+check_target_free_space() {
+  local free_kib required_gib required_kib
+
+  required_gib="${1:-25}"
+  required_kib=$((required_gib * 1024 * 1024))
+  free_kib="$(df -Pk /mnt 2>/dev/null | awk 'NR == 2 {print $4}')"
+
+  if [[ "$free_kib" =~ ^[0-9]+$ ]] && (( free_kib < required_kib )); then
+    show_target_space
+    echo "ERROR: /mnt has less than ${required_gib}GiB free."
+    echo "Increase the VM disk size, then rerun the installer."
+    exit 1
+  fi
+}
+
 prepare_install_workspace() {
   echo "==> Preparing install workspace on target disk..."
   sudo mkdir -p "$INSTALL_TMPDIR" "$USER_CACHE_DIR" "$ROOT_CACHE_DIR"
@@ -96,6 +144,8 @@ prepare_install_workspace() {
   sudo rm -rf "$WORK_DIR"
   git clone -q "$REPO" "$WORK_DIR"
   cd "$WORK_DIR"
+  show_target_space
+  check_target_free_space 25
 }
 
 cleanup() {
@@ -103,6 +153,7 @@ cleanup() {
   [[ -n "$DISKO_CONFIG" ]] && rm -f "$DISKO_CONFIG"
 
   if [[ "$status" -ne 0 ]]; then
+    show_target_space
     echo "==> Install failed. Leaving /mnt mounted for debugging."
     echo "==> Useful checks: findmnt /mnt /mnt/boot; sudo find /mnt/boot -maxdepth 5 -type f"
     return
@@ -185,6 +236,8 @@ else
   [[ -z "${DISK_NAMES[$CHOICE]+x}" ]] && { echo "ERROR: Invalid choice."; exit 1; }
   DEV="/dev/${DISK_NAMES[$CHOICE]}"
 fi
+
+check_target_disk_size
 
 # Partition and format with disko
 echo "==> Partitioning and formatting $DEV..."
