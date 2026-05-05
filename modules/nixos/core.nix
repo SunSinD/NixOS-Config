@@ -71,6 +71,8 @@
           homeDirectory = "/home/SunSD";
           stateVersion  = "25.11";
         };
+        gtk.gtk4.theme = null;
+        xdg.userDirs.setSessionVariables = false;
       };
     };
 
