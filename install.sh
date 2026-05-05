@@ -2,7 +2,10 @@
 set -euo pipefail
 
 REPO="https://github.com/SunSinD/NixOS-Config.git"
-WORK_DIR="/tmp/nixconf"
+WORK_DIR="/mnt/tmp/nixconf"
+INSTALL_TMPDIR="/mnt/tmp"
+USER_CACHE_DIR="/mnt/tmp/nix-cache-user"
+ROOT_CACHE_DIR="/mnt/tmp/nix-cache-root"
 HOST="${1:-}"
 DISKO_CONFIG=""
 INSTALL_SUBSTITUTERS="https://cache.nixos.org https://niri.cachix.org https://attic.xuyh0120.win/lantian https://cache.garnix.io"
@@ -82,6 +85,19 @@ build_systemd_loader() {
   return 1
 }
 
+prepare_install_workspace() {
+  echo "==> Preparing install workspace on target disk..."
+  sudo mkdir -p "$INSTALL_TMPDIR" "$USER_CACHE_DIR" "$ROOT_CACHE_DIR"
+  sudo chmod 1777 "$INSTALL_TMPDIR" "$USER_CACHE_DIR" "$ROOT_CACHE_DIR"
+
+  export TMPDIR="$INSTALL_TMPDIR"
+  export XDG_CACHE_HOME="$USER_CACHE_DIR"
+
+  sudo rm -rf "$WORK_DIR"
+  git clone -q "$REPO" "$WORK_DIR"
+  cd "$WORK_DIR"
+}
+
 cleanup() {
   local status=$?
   [[ -n "$DISKO_CONFIG" ]] && rm -f "$DISKO_CONFIG"
@@ -124,11 +140,6 @@ if [[ "$HOST" == "main-pc" && "$MACHINE" == *ThinkPad* ]]; then
   echo "main-pc is desktop-only (AMD/Nvidia/CachyOS/Secure Boot). Use: generic"
   exit 1
 fi
-
-echo "==> Fetching config ($HOST)..."
-rm -rf "$WORK_DIR"
-git clone -q "$REPO" "$WORK_DIR"
-cd "$WORK_DIR"
 
 if [[ -r /dev/tty ]]; then
   exec < /dev/tty
@@ -238,8 +249,11 @@ if ! findmnt /mnt/boot >/dev/null; then
   exit 1
 fi
 
+prepare_install_workspace
+
 echo "==> Installing NixOS ($HOST)... (this may take 10-20 minutes)"
-sudo nixos-install \
+sudo env TMPDIR="$INSTALL_TMPDIR" XDG_CACHE_HOME="$ROOT_CACHE_DIR" \
+  nixos-install \
   --root /mnt \
   --flake "$WORK_DIR#$HOST" \
   --no-root-passwd \
