@@ -15,6 +15,9 @@ INSTALL_TRUSTED_KEYS="cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDS
 INSTALL_MAX_JOBS=1
 INSTALL_CORES=1
 INSTALL_SWAP_SIZE="${INSTALL_SWAP_SIZE:-8G}"
+INSTALL_PROGRESS_INTERVAL="${INSTALL_PROGRESS_INTERVAL:-10}"
+GREEN=$'\033[1;32m'
+RESET=$'\033[0m'
 NIX_FLAGS=(
   --extra-experimental-features "nix-command flakes"
   --store /mnt
@@ -29,23 +32,51 @@ filter_install_output() {
   sed -u -E '/^warning:/d;/^\+/d;/^[[:space:]]*$/d;/(Added|Adding|Removed) input/d'
 }
 
+status() {
+  printf '%b==> %s%b\n' "$GREEN" "$*" "$RESET"
+}
+
+elapsed_time() {
+  local elapsed="$1"
+  printf '%dm%02ds' "$((elapsed / 60))" "$((elapsed % 60))"
+}
+
+target_usage_summary() {
+  local disk_usage swap_usage
+
+  disk_usage="$(
+    df -h /mnt 2>/dev/null \
+      | awk 'NR == 2 {printf "/mnt %s used, %s free", $5, $4}' \
+      || true
+  )"
+  [[ -n "$disk_usage" ]] || disk_usage="/mnt not mounted yet"
+
+  swap_usage="$(
+    swapon --show=NAME,SIZE,USED --noheadings 2>/dev/null \
+      | awk 'NR == 1 {printf "swap %s/%s used", $3, $2}' \
+      || true
+  )"
+  [[ -n "$swap_usage" ]] || swap_usage="swap inactive"
+
+  printf '%s | %s\n' "$disk_usage" "$swap_usage"
+}
+
 run_with_heartbeat() {
   local label="$1"
   shift
 
+  status "Starting: $label"
   "$@" &
   local pid=$!
   local start now elapsed
   start="$(date +%s)"
 
   while kill -0 "$pid" 2>/dev/null; do
-    sleep 30
+    sleep "$INSTALL_PROGRESS_INTERVAL"
     kill -0 "$pid" 2>/dev/null || break
     now="$(date +%s)"
     elapsed=$((now - start))
-    printf '==> Still working: %s (%dm%02ds elapsed)\n' "$label" "$((elapsed / 60))" "$((elapsed % 60))"
-    df -h /mnt /mnt/nix 2>/dev/null | awk 'NR == 1 || !seen[$1]++' || true
-    swapon --show --bytes 2>/dev/null || true
+    status "Still working: $label | elapsed $(elapsed_time "$elapsed") | $(target_usage_summary)"
   done
 
   wait "$pid"
@@ -166,9 +197,9 @@ check_target_disk_size() {
 }
 
 show_target_space() {
-  echo "==> Filesystem space:"
+  status "Filesystem space:"
   df -h / /tmp /mnt /mnt/tmp /mnt/nix 2>/dev/null | awk 'NR == 1 || !seen[$1]++' || true
-  echo "==> Inode space:"
+  status "Inode space:"
   df -ih / /tmp /mnt /mnt/tmp /mnt/nix 2>/dev/null | awk 'NR == 1 || !seen[$1]++' || true
 }
 
@@ -212,7 +243,7 @@ enable_install_swap() {
     return 0
   fi
 
-  echo "==> Enabling temporary install swap ($INSTALL_SWAP_SIZE)..."
+  status "Enabling temporary install swap ($INSTALL_SWAP_SIZE)"
   sudo rm -f "$INSTALL_SWAPFILE"
 
   if sudo btrfs filesystem mkswapfile --size "$INSTALL_SWAP_SIZE" "$INSTALL_SWAPFILE" >/dev/null 2>&1; then
@@ -249,7 +280,7 @@ redirect_live_root_nix_cache() {
 }
 
 lock_flake_on_target() {
-  echo "==> Resolving flake inputs on target disk..."
+  status "Phase 4/6: resolving flake inputs on target disk"
   run_with_heartbeat "resolving flake inputs" \
     root_nix flake lock "$WORK_DIR" \
     2>&1 | filter_install_output
@@ -258,7 +289,7 @@ lock_flake_on_target() {
 }
 
 prepare_install_workspace() {
-  echo "==> Preparing install workspace on target disk..."
+  status "Phase 3/6: preparing install workspace on target disk"
   sudo mkdir -p "$INSTALL_TMPDIR" "$USER_CACHE_DIR" "$ROOT_CACHE_DIR" "$ROOT_HOME_DIR"
   sudo chmod 1777 "$INSTALL_TMPDIR" "$USER_CACHE_DIR"
   sudo chmod 700 "$ROOT_CACHE_DIR" "$ROOT_HOME_DIR"
@@ -282,8 +313,8 @@ cleanup() {
 
   if [[ "$status" -ne 0 ]]; then
     show_target_space
-    echo "==> Install failed. Leaving /mnt mounted for debugging."
-    echo "==> Useful checks: findmnt /mnt /mnt/boot; sudo find /mnt/boot -maxdepth 5 -type f"
+    status "Install failed. Leaving /mnt mounted for debugging."
+    status "Useful checks: findmnt /mnt /mnt/boot; sudo find /mnt/boot -maxdepth 5 -type f"
     return
   fi
 
@@ -296,7 +327,7 @@ MACHINE="$(detect_machine | tr '\n' ' ' || true)"
 # Host selection
 if [[ -z "$HOST" && "$MACHINE" =~ (VMware|VirtualBox|KVM|QEMU|Hyper-V|Hypervisor|Bochs) ]]; then
   HOST="vm"
-  echo "==> Auto-selected host: vm ($MACHINE)"
+  status "Auto-selected host: vm ($MACHINE)"
 fi
 
 if [[ -z "$HOST" || "$HOST" == "--help" || "$HOST" == "-h" ]]; then
@@ -334,7 +365,8 @@ fi
 if [[ ! -d /sys/firmware/efi/efivars ]]; then
   fail_legacy_boot
 fi
-echo "==> Firmware: UEFI"
+status "Phase 1/6: checks passed"
+status "Firmware: UEFI"
 
 if [[ "$HOST" != "main-pc" ]] && secure_boot_enabled; then
   echo "ERROR: Secure Boot is enabled."
@@ -356,7 +388,7 @@ mapfile -t DISK_NAMES < <(
 
 if [[ ${#DISK_NAMES[@]} -eq 1 ]]; then
   DEV="/dev/${DISK_NAMES[0]}"
-  echo "==> Disk: $DEV  $(lsblk -dno SIZE "$DEV")  $(lsblk -dno MODEL "$DEV")"
+  status "Disk: $DEV  $(lsblk -dno SIZE "$DEV")  $(lsblk -dno MODEL "$DEV")"
 else
   echo "Available disks:"
   for i in "${!DISK_NAMES[@]}"; do
@@ -373,7 +405,7 @@ fi
 check_target_disk_size
 
 # Partition and format with disko
-echo "==> Partitioning and formatting $DEV..."
+status "Phase 2/6: partitioning and formatting $DEV"
 
 DISKO_CONFIG=$(mktemp /tmp/disko-XXXXXX.nix)
 cat > "$DISKO_CONFIG" << NIXEOF
@@ -439,9 +471,9 @@ fi
 enable_install_swap
 prepare_install_workspace
 
-echo "==> Installing NixOS ($HOST)... (this may take 10-20 minutes)"
-echo "==> Nix build limits: max-jobs=$INSTALL_MAX_JOBS cores=$INSTALL_CORES"
-echo "==> If this sits on one path for a while, it is usually downloading or unpacking a large cache item."
+status "Phase 5/6: installing NixOS ($HOST)"
+status "Nix build limits: max-jobs=$INSTALL_MAX_JOBS cores=$INSTALL_CORES"
+status "Long cache downloads can sit on one path; the timer below means it is still running."
 NIXOS_INSTALL_LOCK_ARGS=()
 if nixos-install --help 2>&1 | grep -q -- '--no-write-lock-file'; then
   NIXOS_INSTALL_LOCK_ARGS+=(--no-write-lock-file)
@@ -465,7 +497,7 @@ run_with_heartbeat "installing NixOS $HOST" \
     --option fallback             false \
   2>&1 | filter_install_output
 
-echo "==> Verifying EFI boot files..."
+status "Phase 6/6: verifying EFI boot files"
 if [[ ! -s /mnt/boot/EFI/BOOT/BOOTX64.EFI ]]; then
   EFI_LOADER="$(find_efi_loader || true)"
 
@@ -475,7 +507,7 @@ if [[ ! -s /mnt/boot/EFI/BOOT/BOOTX64.EFI ]]; then
   fi
 
   if [[ -z "$EFI_LOADER" ]]; then
-    echo "==> Fetching systemd-boot EFI loader..."
+    status "Fetching systemd-boot EFI loader"
     EFI_LOADER="$(build_systemd_loader || true)"
   fi
 
@@ -503,7 +535,7 @@ if [[ -z "$BOOT_ENTRY" && -z "$UKI_ENTRY" ]]; then
 fi
 
 if command -v efibootmgr >/dev/null 2>&1; then
-  echo "==> Firmware boot entries:"
+  status "Firmware boot entries:"
   sudo efibootmgr -v || true
 fi
 
@@ -514,5 +546,5 @@ sudo cp -rT "$WORK_DIR" "$DEST"
 sudo chown -R 1000:1000 "$DEST"
 cd "$DEST" && sudo -u "#1000" git remote set-url origin https://github.com/SunSinD/NixOS-Config.git 2>/dev/null || true
 
-echo "==> Done! Rebooting..."
+status "Done. Rebooting..."
 sudo reboot
