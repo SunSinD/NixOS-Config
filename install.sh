@@ -6,6 +6,7 @@ WORK_DIR="/mnt/tmp/nixconf"
 INSTALL_TMPDIR="/mnt/tmp"
 USER_CACHE_DIR="/mnt/tmp/nix-cache-user"
 ROOT_CACHE_DIR="/mnt/tmp/nix-cache-root"
+ROOT_HOME_DIR="/mnt/tmp/nix-root-home"
 HOST="${1:-}"
 DISKO_CONFIG=""
 INSTALL_SUBSTITUTERS="https://cache.nixos.org https://niri.cachix.org https://attic.xuyh0120.win/lantian https://cache.garnix.io"
@@ -71,10 +72,12 @@ build_systemd_loader() {
   local out
 
   out="$(
-    nix --extra-experimental-features "nix-command flakes" \
-      build --no-link --print-out-paths 'nixpkgs#systemd' 2>/dev/null \
-    || nix --extra-experimental-features "nix-command flakes" \
-      build --no-link --print-out-paths 'github:NixOS/nixpkgs/nixos-unstable#systemd'
+    HOME="$ROOT_HOME_DIR" XDG_CACHE_HOME="$ROOT_CACHE_DIR" TMPDIR="$INSTALL_TMPDIR" \
+      nix --extra-experimental-features "nix-command flakes" \
+        build --no-link --print-out-paths 'nixpkgs#systemd' 2>/dev/null \
+    || HOME="$ROOT_HOME_DIR" XDG_CACHE_HOME="$ROOT_CACHE_DIR" TMPDIR="$INSTALL_TMPDIR" \
+      nix --extra-experimental-features "nix-command flakes" \
+        build --no-link --print-out-paths 'github:NixOS/nixpkgs/nixos-unstable#systemd'
   )"
 
   if [[ -f "$out/lib/systemd/boot/efi/systemd-bootx64.efi" ]]; then
@@ -116,6 +119,8 @@ check_target_disk_size() {
 show_target_space() {
   echo "==> Filesystem space:"
   df -h / /tmp /mnt /mnt/tmp /mnt/nix 2>/dev/null | awk 'NR == 1 || !seen[$1]++' || true
+  echo "==> Inode space:"
+  df -ih / /tmp /mnt /mnt/tmp /mnt/nix 2>/dev/null | awk 'NR == 1 || !seen[$1]++' || true
 }
 
 check_target_free_space() {
@@ -135,8 +140,9 @@ check_target_free_space() {
 
 prepare_install_workspace() {
   echo "==> Preparing install workspace on target disk..."
-  sudo mkdir -p "$INSTALL_TMPDIR" "$USER_CACHE_DIR" "$ROOT_CACHE_DIR"
-  sudo chmod 1777 "$INSTALL_TMPDIR" "$USER_CACHE_DIR" "$ROOT_CACHE_DIR"
+  sudo mkdir -p "$INSTALL_TMPDIR" "$USER_CACHE_DIR" "$ROOT_CACHE_DIR" "$ROOT_HOME_DIR"
+  sudo chmod 1777 "$INSTALL_TMPDIR" "$USER_CACHE_DIR"
+  sudo chmod 700 "$ROOT_CACHE_DIR" "$ROOT_HOME_DIR"
 
   export TMPDIR="$INSTALL_TMPDIR"
   export XDG_CACHE_HOME="$USER_CACHE_DIR"
@@ -305,7 +311,7 @@ fi
 prepare_install_workspace
 
 echo "==> Installing NixOS ($HOST)... (this may take 10-20 minutes)"
-sudo env TMPDIR="$INSTALL_TMPDIR" XDG_CACHE_HOME="$ROOT_CACHE_DIR" \
+sudo env HOME="$ROOT_HOME_DIR" TMPDIR="$INSTALL_TMPDIR" XDG_CACHE_HOME="$ROOT_CACHE_DIR" \
   nixos-install \
   --no-write-lock-file \
   --root /mnt \
