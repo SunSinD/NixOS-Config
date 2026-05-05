@@ -203,7 +203,14 @@ cleanup() {
 }
 trap cleanup EXIT
 
+MACHINE="$(detect_machine | tr '\n' ' ' || true)"
+
 # Host selection
+if [[ -z "$HOST" && "$MACHINE" =~ (VMware|VirtualBox|KVM|QEMU|Hyper-V|Hypervisor|Bochs) ]]; then
+  HOST="vm"
+  echo "==> Auto-selected host: vm ($MACHINE)"
+fi
+
 if [[ -z "$HOST" || "$HOST" == "--help" || "$HOST" == "-h" ]]; then
   echo "Select a host to install:"
   echo "  [0] main-pc - desktop-only, AMD/Nvidia, CachyOS kernel"
@@ -225,7 +232,6 @@ case "$HOST" in
     exit 1 ;;
 esac
 
-MACHINE="$(detect_machine | tr '\n' ' ' || true)"
 if [[ "$HOST" == "main-pc" && "$MACHINE" == *ThinkPad* ]]; then
   echo "ERROR: This machine looks like a ThinkPad: $MACHINE"
   echo "main-pc is desktop-only (AMD/Nvidia/CachyOS/Secure Boot). Use: generic"
