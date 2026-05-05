@@ -16,6 +16,7 @@ INSTALL_CORES=1
 INSTALL_SWAP_SIZE="${INSTALL_SWAP_SIZE:-8G}"
 INSTALL_PROGRESS_INTERVAL="${INSTALL_PROGRESS_INTERVAL:-20}"
 INSTALL_VERBOSE="${INSTALL_VERBOSE:-0}"
+INSTALL_CLEAR="${INSTALL_CLEAR:-1}"
 GREEN=$'\033[32m'
 RESET=$'\033[0m'
 NIX_FLAGS=(
@@ -56,7 +57,21 @@ status() {
 }
 
 progress() {
-  tty_printf '    %s\n' "$*"
+  tty_printf '  - %s\n' "$*"
+}
+
+banner() {
+  if [[ "$INSTALL_CLEAR" == "1" ]]; then
+    tty_printf '\033[2J\033[H'
+  fi
+  tty_printf '\n%s\n' "SunSD NixOS Installer"
+  tty_printf '%s\n\n' "Clean install log. Errors stay visible; routine build noise stays hidden."
+}
+
+phase() {
+  local number="$1"
+  local label="$2"
+  status "[$number/6] $label"
 }
 
 elapsed_time() {
@@ -69,14 +84,14 @@ target_usage_summary() {
 
   disk_usage="$(
     df -h /mnt 2>/dev/null \
-      | awk 'NR == 2 {printf "/mnt %s used, %s free", $5, $4}' \
+      | awk 'NR == 2 {printf "/mnt %s, %s free", $5, $4}' \
       || true
   )"
   [[ -n "$disk_usage" ]] || disk_usage="/mnt not mounted yet"
 
   swap_usage="$(
     swapon --show=NAME,SIZE,USED --noheadings 2>/dev/null \
-      | awk 'NR == 1 {printf "swap %s/%s used", $3, $2}' \
+      | awk 'NR == 1 {printf "swap %s/%s", $3, $2}' \
       || true
   )"
   [[ -n "$swap_usage" ]] || swap_usage="swap inactive"
@@ -88,7 +103,7 @@ run_with_heartbeat() {
   local label="$1"
   shift
 
-  progress "$label started"
+  progress "$label"
   "$@" &
   local pid=$!
   local start now elapsed
@@ -99,13 +114,13 @@ run_with_heartbeat() {
     kill -0 "$pid" 2>/dev/null || break
     now="$(date +%s)"
     elapsed=$((now - start))
-    progress "$label still running | elapsed $(elapsed_time "$elapsed") | $(target_usage_summary)"
+    progress "$(elapsed_time "$elapsed") | $(target_usage_summary)"
   done
 
   wait "$pid"
   now="$(date +%s)"
   elapsed=$((now - start))
-  progress "$label finished in $(elapsed_time "$elapsed")"
+  progress "Done in $(elapsed_time "$elapsed")"
 }
 
 detect_machine() {
@@ -218,11 +233,11 @@ format_and_mount_target() {
 
   sudo swapoff -a 2>/dev/null || true
   sudo umount -R /mnt 2>/dev/null || true
-  sudo wipefs -af "$DEV"
-  sudo parted -s "$DEV" mklabel gpt
-  sudo parted -s "$DEV" mkpart ESP fat32 1MiB 513MiB
-  sudo parted -s "$DEV" set 1 esp on
-  sudo parted -s "$DEV" mkpart root btrfs 513MiB 100%
+  sudo wipefs -af "$DEV" >/dev/null
+  sudo parted -s "$DEV" mklabel gpt >/dev/null
+  sudo parted -s "$DEV" mkpart ESP fat32 1MiB 513MiB >/dev/null
+  sudo parted -s "$DEV" set 1 esp on >/dev/null
+  sudo parted -s "$DEV" mkpart root btrfs 513MiB 100% >/dev/null
   sudo partprobe "$DEV" 2>/dev/null || true
   sudo udevadm settle 2>/dev/null || sleep 2
 
@@ -372,7 +387,7 @@ redirect_live_root_nix_cache() {
 }
 
 lock_flake_on_target() {
-  status "Phase 4/6: resolving flake inputs on target disk"
+  phase 4 "Resolve flake inputs"
   run_with_heartbeat "resolving flake inputs" \
     root_nix flake lock "$WORK_DIR" \
     2>&1 | filter_install_output
@@ -381,7 +396,7 @@ lock_flake_on_target() {
 }
 
 prepare_install_workspace() {
-  status "Phase 3/6: preparing install workspace on target disk"
+  phase 3 "Prepare install workspace"
   sudo mkdir -p "$INSTALL_TMPDIR" "$USER_CACHE_DIR" "$ROOT_CACHE_DIR" "$ROOT_HOME_DIR"
   sudo chmod 1777 "$INSTALL_TMPDIR" "$USER_CACHE_DIR"
   sudo chmod 700 "$ROOT_CACHE_DIR" "$ROOT_HOME_DIR"
@@ -404,7 +419,8 @@ cleanup() {
 
   if [[ "$status" -ne 0 ]]; then
     show_target_space
-    status "Install failed. Leaving /mnt mounted for debugging."
+    status "Install failed"
+    progress "Leaving /mnt mounted for debugging."
     progress "Useful checks: findmnt /mnt /mnt/boot; sudo find /mnt/boot -maxdepth 5 -type f"
     return
   fi
@@ -414,6 +430,7 @@ cleanup() {
 trap cleanup EXIT
 
 MACHINE="$(detect_machine | tr '\n' ' ' || true)"
+banner
 
 # Host selection
 if [[ -z "$HOST" && "$MACHINE" =~ (VMware|VirtualBox|KVM|QEMU|Hyper-V|Hypervisor|Bochs) ]]; then
@@ -456,7 +473,7 @@ fi
 if [[ ! -d /sys/firmware/efi/efivars ]]; then
   fail_legacy_boot
 fi
-status "Phase 1/6: checks passed"
+phase 1 "Preflight"
 progress "Firmware: UEFI"
 
 if [[ "$HOST" != "main-pc" ]] && secure_boot_enabled; then
@@ -496,7 +513,7 @@ fi
 check_target_disk_size
 
 # Partition, format, and mount without pulling disko into the live ISO.
-status "Phase 2/6: partitioning and formatting $DEV"
+phase 2 "Prepare disk"
 
 run_with_heartbeat "partitioning and formatting $DEV" \
   format_and_mount_target \
@@ -515,7 +532,7 @@ fi
 enable_install_swap
 prepare_install_workspace
 
-status "Phase 5/6: installing NixOS ($HOST)"
+phase 5 "Install NixOS"
 progress "Nix build limits: max-jobs=$INSTALL_MAX_JOBS cores=$INSTALL_CORES"
 progress "Progress updates print every ${INSTALL_PROGRESS_INTERVAL}s while long steps are running."
 NIXOS_INSTALL_LOCK_ARGS=()
@@ -541,7 +558,7 @@ run_with_heartbeat "installing NixOS $HOST" \
     --option fallback             false \
   2>&1 | filter_install_output
 
-status "Phase 6/6: verifying EFI boot files"
+phase 6 "Verify boot files"
 if [[ ! -s /mnt/boot/EFI/BOOT/BOOTX64.EFI ]]; then
   EFI_LOADER="$(find_efi_loader || true)"
 
@@ -590,5 +607,6 @@ sudo cp -rT "$WORK_DIR" "$DEST"
 sudo chown -R 1000:1000 "$DEST"
 cd "$DEST" && sudo -u "#1000" git remote set-url origin https://github.com/SunSinD/NixOS-Config.git 2>/dev/null || true
 
-status "Done. Rebooting..."
+status "Done"
+progress "Rebooting..."
 sudo reboot
