@@ -4,6 +4,10 @@
     sunsdNiriSession = pkgs.writeShellScriptBin "sunsd-niri-session" ''
       set -eu
 
+      log_dir="$HOME/.local/state/niri"
+      mkdir -p "$log_dir"
+      exec >> "$log_dir/session.log" 2>&1
+
       export XDG_CURRENT_DESKTOP=niri
       export XDG_SESSION_DESKTOP=niri
       export XDG_SESSION_TYPE=wayland
@@ -41,6 +45,10 @@
       enable    = true;
       algorithm = "zstd";
     };
+
+    swapDevices = [
+      { device = "/swapfile"; }
+    ];
 
     users = {
       mutableUsers = false;
@@ -176,8 +184,27 @@
       };
     };
 
-    systemd.services.NetworkManager-wait-online.enable = false;
-    systemd.network.wait-online.enable = false;
+    systemd = {
+      services = {
+        create-swapfile = {
+          description = "Create Btrfs swapfile";
+          wantedBy = [ "swapfile.swap" ];
+          before = [ "swapfile.swap" ];
+          unitConfig.DefaultDependencies = false;
+          serviceConfig.Type = "oneshot";
+          script = ''
+            if ! ${pkgs.util-linux}/bin/swapon --show=NAME --noheadings | ${pkgs.gnugrep}/bin/grep -qx /swapfile; then
+              rm -f /swapfile
+              ${pkgs.btrfs-progs}/bin/btrfs filesystem mkswapfile --size 8G /swapfile
+            fi
+          '';
+        };
+
+        NetworkManager-wait-online.enable = false;
+      };
+
+      network.wait-online.enable = false;
+    };
 
     security.pam.services.greetd.enableGnomeKeyring = true;
 
