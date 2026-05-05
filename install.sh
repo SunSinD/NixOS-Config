@@ -15,6 +15,7 @@ INSTALL_MAX_JOBS=1
 INSTALL_CORES=1
 INSTALL_SWAP_SIZE="${INSTALL_SWAP_SIZE:-8G}"
 INSTALL_PROGRESS_INTERVAL="${INSTALL_PROGRESS_INTERVAL:-20}"
+INSTALL_VERBOSE="${INSTALL_VERBOSE:-0}"
 GREEN=$'\033[32m'
 RESET=$'\033[0m'
 NIX_FLAGS=(
@@ -33,8 +34,8 @@ filter_install_output() {
     -e '/^\+/d' \
     -e '/^[[:space:]]*$/d' \
     -e '/^(Added|Adding|Removed) input/d' \
-    -e '/^unpacking '\''github:/d' \
-    -e '/^copying path '\''\/nix\/store\//d' \
+    -e '/^unpacking /d' \
+    -e '/^copying path /d' \
     -e '/^building the flake in /d' \
     -e '/^Create subvolume /d'
 }
@@ -284,10 +285,14 @@ check_target_disk_size() {
 }
 
 show_target_space() {
-  status "Filesystem space:"
-  df -h / /tmp /mnt /mnt/tmp /mnt/nix 2>/dev/null | awk 'NR == 1 || !seen[$1]++' || true
-  status "Inode space:"
-  df -ih / /tmp /mnt /mnt/tmp /mnt/nix 2>/dev/null | awk 'NR == 1 || !seen[$1]++' || true
+  if [[ "$INSTALL_VERBOSE" == "1" ]]; then
+    progress "Filesystem space:"
+    df -h / /tmp /mnt /mnt/tmp /mnt/nix 2>/dev/null | awk 'NR == 1 || !seen[$1]++' || true
+    progress "Inode space:"
+    df -ih / /tmp /mnt /mnt/tmp /mnt/nix 2>/dev/null | awk 'NR == 1 || !seen[$1]++' || true
+  else
+    progress "Target: $(target_usage_summary)"
+  fi
 }
 
 check_target_free_space() {
@@ -330,7 +335,7 @@ enable_install_swap() {
     return 0
   fi
 
-  status "Enabling temporary install swap ($INSTALL_SWAP_SIZE)"
+  progress "Enabling temporary install swap ($INSTALL_SWAP_SIZE)"
   sudo rm -f "$INSTALL_SWAPFILE"
 
   if sudo btrfs filesystem mkswapfile --size "$INSTALL_SWAP_SIZE" "$INSTALL_SWAPFILE" >/dev/null 2>&1; then
@@ -344,7 +349,7 @@ enable_install_swap() {
   fi
 
   sudo swapon "$INSTALL_SWAPFILE"
-  swapon --show || true
+  progress "$(target_usage_summary)"
 }
 
 disable_install_swap() {
@@ -400,7 +405,7 @@ cleanup() {
   if [[ "$status" -ne 0 ]]; then
     show_target_space
     status "Install failed. Leaving /mnt mounted for debugging."
-    status "Useful checks: findmnt /mnt /mnt/boot; sudo find /mnt/boot -maxdepth 5 -type f"
+    progress "Useful checks: findmnt /mnt /mnt/boot; sudo find /mnt/boot -maxdepth 5 -type f"
     return
   fi
 
@@ -413,7 +418,7 @@ MACHINE="$(detect_machine | tr '\n' ' ' || true)"
 # Host selection
 if [[ -z "$HOST" && "$MACHINE" =~ (VMware|VirtualBox|KVM|QEMU|Hyper-V|Hypervisor|Bochs) ]]; then
   HOST="vm"
-  status "Auto-selected host: vm ($MACHINE)"
+  progress "Host: vm ($MACHINE)"
 fi
 
 if [[ -z "$HOST" || "$HOST" == "--help" || "$HOST" == "-h" ]]; then
@@ -452,7 +457,7 @@ if [[ ! -d /sys/firmware/efi/efivars ]]; then
   fail_legacy_boot
 fi
 status "Phase 1/6: checks passed"
-status "Firmware: UEFI"
+progress "Firmware: UEFI"
 
 if [[ "$HOST" != "main-pc" ]] && secure_boot_enabled; then
   echo "ERROR: Secure Boot is enabled."
@@ -474,7 +479,7 @@ mapfile -t DISK_NAMES < <(
 
 if [[ ${#DISK_NAMES[@]} -eq 1 ]]; then
   DEV="/dev/${DISK_NAMES[0]}"
-  status "Disk: $DEV  $(lsblk -dno SIZE "$DEV")  $(lsblk -dno MODEL "$DEV")"
+  progress "Disk: $DEV  $(lsblk -dno SIZE "$DEV")  $(lsblk -dno MODEL "$DEV")"
 else
   echo "Available disks:"
   for i in "${!DISK_NAMES[@]}"; do
@@ -511,8 +516,8 @@ enable_install_swap
 prepare_install_workspace
 
 status "Phase 5/6: installing NixOS ($HOST)"
-status "Nix build limits: max-jobs=$INSTALL_MAX_JOBS cores=$INSTALL_CORES"
-status "Long cache downloads can sit on one path; the timer below means it is still running."
+progress "Nix build limits: max-jobs=$INSTALL_MAX_JOBS cores=$INSTALL_CORES"
+progress "Progress updates print every ${INSTALL_PROGRESS_INTERVAL}s while long steps are running."
 NIXOS_INSTALL_LOCK_ARGS=()
 if nixos-install --help 2>&1 | grep -q -- '--no-write-lock-file'; then
   NIXOS_INSTALL_LOCK_ARGS+=(--no-write-lock-file)
@@ -546,7 +551,7 @@ if [[ ! -s /mnt/boot/EFI/BOOT/BOOTX64.EFI ]]; then
   fi
 
   if [[ -z "$EFI_LOADER" ]]; then
-    status "Fetching systemd-boot EFI loader"
+    progress "Fetching systemd-boot EFI loader"
     EFI_LOADER="$(build_systemd_loader || true)"
   fi
 
@@ -574,7 +579,7 @@ if [[ -z "$BOOT_ENTRY" && -z "$UKI_ENTRY" ]]; then
 fi
 
 if command -v efibootmgr >/dev/null 2>&1; then
-  status "Firmware boot entries:"
+  progress "Firmware boot entries:"
   sudo efibootmgr -v || true
 fi
 
