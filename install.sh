@@ -9,7 +9,6 @@ ROOT_CACHE_DIR="/mnt/tmp/nix-cache-root"
 ROOT_HOME_DIR="/mnt/tmp/nix-root-home"
 INSTALL_SWAPFILE="/mnt/.install-swap"
 HOST="${1:-}"
-DISKO_CONFIG=""
 INSTALL_SUBSTITUTERS="https://cache.nixos.org https://niri.cachix.org https://attic.xuyh0120.win/lantian https://cache.garnix.io"
 INSTALL_TRUSTED_KEYS="cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964= lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc= cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
 INSTALL_MAX_JOBS=1
@@ -193,6 +192,68 @@ build_systemd_loader() {
   return 1
 }
 
+partition_path() {
+  local number path
+  number="$1"
+
+  path="$(
+    lsblk -nrpo NAME,PARTN "$DEV" 2>/dev/null \
+      | awk -v number="$number" '$2 == number {print $1; exit}' \
+      || true
+  )"
+
+  if [[ -n "$path" ]]; then
+    printf '%s\n' "$path"
+  elif [[ "$DEV" =~ [0-9]$ ]]; then
+    printf '%sp%s\n' "$DEV" "$number"
+  else
+    printf '%s%s\n' "$DEV" "$number"
+  fi
+}
+
+format_and_mount_target() {
+  local efi_part root_part
+
+  sudo swapoff -a 2>/dev/null || true
+  sudo umount -R /mnt 2>/dev/null || true
+  sudo wipefs -af "$DEV"
+  sudo parted -s "$DEV" mklabel gpt
+  sudo parted -s "$DEV" mkpart ESP fat32 1MiB 513MiB
+  sudo parted -s "$DEV" set 1 esp on
+  sudo parted -s "$DEV" mkpart root btrfs 513MiB 100%
+  sudo partprobe "$DEV" 2>/dev/null || true
+  sudo udevadm settle 2>/dev/null || sleep 2
+
+  efi_part="$(partition_path 1)"
+  root_part="$(partition_path 2)"
+
+  if [[ ! -b "$efi_part" || ! -b "$root_part" ]]; then
+    echo "ERROR: Partitioning finished, but expected partitions were not found."
+    lsblk "$DEV" || true
+    exit 1
+  fi
+
+  sudo mkfs.vfat -F 32 -n NIXBOOT "$efi_part"
+  sudo mkfs.btrfs -f -L nixos "$root_part"
+
+  sudo mkdir -p /mnt
+  sudo mount "$root_part" /mnt
+  sudo btrfs subvolume create /mnt/@
+  sudo btrfs subvolume create /mnt/@nix
+  sudo btrfs subvolume create /mnt/@home
+  sudo btrfs subvolume create /mnt/@log
+  sudo btrfs subvolume create /mnt/@snapshots
+  sudo umount /mnt
+
+  sudo mount -o compress=zstd,noatime,subvol=@ "$root_part" /mnt
+  sudo mkdir -p /mnt/nix /mnt/home /mnt/var/log /mnt/.snapshots /mnt/boot
+  sudo mount -o compress=zstd,noatime,subvol=@nix "$root_part" /mnt/nix
+  sudo mount -o compress=zstd,noatime,subvol=@home "$root_part" /mnt/home
+  sudo mount -o compress=zstd,noatime,subvol=@log "$root_part" /mnt/var/log
+  sudo mount -o compress=zstd,noatime,subvol=@snapshots "$root_part" /mnt/.snapshots
+  sudo mount -o umask=0077 "$efi_part" /mnt/boot
+}
+
 required_target_disk_gib() {
   case "$HOST" in
     main-pc) printf '80\n' ;;
@@ -333,7 +394,6 @@ prepare_install_workspace() {
 
 cleanup() {
   local status=$?
-  [[ -n "$DISKO_CONFIG" ]] && rm -f "$DISKO_CONFIG"
   disable_install_swap
 
   if [[ "$status" -ne 0 ]]; then
@@ -429,67 +489,20 @@ fi
 
 check_target_disk_size
 
-# Partition and format with disko
+# Partition, format, and mount without pulling disko into the live ISO.
 status "Phase 2/6: partitioning and formatting $DEV"
 
-DISKO_CONFIG=$(mktemp /tmp/disko-XXXXXX.nix)
-cat > "$DISKO_CONFIG" << NIXEOF
-{
-  disko.devices.disk.main = {
-    type   = "disk";
-    device = "$DEV";
-    content = {
-      type = "gpt";
-      partitions = {
-        ESP = {
-          size = "512M";
-          type = "EF00";
-          content = {
-            type         = "filesystem";
-            format       = "vfat";
-            mountpoint   = "/boot";
-            extraArgs    = [ "-F" "32" "-n" "NIXBOOT" ];
-            mountOptions = [ "umask=0077" ];
-          };
-        };
-        root = {
-          size    = "100%";
-          content = {
-            type      = "btrfs";
-            extraArgs = [ "-f" "--label" "nixos" ];
-            subvolumes = {
-              "@"          = { mountpoint = "/";           mountOptions = [ "compress=zstd" "noatime" ]; };
-              "@nix"       = { mountpoint = "/nix";        mountOptions = [ "compress=zstd" "noatime" ]; };
-              "@home"      = { mountpoint = "/home";       mountOptions = [ "compress=zstd" "noatime" ]; };
-              "@log"       = { mountpoint = "/var/log";    mountOptions = [ "compress=zstd" "noatime" ]; };
-              "@snapshots" = { mountpoint = "/.snapshots"; mountOptions = [ "compress=zstd" "noatime" ]; };
-            };
-          };
-        };
-      };
-    };
-  };
-}
-NIXEOF
-
 run_with_heartbeat "partitioning and formatting $DEV" \
-  sudo nix --extra-experimental-features "nix-command flakes" \
-    run 'github:nix-community/disko/latest' -- \
-    --mode destroy,format,mount \
-    --yes-wipe-all-disks \
-    "$DISKO_CONFIG" \
+  format_and_mount_target \
   2>&1 | filter_install_output
 
-rm -f "$DISKO_CONFIG"
-DISKO_CONFIG=""
-
 if ! findmnt /mnt >/dev/null; then
-  echo "ERROR: disko finished but /mnt is not mounted."
+  echo "ERROR: Partitioning finished but /mnt is not mounted."
   exit 1
 fi
 
 if ! findmnt /mnt/boot >/dev/null; then
-  echo "ERROR: disko finished but /mnt/boot (EFI system partition) is not mounted."
+  echo "ERROR: Partitioning finished but /mnt/boot (EFI system partition) is not mounted."
   exit 1
 fi
 
