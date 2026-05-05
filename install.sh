@@ -29,6 +29,28 @@ filter_install_output() {
   sed -u -E '/^warning:/d;/^\+/d;/^[[:space:]]*$/d;/(Added|Adding|Removed) input/d'
 }
 
+run_with_heartbeat() {
+  local label="$1"
+  shift
+
+  "$@" &
+  local pid=$!
+  local start now elapsed
+  start="$(date +%s)"
+
+  while kill -0 "$pid" 2>/dev/null; do
+    sleep 30
+    kill -0 "$pid" 2>/dev/null || break
+    now="$(date +%s)"
+    elapsed=$((now - start))
+    printf '==> Still working: %s (%dm%02ds elapsed)\n' "$label" "$((elapsed / 60))" "$((elapsed % 60))"
+    df -h /mnt /mnt/nix 2>/dev/null | awk 'NR == 1 || !seen[$1]++' || true
+    swapon --show --bytes 2>/dev/null || true
+  done
+
+  wait "$pid"
+}
+
 detect_machine() {
   local file value
   for file in /sys/class/dmi/id/product_name /sys/class/dmi/id/product_family /sys/class/dmi/id/sys_vendor; do
@@ -228,7 +250,9 @@ redirect_live_root_nix_cache() {
 
 lock_flake_on_target() {
   echo "==> Resolving flake inputs on target disk..."
-  root_nix flake lock "$WORK_DIR" 2>&1 | filter_install_output
+  run_with_heartbeat "resolving flake inputs" \
+    root_nix flake lock "$WORK_DIR" \
+    2>&1 | filter_install_output
   show_target_space
   check_target_free_space 20
 }
@@ -391,11 +415,12 @@ cat > "$DISKO_CONFIG" << NIXEOF
 }
 NIXEOF
 
-sudo nix --extra-experimental-features "nix-command flakes" \
-  run 'github:nix-community/disko/latest' -- \
-  --mode destroy,format,mount \
-  --yes-wipe-all-disks \
-  "$DISKO_CONFIG" \
+run_with_heartbeat "partitioning and formatting $DEV" \
+  sudo nix --extra-experimental-features "nix-command flakes" \
+    run 'github:nix-community/disko/latest' -- \
+    --mode destroy,format,mount \
+    --yes-wipe-all-disks \
+    "$DISKO_CONFIG" \
   2>&1 | filter_install_output
 
 rm -f "$DISKO_CONFIG"
@@ -426,17 +451,18 @@ if nixos-install --help 2>&1 | grep -q -- '--no-channel-copy'; then
   NIXOS_INSTALL_CHANNEL_ARGS+=(--no-channel-copy)
 fi
 
-root_env nixos-install \
-  "${NIXOS_INSTALL_LOCK_ARGS[@]}" \
-  "${NIXOS_INSTALL_CHANNEL_ARGS[@]}" \
-  --root /mnt \
-  --flake "$WORK_DIR#$HOST" \
-  --no-root-passwd \
-  --option substituters         "$INSTALL_SUBSTITUTERS" \
-  --option trusted-public-keys  "$INSTALL_TRUSTED_KEYS" \
-  --option max-jobs             "$INSTALL_MAX_JOBS" \
-  --option cores                "$INSTALL_CORES" \
-  --option fallback             false \
+run_with_heartbeat "installing NixOS $HOST" \
+  root_env nixos-install \
+    "${NIXOS_INSTALL_LOCK_ARGS[@]}" \
+    "${NIXOS_INSTALL_CHANNEL_ARGS[@]}" \
+    --root /mnt \
+    --flake "$WORK_DIR#$HOST" \
+    --no-root-passwd \
+    --option substituters         "$INSTALL_SUBSTITUTERS" \
+    --option trusted-public-keys  "$INSTALL_TRUSTED_KEYS" \
+    --option max-jobs             "$INSTALL_MAX_JOBS" \
+    --option cores                "$INSTALL_CORES" \
+    --option fallback             false \
   2>&1 | filter_install_output
 
 echo "==> Verifying EFI boot files..."
