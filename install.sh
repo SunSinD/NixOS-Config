@@ -30,15 +30,22 @@ NIX_FLAGS=(
 )
 
 filter_install_output() {
-  sed -u -E \
-    -e '/^warning:/d' \
-    -e '/^\+/d' \
-    -e '/^[[:space:]]*$/d' \
-    -e '/^(Added|Adding|Removed) input/d' \
-    -e '/^unpacking /d' \
-    -e '/^copying path /d' \
-    -e '/^building the flake in /d' \
-    -e '/^Create subvolume /d'
+  awk '
+    /^error:/ || /^ERROR:/ || /^warning: download/ { warn = 0; print; next }
+    /^evaluation warning:/ || /^warning:/ { warn = 1; next }
+    warn && /^[[:space:]]/ { next }
+    warn { warn = 0 }
+    /^[[:space:]]*$/ { next }
+    /^\+/ { next }
+    /^building the flake in / { next }
+    /^unpacking / { next }
+    /^copying path / { next }
+    /^Create subvolume / { next }
+    /(Added|Adding|Removed) input/ { next }
+    /^[[:space:]]*follows/ { next }
+    /^[[:space:]]/ && (index($0, "github:") || index($0, "https:") || index($0, "path:")) { next }
+    { print }
+  '
 }
 
 tty_printf() {
@@ -64,8 +71,7 @@ banner() {
   if [[ "$INSTALL_CLEAR" == "1" ]]; then
     tty_printf '\033[2J\033[H'
   fi
-  tty_printf '\n%s\n' "SunSD NixOS Installer"
-  tty_printf '%s\n\n' "Clean install log. Errors stay visible; routine build noise stays hidden."
+  tty_printf '\n%s\n\n' "SunSD NixOS Installer"
 }
 
 phase() {
@@ -185,6 +191,10 @@ root_env() {
 
 root_nix() {
   root_env nix "${NIX_FLAGS[@]}" "$@"
+}
+
+resolve_flake_metadata() {
+  root_nix flake metadata --no-write-lock-file "$WORK_DIR" >/dev/null
 }
 
 build_systemd_loader() {
@@ -386,10 +396,10 @@ redirect_live_root_nix_cache() {
   sudo ln -sfn "$ROOT_CACHE_DIR/nix" /root/.cache/nix
 }
 
-lock_flake_on_target() {
+resolve_flake_on_target() {
   phase 4 "Resolve flake inputs"
-  run_with_heartbeat "resolving flake inputs" \
-    root_nix flake lock "$WORK_DIR" \
+  run_with_heartbeat "fetching locked inputs" \
+    resolve_flake_metadata \
     2>&1 | filter_install_output
   show_target_space
   check_target_free_space 20
@@ -410,7 +420,7 @@ prepare_install_workspace() {
   cd "$WORK_DIR"
   show_target_space
   check_target_free_space 25
-  lock_flake_on_target
+  resolve_flake_on_target
 }
 
 cleanup() {
