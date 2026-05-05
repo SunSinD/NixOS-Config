@@ -7,12 +7,14 @@ INSTALL_TMPDIR="/mnt/tmp"
 USER_CACHE_DIR="/mnt/tmp/nix-cache-user"
 ROOT_CACHE_DIR="/mnt/tmp/nix-cache-root"
 ROOT_HOME_DIR="/mnt/tmp/nix-root-home"
+INSTALL_SWAPFILE="/mnt/.install-swap"
 HOST="${1:-}"
 DISKO_CONFIG=""
 INSTALL_SUBSTITUTERS="https://cache.nixos.org https://niri.cachix.org https://attic.xuyh0120.win/lantian https://cache.garnix.io"
 INSTALL_TRUSTED_KEYS="cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964= lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc= cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
-INSTALL_MAX_JOBS=2
-INSTALL_CORES=2
+INSTALL_MAX_JOBS=1
+INSTALL_CORES=1
+INSTALL_SWAP_SIZE="${INSTALL_SWAP_SIZE:-8G}"
 NIX_FLAGS=(
   --extra-experimental-features "nix-command flakes"
   --store /mnt
@@ -163,6 +165,35 @@ check_target_free_space() {
   fi
 }
 
+enable_install_swap() {
+  if swapon --show=NAME --noheadings | grep -qx "$INSTALL_SWAPFILE"; then
+    return 0
+  fi
+
+  echo "==> Enabling temporary install swap ($INSTALL_SWAP_SIZE)..."
+  sudo rm -f "$INSTALL_SWAPFILE"
+
+  if sudo btrfs filesystem mkswapfile --size "$INSTALL_SWAP_SIZE" "$INSTALL_SWAPFILE" >/dev/null 2>&1; then
+    :
+  else
+    sudo touch "$INSTALL_SWAPFILE"
+    sudo chattr +C "$INSTALL_SWAPFILE" 2>/dev/null || true
+    sudo fallocate -l "$INSTALL_SWAP_SIZE" "$INSTALL_SWAPFILE"
+    sudo chmod 600 "$INSTALL_SWAPFILE"
+    sudo mkswap "$INSTALL_SWAPFILE" >/dev/null
+  fi
+
+  sudo swapon "$INSTALL_SWAPFILE"
+  swapon --show || true
+}
+
+disable_install_swap() {
+  if swapon --show=NAME --noheadings | grep -qx "$INSTALL_SWAPFILE"; then
+    sudo swapoff "$INSTALL_SWAPFILE" 2>/dev/null || true
+  fi
+  sudo rm -f "$INSTALL_SWAPFILE" 2>/dev/null || true
+}
+
 redirect_live_root_nix_cache() {
   sudo mkdir -p /root/.cache "$ROOT_CACHE_DIR/nix" "$ROOT_HOME_DIR/.cache"
   sudo ln -sfn "$ROOT_CACHE_DIR/nix" "$ROOT_HOME_DIR/.cache/nix"
@@ -203,6 +234,7 @@ prepare_install_workspace() {
 cleanup() {
   local status=$?
   [[ -n "$DISKO_CONFIG" ]] && rm -f "$DISKO_CONFIG"
+  disable_install_swap
 
   if [[ "$status" -ne 0 ]]; then
     show_target_space
@@ -360,6 +392,7 @@ if ! findmnt /mnt/boot >/dev/null; then
   exit 1
 fi
 
+enable_install_swap
 prepare_install_workspace
 
 echo "==> Installing NixOS ($HOST)... (this may take 10-20 minutes)"
@@ -369,9 +402,14 @@ NIXOS_INSTALL_LOCK_ARGS=()
 if nixos-install --help 2>&1 | grep -q -- '--no-write-lock-file'; then
   NIXOS_INSTALL_LOCK_ARGS+=(--no-write-lock-file)
 fi
+NIXOS_INSTALL_CHANNEL_ARGS=()
+if nixos-install --help 2>&1 | grep -q -- '--no-channel-copy'; then
+  NIXOS_INSTALL_CHANNEL_ARGS+=(--no-channel-copy)
+fi
 
 root_env nixos-install \
   "${NIXOS_INSTALL_LOCK_ARGS[@]}" \
+  "${NIXOS_INSTALL_CHANNEL_ARGS[@]}" \
   --root /mnt \
   --flake "$WORK_DIR#$HOST" \
   --no-root-passwd \
