@@ -12,28 +12,48 @@
           networking.hostName = "vm";
           custom.secureBoot.enable = false;
 
-          # ── Disk ───────────────────────────────────────────────────────────────
-          # VirtIO block device — standard for QEMU/KVM
-          custom.disk.device = "/dev/vda";
+          # Disk
+          # Placeholder only. The installer mounts filesystems by label.
+          custom.disk.device = "/dev/sda";
 
-          # ── Hardware ───────────────────────────────────────────────────────────
-          boot.initrd.availableKernelModules = [ "virtio_pci" "virtio_blk" "virtio_scsi" "ahci" "sd_mod" ];
-          boot.kernelModules                 = [ "kvm-amd" "kvm-intel" ];
+          # Hardware
+          # Covers VMware, QEMU/KVM VirtIO, SATA, and common SCSI boot disks.
+          boot.initrd.availableKernelModules = [
+            "ahci"
+            "ata_piix"
+            "sd_mod"
+            "sr_mod"
+            "xhci_pci"
+            "ehci_pci"
+            "ohci_pci"
+            "usbhid"
+            "virtio_pci"
+            "virtio_blk"
+            "virtio_scsi"
+            "mptbase"
+            "mptscsih"
+            "mptspi"
+            "vmw_pvscsi"
+          ];
+          boot.initrd.kernelModules = [ "vmwgfx" ];
+          boot.kernelModules       = [ "kvm-amd" "kvm-intel" ];
 
-          # ── Boot ───────────────────────────────────────────────────────────────
+          # Boot
           boot = {
             kernelPackages              = pkgs.linuxPackages_latest;
             supportedFilesystems        = [ "btrfs" ];
             initrd.supportedFilesystems = [ "btrfs" ];
 
-            loader.systemd-boot.enable      = true;
+            loader.systemd-boot.enable       = true;
             loader.efi.canTouchEfiVariables  = true;
           };
 
-          # ── VM guest tools ─────────────────────────────────────────────────────
+          # VM guest integration
           services.spice-vdagentd.enable = true;
           services.qemuGuest.enable      = true;
-          environment.systemPackages     = [
+          virtualisation.vmware.guest.enable = true;
+
+          environment.systemPackages = [
             pkgs.spice-vdagent
             pkgs.open-vm-tools
           ];
