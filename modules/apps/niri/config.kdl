@@ -314,7 +314,6 @@ animations {
         spring damping-ratio=1.0 stiffness=680 epsilon=0.001
     }
 }
-environment
 
 gestures {
     hot-corners {
