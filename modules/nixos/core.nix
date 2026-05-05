@@ -1,5 +1,23 @@
 { inputs, ... }: {
-  flake.nixosModules.core = { config, pkgs, lib, ... }: {
+  flake.nixosModules.core = { config, pkgs, lib, ... }:
+  let
+    sunsdNiriSession = pkgs.writeShellScriptBin "sunsd-niri-session" ''
+      set -eu
+
+      export XDG_CURRENT_DESKTOP=niri
+      export XDG_SESSION_DESKTOP=niri
+      export XDG_SESSION_TYPE=wayland
+      export NIXOS_OZONE_WL=1
+      export ELECTRON_OZONE_PLATFORM_HINT=wayland
+      export MOZ_ENABLE_WAYLAND=1
+
+      if [ -z "''${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
+        exec ${pkgs.dbus}/bin/dbus-run-session -- ${lib.getExe config.programs.niri.package}
+      fi
+
+      exec ${lib.getExe config.programs.niri.package}
+    '';
+  in {
     imports = [
       inputs.home-manager.nixosModules.home-manager
       inputs.catppuccin.nixosModules.catppuccin
@@ -122,7 +140,7 @@
         enable = true;
         restart = false;
         settings.default_session = {
-          command = "niri-session";
+          command = lib.getExe sunsdNiriSession;
           user = "SunSD";
         };
       };
