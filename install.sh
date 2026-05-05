@@ -15,7 +15,8 @@ INSTALL_TRUSTED_KEYS="cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDS
 INSTALL_MAX_JOBS=1
 INSTALL_CORES=1
 INSTALL_SWAP_SIZE="${INSTALL_SWAP_SIZE:-8G}"
-INSTALL_PROGRESS_INTERVAL="${INSTALL_PROGRESS_INTERVAL:-10}"
+INSTALL_PROGRESS_INTERVAL="${INSTALL_PROGRESS_INTERVAL:-1}"
+INSTALL_PROGRESS_LOG_INTERVAL="${INSTALL_PROGRESS_LOG_INTERVAL:-10}"
 GREEN=$'\033[1;32m'
 RESET=$'\033[0m'
 NIX_FLAGS=(
@@ -32,8 +33,19 @@ filter_install_output() {
   sed -u -E '/^warning:/d;/^\+/d;/^[[:space:]]*$/d;/(Added|Adding|Removed) input/d'
 }
 
+tty_printf() {
+  local format="$1"
+  shift
+
+  if [[ -w /dev/tty ]]; then
+    printf "$format" "$@" > /dev/tty
+  else
+    printf "$format" "$@"
+  fi
+}
+
 status() {
-  printf '%b==> %s%b\n' "$GREEN" "$*" "$RESET"
+  tty_printf '%b==>%b %s\n' "$GREEN" "$RESET" "$*"
 }
 
 elapsed_time() {
@@ -68,17 +80,30 @@ run_with_heartbeat() {
   status "Starting: $label"
   "$@" &
   local pid=$!
-  local start now elapsed
+  local start now elapsed spinner_index spinner_chars spinner spinner_pos log_every
   start="$(date +%s)"
+  spinner_index=0
+  spinner_chars='|/-\'
+  log_every="$INSTALL_PROGRESS_LOG_INTERVAL"
 
   while kill -0 "$pid" 2>/dev/null; do
     sleep "$INSTALL_PROGRESS_INTERVAL"
     kill -0 "$pid" 2>/dev/null || break
     now="$(date +%s)"
     elapsed=$((now - start))
-    status "Still working: $label | elapsed $(elapsed_time "$elapsed") | $(target_usage_summary)"
+    spinner_pos=$((spinner_index % ${#spinner_chars}))
+    spinner="${spinner_chars:spinner_pos:1}"
+    spinner_index=$((spinner_index + 1))
+
+    tty_printf '\r\033[K%b==>%b [%s] %s | elapsed %s | %s' \
+      "$GREEN" "$RESET" "$spinner" "$label" "$(elapsed_time "$elapsed")" "$(target_usage_summary)"
+
+    if (( log_every > 0 && elapsed > 0 && elapsed % log_every == 0 )); then
+      tty_printf '\n'
+    fi
   done
 
+  tty_printf '\r\033[K'
   wait "$pid"
 }
 
