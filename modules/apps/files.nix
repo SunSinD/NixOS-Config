@@ -204,13 +204,8 @@
         ".local/share/applications/com.obsproject.Studio.desktop".text = ''
           [Desktop Entry]
           Name=OBS Studio
-          GenericName=Streaming/Recording Software
-          Comment=Free and Open Source Streaming/Recording Software
-          Exec=obs
-          Icon=${pkgs.obs-studio}/share/icons/hicolor/256x256/apps/com.obsproject.Studio.png
-          Terminal=false
           Type=Application
-          Categories=AudioVideo;Recorder;
+          NoDisplay=true
         '';
 
         # Hide helper desktop entries we don't want in the launcher grid.

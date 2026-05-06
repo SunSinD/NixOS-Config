@@ -8,6 +8,9 @@
       mkdir -p "$log_dir"
       exec >> "$log_dir/session.log" 2>&1
 
+      # Home Manager user packages (sunsd-focus-or-spawn, etc.) — niri spawn does not use a login shell.
+      export PATH="/etc/profiles/per-user/SunSD/bin''${PATH:+:}''$PATH"
+
       export XDG_CURRENT_DESKTOP=niri
       export XDG_SESSION_DESKTOP=niri
       export XDG_SESSION_TYPE=wayland
@@ -141,8 +144,9 @@
 
     boot.loader.systemd-boot.configurationLimit = lib.mkForce 1;
     boot.loader.timeout = lib.mkForce 0;
-    boot.consoleLogLevel = 0;
-    boot.kernelParams = [ "quiet" "udev.log_level=3" ];
+    # Verbose boot (greyxp1-style: no "quiet"); see kernel/docs for loglevel.
+    boot.consoleLogLevel = 7;
+    boot.kernelParams = [ "loglevel=4" "udev.log_level=info" ];
 
     hardware.graphics = {
       enable      = true;

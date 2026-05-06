@@ -70,8 +70,6 @@
 
         vivaldi
         google-chrome
-        obs-studio
-        gpu-screen-recorder
         obsidian
         mpv
         thunar
