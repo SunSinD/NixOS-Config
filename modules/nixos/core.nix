@@ -15,6 +15,11 @@
       export ELECTRON_OZONE_PLATFORM_HINT=wayland
       export MOZ_ENABLE_WAYLAND=1
 
+      # VMware: use CPU rendering (llvmpipe) — much faster than VMware's emulated GPU.
+      if [ -f /sys/class/dmi/id/sys_vendor ] && grep -qi vmware /sys/class/dmi/id/sys_vendor 2>/dev/null; then
+        export MESA_LOADER_DRIVER_OVERRIDE=llvmpipe
+      fi
+
       if [ -z "''${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
         exec ${pkgs.dbus}/bin/dbus-run-session -- ${lib.getExe config.programs.niri.package}
       fi
