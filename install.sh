@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# ── Configuration ─────────────────────────────────────────────────────────────
 REPO="https://github.com/SunSinD/NixOS-Config.git"
 WORK_DIR="/mnt/tmp/nixconf"
 INSTALL_TMPDIR="/mnt/tmp"
@@ -9,240 +10,112 @@ ROOT_CACHE_DIR="/mnt/tmp/nix-cache-root"
 ROOT_HOME_DIR="/mnt/tmp/nix-root-home"
 INSTALL_SWAPFILE="/mnt/.install-swap"
 HOST="${1:-}"
-INSTALL_SUBSTITUTERS="https://cache.nixos.org https://niri.cachix.org https://attic.xuyh0120.win/lantian https://cache.garnix.io"
-INSTALL_TRUSTED_KEYS="cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964= lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc= cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
-INSTALL_MAX_JOBS=1
-INSTALL_CORES=1
-INSTALL_SWAP_SIZE="${INSTALL_SWAP_SIZE:-8G}"
-INSTALL_PROGRESS_INTERVAL="${INSTALL_PROGRESS_INTERVAL:-20}"
-INSTALL_VERBOSE="${INSTALL_VERBOSE:-0}"
-INSTALL_CLEAR="${INSTALL_CLEAR:-1}"
+
+SUBSTITUTERS="https://cache.nixos.org https://niri.cachix.org https://attic.xuyh0120.win/lantian https://cache.garnix.io"
+TRUSTED_KEYS="cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964= lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc= cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
+MAX_JOBS=1
+CORES=1
+SWAP_SIZE="${INSTALL_SWAP_SIZE:-}"
+PROGRESS_INTERVAL="${INSTALL_PROGRESS_INTERVAL:-20}"
+
 GREEN=$'\033[32m'
 RESET=$'\033[0m'
+
 NIX_FLAGS=(
   --extra-experimental-features "nix-command flakes"
   --store /mnt
-  --option substituters "$INSTALL_SUBSTITUTERS"
-  --option trusted-public-keys "$INSTALL_TRUSTED_KEYS"
-  --option max-jobs "$INSTALL_MAX_JOBS"
-  --option cores "$INSTALL_CORES"
+  --option substituters "$SUBSTITUTERS"
+  --option trusted-public-keys "$TRUSTED_KEYS"
+  --option max-jobs "$MAX_JOBS"
+  --option cores "$CORES"
   --option fallback false
 )
 
-filter_install_output() {
+# ── Helpers ───────────────────────────────────────────────────────────────────
+msg()    { printf '  - %s\n' "$*" > /dev/tty 2>/dev/null || printf '  - %s\n' "$*"; }
+status() { printf '%b==>%b %s\n' "$GREEN" "$RESET" "$*" > /dev/tty 2>/dev/null || printf '==> %s\n' "$*"; }
+
+elapsed() { printf '%dm%02ds' "$(($1 / 60))" "$(($1 % 60))"; }
+
+target_summary() {
+  local d s
+  d="$(df -h /mnt 2>/dev/null | awk 'NR==2{printf "/mnt %s, %s free",$5,$4}' || true)"
+  s="$(swapon --show=NAME,SIZE,USED --noheadings 2>/dev/null | awk 'NR==1{printf "swap %s/%s",$3,$2}' || true)"
+  printf '%s | %s' "${d:-/mnt not mounted}" "${s:-swap inactive}"
+}
+
+# Single awk filter — avoids pipefail issues with chained greps
+filter_output() {
   awk '
-    /^error:/ || /^ERROR:/ || /^warning: download/ { warn = 0; print; next }
-    /^evaluation warning:/ || /^warning:/ { warn = 1; next }
-    warn && /^[[:space:]]/ { next }
-    warn { warn = 0 }
     /^[[:space:]]*$/ { next }
     /^\+/ { next }
     /^building the flake in / { next }
     /^unpacking / { next }
     /^copying path / { next }
     /^Create subvolume / { next }
+    /^evaluation warning:/ { warn=1; next }
+    /^warning:/ && !/download/ { warn=1; next }
+    warn && /^[[:space:]]/ { next }
+    { warn=0 }
     /(Added|Adding|Removed) input/ { next }
     /^[[:space:]]*follows/ { next }
-    /^[[:space:]]/ && (index($0, "github:") || index($0, "https:") || index($0, "path:")) { next }
+    /^[[:space:]]/ && (index($0,"github:") || index($0,"https:") || index($0,"path:")) { next }
     { print }
   '
 }
 
-tty_printf() {
-  local format="$1"
-  shift
-
-  if [[ -w /dev/tty ]]; then
-    printf "$format" "$@" > /dev/tty
-  else
-    printf "$format" "$@"
-  fi
-}
-
-status() {
-  tty_printf '%b==>%b %s\n' "$GREEN" "$RESET" "$*"
-}
-
-progress() {
-  tty_printf '  - %s\n' "$*"
-}
-
-banner() {
-  if [[ "$INSTALL_CLEAR" == "1" ]]; then
-    tty_printf '\033[2J\033[H'
-  fi
-  tty_printf '\n%s\n\n' "SunSD NixOS Installer"
-}
-
-phase() {
-  local number="$1"
-  local label="$2"
-  status "[$number/6] $label"
-}
-
-elapsed_time() {
-  local elapsed="$1"
-  printf '%dm%02ds' "$((elapsed / 60))" "$((elapsed % 60))"
-}
-
-target_usage_summary() {
-  local disk_usage swap_usage
-
-  disk_usage="$(
-    df -h /mnt 2>/dev/null \
-      | awk 'NR == 2 {printf "/mnt %s, %s free", $5, $4}' \
-      || true
-  )"
-  [[ -n "$disk_usage" ]] || disk_usage="/mnt not mounted yet"
-
-  swap_usage="$(
-    swapon --show=NAME,SIZE,USED --noheadings 2>/dev/null \
-      | awk 'NR == 1 {printf "swap %s/%s", $3, $2}' \
-      || true
-  )"
-  [[ -n "$swap_usage" ]] || swap_usage="swap inactive"
-
-  printf '%s | %s\n' "$disk_usage" "$swap_usage"
-}
-
 run_with_heartbeat() {
-  local label="$1"
-  shift
-
-  progress "$label"
+  local label="$1"; shift
+  msg "$label"
   "$@" &
-  local pid=$!
-  local start now elapsed
+  local pid=$! start
   start="$(date +%s)"
-
   while kill -0 "$pid" 2>/dev/null; do
-    sleep "$INSTALL_PROGRESS_INTERVAL"
+    sleep "$PROGRESS_INTERVAL"
     kill -0 "$pid" 2>/dev/null || break
-    now="$(date +%s)"
-    elapsed=$((now - start))
-    progress "$(elapsed_time "$elapsed") | $(target_usage_summary)"
+    msg "$(elapsed $(($(date +%s) - start))) | $(target_summary)"
   done
-
   wait "$pid"
-  now="$(date +%s)"
-  elapsed=$((now - start))
-  progress "Done in $(elapsed_time "$elapsed")"
+  msg "Done in $(elapsed $(($(date +%s) - start)))"
 }
 
+# ── Machine detection ─────────────────────────────────────────────────────────
 detect_machine() {
-  local file value
-  for file in /sys/class/dmi/id/product_name /sys/class/dmi/id/product_family /sys/class/dmi/id/sys_vendor; do
-    [[ -r "$file" ]] || continue
-    value="$(<"$file")"
-    [[ -n "$value" ]] && printf '%s\n' "$value"
+  local f v=""
+  for f in /sys/class/dmi/id/product_name /sys/class/dmi/id/product_family /sys/class/dmi/id/sys_vendor; do
+    [[ -r "$f" ]] && v+="$(<"$f") "
   done
+  printf '%s' "${v% }"
 }
 
 secure_boot_enabled() {
-  local file value
-
   if command -v mokutil >/dev/null 2>&1; then
     mokutil --sb-state 2>/dev/null | grep -qi "SecureBoot enabled" && return 0
   fi
-
-  for file in /sys/firmware/efi/efivars/SecureBoot-*; do
-    [[ -e "$file" ]] || continue
-    value="$(od -An -t u1 "$file" 2>/dev/null | awk '{print $5; exit}')"
-    [[ "$value" == "1" ]] && return 0
+  local f val
+  for f in /sys/firmware/efi/efivars/SecureBoot-*; do
+    [[ -e "$f" ]] || continue
+    val="$(od -An -t u1 "$f" 2>/dev/null | awk '{print $5; exit}')"
+    [[ "$val" == "1" ]] && return 0
   done
-
   return 1
 }
 
-find_efi_loader() {
-  local file
-
-  for file in \
-    /mnt/boot/EFI/systemd/systemd-bootx64.efi \
-    /mnt/boot/EFI/BOOT/BOOTX64.EFI
-  do
-    [[ -f "$file" ]] && { printf '%s\n' "$file"; return 0; }
-  done
-
-  if compgen -G "/mnt/boot/EFI/NixOS-boot/*.efi" >/dev/null; then
-    mapfile -t NIXOS_BOOTLOADERS < <(compgen -G "/mnt/boot/EFI/NixOS-boot/*.efi")
-    printf '%s\n' "${NIXOS_BOOTLOADERS[0]}"
-    return 0
-  fi
-
-  while IFS= read -r file; do
-    [[ -f "$file" ]] && { printf '%s\n' "$file"; return 0; }
-  done < <(find /mnt/nix/store -path '*/lib/systemd/boot/efi/systemd-bootx64.efi' -type f 2>/dev/null)
-
-  while IFS= read -r file; do
-    [[ -f "$file" ]] && { printf '%s\n' "$file"; return 0; }
-  done < <(find /nix/store /run/current-system/sw -path '*/lib/systemd/boot/efi/systemd-bootx64.efi' -type f 2>/dev/null)
-
-  return 1
-}
-
-root_env() {
-  sudo env \
-    HOME="$ROOT_HOME_DIR" \
-    TMPDIR="$INSTALL_TMPDIR" \
-    XDG_CACHE_HOME="$ROOT_CACHE_DIR" \
-    "$@"
-}
-
-root_nix() {
-  root_env nix "${NIX_FLAGS[@]}" "$@"
-}
-
-resolve_flake_metadata() {
-  root_nix flake metadata --no-write-lock-file "$WORK_DIR" >/dev/null
-}
-
-build_systemd_loader() {
-  local out physical_out
-
-  out="$(
-    root_nix build --no-link --print-out-paths 'nixpkgs#systemd' 2>/dev/null \
-    || root_nix build --no-link --print-out-paths 'github:NixOS/nixpkgs/nixos-unstable#systemd'
-  )"
-
-  if [[ -f "$out/lib/systemd/boot/efi/systemd-bootx64.efi" ]]; then
-    printf '%s\n' "$out/lib/systemd/boot/efi/systemd-bootx64.efi"
-    return 0
-  fi
-
-  physical_out="/mnt$out"
-  if [[ -f "$physical_out/lib/systemd/boot/efi/systemd-bootx64.efi" ]]; then
-    printf '%s\n' "$physical_out/lib/systemd/boot/efi/systemd-bootx64.efi"
-    return 0
-  fi
-
-  return 1
-}
-
+# ── Partitioning ──────────────────────────────────────────────────────────────
 partition_path() {
-  local number path
-  number="$1"
-
-  path="$(
-    lsblk -nrpo NAME,PARTN "$DEV" 2>/dev/null \
-      | awk -v number="$number" '$2 == number {print $1; exit}' \
-      || true
-  )"
-
-  if [[ -n "$path" ]]; then
-    printf '%s\n' "$path"
-  elif [[ "$DEV" =~ [0-9]$ ]]; then
-    printf '%sp%s\n' "$DEV" "$number"
-  else
-    printf '%s%s\n' "$DEV" "$number"
+  local n="$1" p
+  p="$(lsblk -nrpo NAME,PARTN "$DEV" 2>/dev/null | awk -v n="$n" '$2==n{print $1;exit}')"
+  if [[ -n "$p" ]]; then echo "$p"
+  elif [[ "$DEV" =~ [0-9]$ ]]; then echo "${DEV}p${n}"
+  else echo "${DEV}${n}"
   fi
 }
 
-format_and_mount_target() {
-  local efi_part root_part
-
+format_and_mount() {
+  local efi root
   sudo swapoff -a 2>/dev/null || true
   sudo umount -R /mnt 2>/dev/null || true
+
   sudo wipefs -af "$DEV" >/dev/null
   sudo parted -s "$DEV" mklabel gpt >/dev/null
   sudo parted -s "$DEV" mkpart ESP fat32 1MiB 513MiB >/dev/null
@@ -251,346 +124,244 @@ format_and_mount_target() {
   sudo partprobe "$DEV" 2>/dev/null || true
   sudo udevadm settle 2>/dev/null || sleep 2
 
-  efi_part="$(partition_path 1)"
-  root_part="$(partition_path 2)"
+  efi="$(partition_path 1)"
+  root="$(partition_path 2)"
+  [[ -b "$efi" && -b "$root" ]] || { echo "ERROR: Partitions not found after formatting."; lsblk "$DEV" || true; exit 1; }
 
-  if [[ ! -b "$efi_part" || ! -b "$root_part" ]]; then
-    echo "ERROR: Partitioning finished, but expected partitions were not found."
-    lsblk "$DEV" || true
-    exit 1
-  fi
-
-  sudo mkfs.vfat -F 32 -n NIXBOOT "$efi_part" >/dev/null
-  sudo mkfs.btrfs -f -L nixos "$root_part" >/dev/null
+  sudo mkfs.vfat -F 32 -n NIXBOOT "$efi" >/dev/null
+  sudo mkfs.btrfs -f -L nixos "$root" >/dev/null
 
   sudo mkdir -p /mnt
-  sudo mount "$root_part" /mnt
-  sudo btrfs subvolume create /mnt/@ >/dev/null
-  sudo btrfs subvolume create /mnt/@nix >/dev/null
-  sudo btrfs subvolume create /mnt/@home >/dev/null
-  sudo btrfs subvolume create /mnt/@log >/dev/null
-  sudo btrfs subvolume create /mnt/@snapshots >/dev/null
+  sudo mount "$root" /mnt
+  local sv; for sv in @ @nix @home @log @snapshots; do
+    sudo btrfs subvolume create "/mnt/$sv" >/dev/null
+  done
   sudo umount /mnt
 
-  sudo mount -o compress=zstd,noatime,subvol=@ "$root_part" /mnt
-  sudo mkdir -p /mnt/nix /mnt/home /mnt/var/log /mnt/.snapshots /mnt/boot
-  sudo mount -o compress=zstd,noatime,subvol=@nix "$root_part" /mnt/nix
-  sudo mount -o compress=zstd,noatime,subvol=@home "$root_part" /mnt/home
-  sudo mount -o compress=zstd,noatime,subvol=@log "$root_part" /mnt/var/log
-  sudo mount -o compress=zstd,noatime,subvol=@snapshots "$root_part" /mnt/.snapshots
-  sudo mount -o umask=0077 "$efi_part" /mnt/boot
+  sudo mount -o compress=zstd,noatime,subvol=@ "$root" /mnt
+  sudo mkdir -p /mnt/{nix,home,var/log,.snapshots,boot}
+  sudo mount -o compress=zstd,noatime,subvol=@nix       "$root" /mnt/nix
+  sudo mount -o compress=zstd,noatime,subvol=@home      "$root" /mnt/home
+  sudo mount -o compress=zstd,noatime,subvol=@log       "$root" /mnt/var/log
+  sudo mount -o compress=zstd,noatime,subvol=@snapshots "$root" /mnt/.snapshots
+  sudo mount -o umask=0077 "$efi" /mnt/boot
 }
 
-required_target_disk_gib() {
-  case "$HOST" in
-    main-pc) printf '80\n' ;;
-    *)       printf '45\n' ;;
-  esac
+# ── Swap ──────────────────────────────────────────────────────────────────────
+auto_swap_size() {
+  local disk_gib
+  disk_gib="$(lsblk -b -dn -o SIZE "$DEV" 2>/dev/null | awk '{printf "%d", $1/1073741824}')"
+  if [[ "$disk_gib" =~ ^[0-9]+$ ]] && (( disk_gib < 50 )); then
+    echo "4G"
+  else
+    echo "8G"
+  fi
 }
 
-check_target_disk_size() {
-  local disk_bytes disk_size required_bytes required_gib
-
-  required_gib="$(required_target_disk_gib)"
-  required_bytes=$((required_gib * 1024 * 1024 * 1024))
-  disk_bytes="$(lsblk -b -dn -o SIZE "$DEV" | tr -d '[:space:]')"
-
-  if [[ ! "$disk_bytes" =~ ^[0-9]+$ ]]; then
-    echo "WARNING: Could not determine size for $DEV; continuing."
+enable_swap() {
+  if swapon --show=NAME --noheadings 2>/dev/null | grep -qx "$INSTALL_SWAPFILE"; then
     return 0
   fi
-
-  if (( disk_bytes < required_bytes )); then
-    disk_size="$(lsblk -dno SIZE "$DEV" | xargs)"
-    echo "ERROR: $HOST install needs at least ${required_gib}GiB of target disk space."
-    echo "Selected disk $DEV is only $disk_size."
-    echo "Increase the VM disk size, then rerun the installer."
-    exit 1
-  fi
-}
-
-show_target_space() {
-  if [[ "$INSTALL_VERBOSE" == "1" ]]; then
-    progress "Filesystem space:"
-    df -h / /tmp /mnt /mnt/tmp /mnt/nix 2>/dev/null | awk 'NR == 1 || !seen[$1]++' || true
-    progress "Inode space:"
-    df -ih / /tmp /mnt /mnt/tmp /mnt/nix 2>/dev/null | awk 'NR == 1 || !seen[$1]++' || true
-  else
-    progress "Target: $(target_usage_summary)"
-  fi
-}
-
-check_target_free_space() {
-  local free_kib required_gib required_kib
-
-  required_gib="${1:-25}"
-  required_kib=$((required_gib * 1024 * 1024))
-  free_kib="$(df -Pk /mnt 2>/dev/null | awk 'NR == 2 {print $4}')"
-
-  if [[ "$free_kib" =~ ^[0-9]+$ ]] && (( free_kib < required_kib )); then
-    show_target_space
-    echo "ERROR: /mnt has less than ${required_gib}GiB free."
-    echo "Increase the VM disk size, then rerun the installer."
-    exit 1
-  fi
-}
-
-fail_legacy_boot() {
-  echo "ERROR: This installer must be booted in UEFI mode."
-  echo
-  echo "Detected: BIOS/Legacy boot. Missing /sys/firmware/efi/efivars."
-  echo
-  if [[ "$MACHINE" =~ VMware ]]; then
-    echo "VMware fix:"
-    echo "  1. Power off the VM completely."
-    echo "  2. Open VM Settings > Options > Advanced."
-    echo "  3. Set Firmware type to UEFI."
-    echo "  4. Keep Secure Boot disabled."
-    echo "  5. Boot the NixOS ISO again and rerun this command."
-  else
-    echo "Fix:"
-    echo "  Enable UEFI boot in firmware settings, disable Legacy/CSM boot,"
-    echo "  then boot the NixOS ISO again."
-  fi
-  exit 1
-}
-
-enable_install_swap() {
-  if swapon --show=NAME --noheadings | grep -qx "$INSTALL_SWAPFILE"; then
-    return 0
-  fi
-
-  progress "Enabling temporary install swap ($INSTALL_SWAP_SIZE)"
+  local size="${SWAP_SIZE:-$(auto_swap_size)}"
+  msg "Enabling temporary swap ($size)"
   sudo rm -f "$INSTALL_SWAPFILE"
-
-  if sudo btrfs filesystem mkswapfile --size "$INSTALL_SWAP_SIZE" "$INSTALL_SWAPFILE" >/dev/null 2>&1; then
-    :
-  else
+  if ! sudo btrfs filesystem mkswapfile --size "$size" "$INSTALL_SWAPFILE" >/dev/null 2>&1; then
     sudo touch "$INSTALL_SWAPFILE"
     sudo chattr +C "$INSTALL_SWAPFILE" 2>/dev/null || true
-    sudo fallocate -l "$INSTALL_SWAP_SIZE" "$INSTALL_SWAPFILE"
+    sudo fallocate -l "$size" "$INSTALL_SWAPFILE"
     sudo chmod 600 "$INSTALL_SWAPFILE"
     sudo mkswap "$INSTALL_SWAPFILE" >/dev/null
   fi
-
   sudo swapon "$INSTALL_SWAPFILE"
-  progress "$(target_usage_summary)"
+  msg "$(target_summary)"
 }
 
-disable_install_swap() {
-  if swapon --show=NAME --noheadings | grep -qx "$INSTALL_SWAPFILE"; then
+disable_swap() {
+  if swapon --show=NAME --noheadings 2>/dev/null | grep -qx "$INSTALL_SWAPFILE"; then
     sudo swapoff "$INSTALL_SWAPFILE" 2>/dev/null || true
   fi
   sudo rm -f "$INSTALL_SWAPFILE" 2>/dev/null || true
 }
 
-redirect_live_root_nix_cache() {
-  sudo mkdir -p /root/.cache "$ROOT_CACHE_DIR/nix" "$ROOT_HOME_DIR/.cache"
-  sudo ln -sfn "$ROOT_CACHE_DIR/nix" "$ROOT_HOME_DIR/.cache/nix"
-
-  if [[ -e /root/.cache/nix && ! -L /root/.cache/nix ]]; then
-    sudo rm -rf "$ROOT_CACHE_DIR/live-root-nix-cache"
-    sudo mv /root/.cache/nix "$ROOT_CACHE_DIR/live-root-nix-cache" 2>/dev/null || sudo rm -rf /root/.cache/nix
-  fi
-
-  sudo ln -sfn "$ROOT_CACHE_DIR/nix" /root/.cache/nix
+# ── Nix helpers ───────────────────────────────────────────────────────────────
+root_nix() {
+  sudo env HOME="$ROOT_HOME_DIR" TMPDIR="$INSTALL_TMPDIR" XDG_CACHE_HOME="$ROOT_CACHE_DIR" \
+    nix "${NIX_FLAGS[@]}" "$@"
 }
 
-resolve_flake_on_target() {
-  phase 4 "Resolve flake inputs"
-  run_with_heartbeat "fetching locked inputs" \
-    resolve_flake_metadata \
-    2>&1 | filter_install_output
-  show_target_space
-  check_target_free_space 20
+# ── EFI verification ─────────────────────────────────────────────────────────
+find_efi_loader() {
+  local f
+  for f in \
+    /mnt/boot/EFI/systemd/systemd-bootx64.efi \
+    /mnt/boot/EFI/BOOT/BOOTX64.EFI; do
+    [[ -f "$f" ]] && { echo "$f"; return 0; }
+  done
+  # Search boot partition, installed nix store, and live system store
+  f="$(find /mnt/boot/EFI /mnt/nix/store /nix/store /run/current-system/sw \
+    -path '*/systemd-bootx64.efi' -type f -print -quit 2>/dev/null || true)"
+  [[ -n "$f" ]] && { echo "$f"; return 0; }
+  return 1
 }
 
-prepare_install_workspace() {
-  phase 3 "Prepare install workspace"
-  sudo mkdir -p "$INSTALL_TMPDIR" "$USER_CACHE_DIR" "$ROOT_CACHE_DIR" "$ROOT_HOME_DIR"
-  sudo chmod 1777 "$INSTALL_TMPDIR" "$USER_CACHE_DIR"
-  sudo chmod 700 "$ROOT_CACHE_DIR" "$ROOT_HOME_DIR"
-  redirect_live_root_nix_cache
-
-  export TMPDIR="$INSTALL_TMPDIR"
-  export XDG_CACHE_HOME="$USER_CACHE_DIR"
-
-  sudo rm -rf "$WORK_DIR"
-  git clone -q "$REPO" "$WORK_DIR"
-  cd "$WORK_DIR"
-  show_target_space
-  check_target_free_space 25
-  resolve_flake_on_target
-}
-
+# ── Cleanup ───────────────────────────────────────────────────────────────────
 cleanup() {
-  local status=$?
-  disable_install_swap
-
-  if [[ "$status" -ne 0 ]]; then
-    show_target_space
+  local rc=$?
+  disable_swap
+  if [[ "$rc" -ne 0 ]]; then
+    msg "Target: $(target_summary)"
     status "Install failed"
-    progress "Leaving /mnt mounted for debugging."
-    progress "Useful checks: findmnt /mnt /mnt/boot; sudo find /mnt/boot -maxdepth 5 -type f"
-    return
+    msg "Leaving /mnt mounted for debugging."
+    msg "Useful checks: findmnt /mnt /mnt/boot; sudo find /mnt/boot -maxdepth 5 -type f"
+  else
+    sudo umount -R /mnt 2>/dev/null || true
   fi
-
-  sudo umount -R /mnt 2>/dev/null || true
 }
 trap cleanup EXIT
 
-MACHINE="$(detect_machine | tr '\n' ' ' || true)"
-banner
+# ═════════════════════════════════════════════════════════════════════════════
+#  MAIN
+# ═════════════════════════════════════════════════════════════════════════════
+MACHINE="$(detect_machine)"
+printf '\033[2J\033[H\n%s\n\n' "SunSD NixOS Installer" > /dev/tty 2>/dev/null || printf '\n%s\n\n' "SunSD NixOS Installer"
 
-# Host selection
+# ── Host selection ────────────────────────────────────────────────────────────
 if [[ -z "$HOST" && "$MACHINE" =~ (VMware|VirtualBox|KVM|QEMU|Hyper-V|Hypervisor|Bochs) ]]; then
   HOST="vm"
-  progress "Host: vm ($MACHINE)"
+  msg "Host: vm ($MACHINE)"
 fi
 
 if [[ -z "$HOST" || "$HOST" == "--help" || "$HOST" == "-h" ]]; then
   echo "Select a host to install:"
   echo "  [0] main-pc - desktop-only, AMD/Nvidia, CachyOS kernel"
-  echo "  [1] vm      - full desktop, QEMU/SPICE/VMware guest tools, standard kernel"
-  echo "  [2] generic - portable laptop/desktop config, standard kernel"
-  read -rp "Choice (number): " HOST_CHOICE
-  case "$HOST_CHOICE" in
-    0) HOST="main-pc" ;;
-    1) HOST="vm"      ;;
-    2) HOST="generic" ;;
+  echo "  [1] vm      - full desktop, QEMU/SPICE/VMware guest tools"
+  echo "  [2] generic - portable laptop/desktop config"
+  read -rp "Choice (number): " choice
+  case "$choice" in
+    0) HOST="main-pc" ;; 1) HOST="vm" ;; 2) HOST="generic" ;;
     *) echo "ERROR: Invalid choice."; exit 1 ;;
   esac
 fi
 
 case "$HOST" in
   main-pc|vm|generic) ;;
-  *)
-    echo "ERROR: Unknown host '$HOST'. Choose: main-pc, vm, or generic."
-    exit 1 ;;
+  *) echo "ERROR: Unknown host '$HOST'. Choose: main-pc, vm, or generic."; exit 1 ;;
 esac
 
 if [[ "$HOST" == "main-pc" && "$MACHINE" == *ThinkPad* ]]; then
   echo "ERROR: This machine looks like a ThinkPad: $MACHINE"
-  echo "main-pc is desktop-only (AMD/Nvidia/CachyOS/Secure Boot). Use: generic"
+  echo "main-pc is desktop-only (AMD/Nvidia/CachyOS). Use: generic"
   exit 1
 fi
 
-if [[ -r /dev/tty ]]; then
-  exec < /dev/tty
-fi
+[[ -r /dev/tty ]] && exec < /dev/tty
 
-# Require UEFI
-if [[ ! -d /sys/firmware/efi/efivars ]]; then
-  fail_legacy_boot
-fi
-phase 1 "Preflight"
-progress "Firmware: UEFI"
+# ── [1/6] Preflight ──────────────────────────────────────────────────────────
+[[ -d /sys/firmware/efi/efivars ]] || {
+  echo "ERROR: This installer requires UEFI mode."
+  echo "Detected: BIOS/Legacy boot. Missing /sys/firmware/efi/efivars."
+  if [[ "$MACHINE" =~ VMware ]]; then
+    echo "VMware fix: VM Settings > Options > Advanced > Firmware type: UEFI"
+  else
+    echo "Fix: Enable UEFI boot in firmware settings, disable Legacy/CSM."
+  fi
+  exit 1
+}
+status "[1/6] Preflight"
+msg "Firmware: UEFI"
 
 if [[ "$HOST" != "main-pc" ]] && secure_boot_enabled; then
   echo "ERROR: Secure Boot is enabled."
-  echo "$HOST uses an unsigned EFI bootloader, which most firmware will reject with Secure Boot enabled."
-  echo "Disable Secure Boot in firmware setup, then run this installer again."
+  echo "$HOST uses an unsigned bootloader. Disable Secure Boot and retry."
   exit 1
 fi
 
-# Disk selection
+# ── Disk selection ────────────────────────────────────────────────────────────
 ISO_DISK=$(findmnt -n -o SOURCE /iso 2>/dev/null | xargs -r lsblk -no PKNAME 2>/dev/null || true)
+mapfile -t DISKS < <(lsblk -dn -o NAME,TYPE -e 7 | awk '$2=="disk"{print $1}' | grep -v "^${ISO_DISK}$" || true)
+[[ ${#DISKS[@]} -eq 0 ]] && { echo "ERROR: No eligible disks found."; exit 1; }
 
-mapfile -t DISK_NAMES < <(
-  lsblk -dn -o NAME,TYPE -e 7 \
-    | awk '$2=="disk"{print $1}' \
-    | grep -v "^${ISO_DISK}$" \
-  || true
-)
-[[ ${#DISK_NAMES[@]} -eq 0 ]] && { echo "ERROR: No eligible disks found."; exit 1; }
-
-if [[ ${#DISK_NAMES[@]} -eq 1 ]]; then
-  DEV="/dev/${DISK_NAMES[0]}"
-  progress "Disk: $DEV  $(lsblk -dno SIZE "$DEV")  $(lsblk -dno MODEL "$DEV")"
+if [[ ${#DISKS[@]} -eq 1 ]]; then
+  DEV="/dev/${DISKS[0]}"
+  msg "Disk: $DEV  $(lsblk -dno SIZE "$DEV")  $(lsblk -dno MODEL "$DEV" 2>/dev/null || true)"
 else
   echo "Available disks:"
-  for i in "${!DISK_NAMES[@]}"; do
-    printf "  [%d] /dev/%s  %s  %s\n" "$i" \
-      "${DISK_NAMES[$i]}" \
-      "$(lsblk -dno SIZE  "/dev/${DISK_NAMES[$i]}")" \
-      "$(lsblk -dno MODEL "/dev/${DISK_NAMES[$i]}")"
+  for i in "${!DISKS[@]}"; do
+    printf "  [%d] /dev/%s  %s  %s\n" "$i" "${DISKS[$i]}" \
+      "$(lsblk -dno SIZE "/dev/${DISKS[$i]}")" "$(lsblk -dno MODEL "/dev/${DISKS[$i]}" 2>/dev/null || true)"
   done
-  read -rp "DANGER: This will WIPE the selected disk. Choose (number): " CHOICE
-  [[ -z "${DISK_NAMES[$CHOICE]+x}" ]] && { echo "ERROR: Invalid choice."; exit 1; }
-  DEV="/dev/${DISK_NAMES[$CHOICE]}"
+  read -rp "DANGER: This will WIPE the selected disk. Choose (number): " choice
+  [[ -z "${DISKS[$choice]+x}" ]] && { echo "ERROR: Invalid choice."; exit 1; }
+  DEV="/dev/${DISKS[$choice]}"
 fi
 
-check_target_disk_size
+# ── [2/6] Prepare disk ───────────────────────────────────────────────────────
+status "[2/6] Prepare disk"
+run_with_heartbeat "partitioning and formatting $DEV" format_and_mount 2>&1 | filter_output
+findmnt /mnt >/dev/null      || { echo "ERROR: /mnt is not mounted after partitioning."; exit 1; }
+findmnt /mnt/boot >/dev/null || { echo "ERROR: /mnt/boot (ESP) is not mounted."; exit 1; }
 
-# Partition, format, and mount without pulling disko into the live ISO.
-phase 2 "Prepare disk"
+enable_swap
 
-run_with_heartbeat "partitioning and formatting $DEV" \
-  format_and_mount_target \
-  2>&1 | filter_install_output
+# ── [3/6] Prepare workspace ──────────────────────────────────────────────────
+status "[3/6] Prepare workspace"
+sudo mkdir -p "$INSTALL_TMPDIR" "$USER_CACHE_DIR" "$ROOT_CACHE_DIR" "$ROOT_HOME_DIR"
+sudo chmod 1777 "$INSTALL_TMPDIR" "$USER_CACHE_DIR"
+sudo chmod 700 "$ROOT_CACHE_DIR" "$ROOT_HOME_DIR"
+export TMPDIR="$INSTALL_TMPDIR" XDG_CACHE_HOME="$USER_CACHE_DIR"
 
-if ! findmnt /mnt >/dev/null; then
-  echo "ERROR: Partitioning finished but /mnt is not mounted."
-  exit 1
-fi
+sudo rm -rf "$WORK_DIR"
+git clone -q "$REPO" "$WORK_DIR"
+cd "$WORK_DIR"
+msg "Target: $(target_summary)"
 
-if ! findmnt /mnt/boot >/dev/null; then
-  echo "ERROR: Partitioning finished but /mnt/boot (EFI system partition) is not mounted."
-  exit 1
-fi
+# ── [4/6] Resolve flake ──────────────────────────────────────────────────────
+status "[4/6] Resolve flake inputs"
+run_with_heartbeat "fetching locked inputs" \
+  root_nix flake metadata --no-write-lock-file "$WORK_DIR" 2>&1 | filter_output
+msg "Target: $(target_summary)"
 
-enable_install_swap
-prepare_install_workspace
+# ── [5/6] Install NixOS ──────────────────────────────────────────────────────
+status "[5/6] Install NixOS"
+msg "Nix build limits: max-jobs=$MAX_JOBS cores=$CORES"
 
-phase 5 "Install NixOS"
-progress "Nix build limits: max-jobs=$INSTALL_MAX_JOBS cores=$INSTALL_CORES"
-progress "Progress updates print every ${INSTALL_PROGRESS_INTERVAL}s while long steps are running."
-NIXOS_INSTALL_LOCK_ARGS=()
-if nixos-install --help 2>&1 | grep -q -- '--no-write-lock-file'; then
-  NIXOS_INSTALL_LOCK_ARGS+=(--no-write-lock-file)
-fi
-NIXOS_INSTALL_CHANNEL_ARGS=()
-if nixos-install --help 2>&1 | grep -q -- '--no-channel-copy'; then
-  NIXOS_INSTALL_CHANNEL_ARGS+=(--no-channel-copy)
-fi
+NIXOS_INSTALL_ARGS=()
+nixos-install --help 2>&1 | grep -q -- '--no-write-lock-file' && NIXOS_INSTALL_ARGS+=(--no-write-lock-file)
+nixos-install --help 2>&1 | grep -q -- '--no-channel-copy'    && NIXOS_INSTALL_ARGS+=(--no-channel-copy)
 
 run_with_heartbeat "installing NixOS $HOST" \
-  root_env nixos-install \
-    "${NIXOS_INSTALL_LOCK_ARGS[@]}" \
-    "${NIXOS_INSTALL_CHANNEL_ARGS[@]}" \
+  sudo env HOME="$ROOT_HOME_DIR" TMPDIR="$INSTALL_TMPDIR" XDG_CACHE_HOME="$ROOT_CACHE_DIR" \
+  nixos-install \
+    "${NIXOS_INSTALL_ARGS[@]}" \
     --root /mnt \
     --flake "$WORK_DIR#$HOST" \
     --no-root-passwd \
-    --option substituters         "$INSTALL_SUBSTITUTERS" \
-    --option trusted-public-keys  "$INSTALL_TRUSTED_KEYS" \
-    --option max-jobs             "$INSTALL_MAX_JOBS" \
-    --option cores                "$INSTALL_CORES" \
-    --option fallback             false \
-  2>&1 | filter_install_output
+    --option substituters        "$SUBSTITUTERS" \
+    --option trusted-public-keys "$TRUSTED_KEYS" \
+    --option max-jobs            "$MAX_JOBS" \
+    --option cores               "$CORES" \
+    --option fallback            false \
+  2>&1 | filter_output
 
-phase 6 "Verify boot files"
+# ── [6/6] Verify boot files ──────────────────────────────────────────────────
+status "[6/6] Verify boot files"
+
 if [[ ! -s /mnt/boot/EFI/BOOT/BOOTX64.EFI ]]; then
   EFI_LOADER="$(find_efi_loader || true)"
 
   if [[ -z "$EFI_LOADER" ]] && command -v bootctl >/dev/null 2>&1; then
-    sudo bootctl --esp-path=/mnt/boot install || true
+    sudo bootctl --esp-path=/mnt/boot install 2>/dev/null || true
     EFI_LOADER="$(find_efi_loader || true)"
   fi
 
   if [[ -z "$EFI_LOADER" ]]; then
-    progress "Fetching systemd-boot EFI loader"
-    EFI_LOADER="$(build_systemd_loader || true)"
-  fi
-
-  if [[ -z "$EFI_LOADER" ]]; then
-    echo "ERROR: No EFI loader found to install as fallback /EFI/BOOT/BOOTX64.EFI."
+    echo "ERROR: No EFI loader found. Boot may fail."
+    echo "Files in /mnt/boot/EFI:"
     find /mnt/boot/EFI -maxdepth 3 -type f 2>/dev/null || true
-    find /mnt/nix/store -path '*/lib/systemd/boot/efi/*.efi' -type f 2>/dev/null | head -n 20 || true
     exit 1
   fi
 
-  sudo mkdir -p /mnt/boot/EFI/BOOT
-  sudo mkdir -p /mnt/boot/EFI/systemd
+  sudo mkdir -p /mnt/boot/EFI/{BOOT,systemd}
   sudo cp "$EFI_LOADER" /mnt/boot/EFI/systemd/systemd-bootx64.efi
   sudo cp "$EFI_LOADER" /mnt/boot/EFI/BOOT/BOOTX64.EFI
 fi
@@ -599,24 +370,20 @@ BOOT_ENTRY="$(sudo find /mnt/boot/loader/entries -maxdepth 1 -type f -name '*.co
 UKI_ENTRY="$(sudo find /mnt/boot/EFI/Linux -maxdepth 1 -type f -name '*.efi' -print -quit 2>/dev/null || true)"
 
 if [[ -z "$BOOT_ENTRY" && -z "$UKI_ENTRY" ]]; then
-  echo "WARNING: No systemd-boot entry files were visible in /mnt/boot."
-  echo "nixos-install already finished, so this warning will not stop the install."
-  echo "Boot files currently on the EFI partition:"
+  echo "WARNING: No boot entries found in /mnt/boot. Boot may fail."
+  echo "Files on the EFI partition:"
   sudo find /mnt/boot -maxdepth 5 -type f 2>/dev/null || true
 fi
 
-if command -v efibootmgr >/dev/null 2>&1; then
-  progress "Firmware boot entries:"
-  sudo efibootmgr -v || true
-fi
+command -v efibootmgr >/dev/null 2>&1 && { msg "Firmware boot entries:"; sudo efibootmgr -v || true; }
 
-# Persist config on installed system
+# ── Persist config ────────────────────────────────────────────────────────────
 DEST="/mnt/home/SunSD/nixconf"
 sudo mkdir -p "$(dirname "$DEST")"
 sudo cp -rT "$WORK_DIR" "$DEST"
 sudo chown -R 1000:1000 "$DEST"
-cd "$DEST" && sudo -u "#1000" git remote set-url origin https://github.com/SunSinD/NixOS-Config.git 2>/dev/null || true
+cd "$DEST" && sudo -u "#1000" git remote set-url origin "$REPO" 2>/dev/null || true
 
 status "Done"
-progress "Rebooting..."
+msg "Rebooting..."
 sudo reboot
