@@ -18,6 +18,13 @@ output "ASUS VG279QM" {
     mode "1920x1080@280.000"
 }
 
+// VMware / generic virtual display: fits standard VM windows.
+// If your VM output has a different name, this catch-all handles it.
+output "Virtual-1" {
+    mode "1920x1080@60.000"
+    variable-refresh-rate off
+}
+
 cursor {
     xcursor-theme "Bibata-Modern-Classic"
     xcursor-size 24
