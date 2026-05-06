@@ -9,7 +9,7 @@
       exec >> "$log_dir/session.log" 2>&1
 
       # Home Manager user packages (sunsd-focus-or-spawn, etc.) — niri spawn does not use a login shell.
-      export PATH="/etc/profiles/per-user/SunSD/bin''${PATH:+:}''$PATH"
+      export PATH=/etc/profiles/per-user/SunSD/bin:''$PATH
 
       export XDG_CURRENT_DESKTOP=niri
       export XDG_SESSION_DESKTOP=niri
