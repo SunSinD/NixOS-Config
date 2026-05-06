@@ -6,7 +6,7 @@
           sunsd-terminal = pkgs.writeShellApplication {
             name = "sunsd-terminal";
             runtimeInputs = with pkgs; [ coreutils procps ghostty foot ];
-            text = ''
+            text = builtins.replaceStrings [ "\r" ] [ "" ] ''
               set -euo pipefail
 
               # Prefer Ghostty, but in some VMs it exits instantly (renderer/GPU).
