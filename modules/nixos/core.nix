@@ -197,10 +197,9 @@
           unitConfig.DefaultDependencies = false;
           serviceConfig.Type = "oneshot";
           script = ''
-            if ! ${pkgs.util-linux}/bin/swapon --show=NAME --noheadings | ${pkgs.gnugrep}/bin/grep -qx /swapfile; then
-              rm -f /swapfile
-              ${pkgs.btrfs-progs}/bin/btrfs filesystem mkswapfile --size 8G /swapfile
-            fi
+            if ${pkgs.util-linux}/bin/swapon --show=NAME --noheadings | ${pkgs.gnugrep}/bin/grep -qx /swapfile; then exit 0; fi
+            rm -f /swapfile
+            ${pkgs.btrfs-progs}/bin/btrfs filesystem mkswapfile --size 8G /swapfile
           '';
         };
 
