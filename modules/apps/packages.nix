@@ -23,30 +23,33 @@
               exec foot "$@"
             '';
           };
-          sunsd-focus-or-spawn = pkgs.writeShellApplication {
-            name = "sunsd-focus-or-spawn";
-            runtimeInputs = with pkgs; [ jq ];
-            # In Nix indented strings, every literal `$` for the shell/jq must be written as `''$`
-            # or Nix mangles the script (broken quotes / missing `fi`).
-            text = ''
-              set -euo pipefail
-              niri_bin=/run/current-system/sw/bin/niri
-              if [[ ! -x ''$niri_bin ]]; then
-                niri_bin=''$(command -v niri 2>/dev/null || true)
-              fi
-              [[ -n ''$niri_bin ]] || { echo "niri not found" >&2; exit 1; }
-              pattern=''${1?}
-              shift
-              id=''$( "''$niri_bin" msg --json windows | ${pkgs.jq}/bin/jq -r --arg p "''$pattern" '
+          sunsd-focus-or-spawn =
+            let
+              # jq program in the store — avoids raw `'` inside the Nix `''` shell string (that breaks parsing).
+              niriFocusJq = pkgs.writeText "sunsd-niri-focus.jq" ''
                 [.Ok.Windows[]? | select(.app_id != null and (.app_id | test(''$p)))] | sort_by(.id) | .[-1].id // empty
-              ')
-              if [[ -n ''$id && ''$id != "null" ]]; then
-                exec "''$niri_bin" msg action focus-window "''$id"
-              else
-                exec "''$@"
-              fi
-            '';
-          };
+              '';
+            in
+            pkgs.writeShellApplication {
+              name = "sunsd-focus-or-spawn";
+              runtimeInputs = with pkgs; [ jq ];
+              text = ''
+                set -euo pipefail
+                niri_bin=/run/current-system/sw/bin/niri
+                if [[ ! -x ''$niri_bin ]]; then
+                  niri_bin=''$(command -v niri 2>/dev/null || true)
+                fi
+                [[ -n ''$niri_bin ]] || { echo "niri not found" >&2; exit 1; }
+                pattern=''${1?}
+                shift
+                id=''$( "''$niri_bin" msg --json windows | ${pkgs.jq}/bin/jq -r --arg p "''$pattern" -f ${niriFocusJq})
+                if [[ -n ''$id && ''$id != "null" ]]; then
+                  exec "''$niri_bin" msg action focus-window "''$id"
+                else
+                  exec "''$@"
+                fi
+              '';
+            };
         in
         (with pkgs; [
         # ── CLI tools ──────────────────────────────────────────────────────────
