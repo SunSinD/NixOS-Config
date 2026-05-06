@@ -1,6 +1,16 @@
 { inputs, ... }: {
   flake.nixosModules.core = { config, pkgs, lib, ... }:
   let
+    # Built without Nix '' multiline strings so CRLF / '' rules cannot break systemd’s generated wrapper.
+    btrfsSwapInit = pkgs.writeShellScript "create-swapfile" (
+      lib.concatStringsSep "\n" [
+        "set -euo pipefail"
+        "if ${pkgs.util-linux}/bin/swapon --show=NAME --noheadings | ${pkgs.gnugrep}/bin/grep -qx /swapfile; then exit 0; fi"
+        "rm -f /swapfile"
+        "${pkgs.btrfs-progs}/bin/btrfs filesystem mkswapfile --size 8G /swapfile"
+      ]
+    );
+
     sunsdNiriSession = pkgs.writeShellScriptBin "sunsd-niri-session" ''
       set -eu
 
@@ -195,12 +205,10 @@
           wantedBy = [ "swapfile.swap" ];
           before = [ "swapfile.swap" ];
           unitConfig.DefaultDependencies = false;
-          serviceConfig.Type = "oneshot";
-          script = ''
-            if ${pkgs.util-linux}/bin/swapon --show=NAME --noheadings | ${pkgs.gnugrep}/bin/grep -qx /swapfile; then exit 0; fi
-            rm -f /swapfile
-            ${pkgs.btrfs-progs}/bin/btrfs filesystem mkswapfile --size 8G /swapfile
-          '';
+          serviceConfig = {
+            Type = "oneshot";
+            ExecStart = "${btrfsSwapInit}/bin/create-swapfile";
+          };
         };
 
         NetworkManager-wait-online.enable = false;
