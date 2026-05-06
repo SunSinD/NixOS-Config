@@ -53,9 +53,17 @@
           services.qemuGuest.enable      = true;
           virtualisation.vmware.guest.enable = true;
 
+          # VMware Wayland compatibility
+          # VMware's vmwgfx needs 3D acceleration enabled in VMware settings.
+          # These variables ensure proper rendering and cursor behavior.
+          environment.sessionVariables = {
+            WLR_NO_HARDWARE_CURSORS = "1";
+          };
+
           environment.systemPackages = [
             pkgs.spice-vdagent
             pkgs.open-vm-tools
+            pkgs.mesa-demos
           ];
         })
       ] ++ builtins.attrValues inputs.self.nixosModules;
