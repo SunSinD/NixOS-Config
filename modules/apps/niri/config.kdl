@@ -134,7 +134,7 @@ window-rule {
 binds {
     Mod+Return { spawn "sunsd-focus-or-spawn" "(?i)foot|ghostty|mitchellh" "sunsd-terminal"; }
     Mod+B      { spawn "sunsd-focus-or-spawn" "(?i)vivaldi" "vivaldi" "--password-store=basic"; }
-    Mod+D      { spawn "sunsd-focus-or-spawn" "(?i)equibop|discord|electron" "equibop"; }
+    Mod+D      { spawn "sunsd-focus-or-spawn" "(?i)equibop|discord" "equibop"; }
     Mod+Z      { spawn "sunsd-focus-or-spawn" "(?i)zed" "zeditor"; }
     Mod+E      { spawn "thunar" "/home/SunSD/Files"; }
 
