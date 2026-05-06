@@ -64,6 +64,7 @@
         pavucontrol
         xwayland-satellite
         foot
+        moonlight-qt
 
         # ── Screenshot / OCR / Pin ─────────────────────────────────────────────
         grim

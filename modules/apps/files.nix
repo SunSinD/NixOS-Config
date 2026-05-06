@@ -212,6 +212,18 @@
           Type=Application
           Categories=AudioVideo;Recorder;
         '';
+
+        ".local/share/applications/moonlight-qt.desktop".text = ''
+          [Desktop Entry]
+          Name=Moonlight
+          GenericName=Game Streaming Client
+          Comment=Play your PC games on almost any device
+          Exec=moonlight
+          Icon=${pkgs.moonlight-qt}/share/icons/hicolor/256x256/apps/moonlight.png
+          Terminal=false
+          Type=Application
+          Categories=Game;Network;
+        '';
       };
     };
   };
