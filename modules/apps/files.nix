@@ -213,16 +213,24 @@
           Categories=AudioVideo;Recorder;
         '';
 
-        ".local/share/applications/moonlight-qt.desktop".text = ''
+        # Hide helper desktop entries we don't want in the launcher grid.
+        ".local/share/applications/foot.desktop".text = ''
           [Desktop Entry]
-          Name=Moonlight
-          GenericName=Game Streaming Client
-          Comment=Play your PC games on almost any device
-          Exec=moonlight
-          Icon=${pkgs.moonlight-qt}/share/icons/hicolor/256x256/apps/moonlight.png
-          Terminal=false
+          Name=Foot
           Type=Application
-          Categories=Game;Network;
+          NoDisplay=true
+        '';
+        ".local/share/applications/footclient.desktop".text = ''
+          [Desktop Entry]
+          Name=Foot Client
+          Type=Application
+          NoDisplay=true
+        '';
+        ".local/share/applications/footserver.desktop".text = ''
+          [Desktop Entry]
+          Name=Foot Server
+          Type=Application
+          NoDisplay=true
         '';
       };
     };
