@@ -127,7 +127,7 @@ window-rule {
 }
 
 binds {
-    Mod+Return { spawn "ghostty"; }
+    Mod+Return { spawn "sunsd-terminal"; }
     Mod+B      { spawn "vivaldi" "--password-store=basic"; }
     Mod+D      { spawn "equibop"; }
     Mod+Z      { spawn "zeditor"; }

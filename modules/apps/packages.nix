@@ -1,7 +1,30 @@
 { ... }: {
   flake.nixosModules.packages = { pkgs, ... }: {
     home-manager.users.SunSD = { pkgs, ... }: {
-      home.packages = with pkgs; [
+      home.packages =
+        let
+          sunsd-terminal = pkgs.writeShellApplication {
+            name = "sunsd-terminal";
+            runtimeInputs = with pkgs; [ coreutils procps ghostty foot ];
+            text = ''
+              set -euo pipefail
+
+              # Prefer Ghostty, but in some VMs it exits instantly (renderer/GPU).
+              if command -v ghostty >/dev/null 2>&1; then
+                ghostty "$@" &
+                pid=$!
+                sleep 0.35
+                if kill -0 "$pid" >/dev/null 2>&1; then
+                  wait "$pid"
+                  exit $?
+                fi
+              fi
+
+              exec foot "$@"
+            '';
+          };
+        in
+        (with pkgs; [
         # ── CLI tools ──────────────────────────────────────────────────────────
         neovim
         curl
@@ -40,6 +63,7 @@
         codex
         pavucontrol
         xwayland-satellite
+        foot
 
         # ── Screenshot / OCR / Pin ─────────────────────────────────────────────
         grim
@@ -50,7 +74,7 @@
         libnotify
         fuzzel
         swaybg
-      ];
+        ]) ++ [ sunsd-terminal ];
 
       gtk = {
         enable = true;
