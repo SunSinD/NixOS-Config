@@ -306,7 +306,7 @@
       "zed.desktop"
     ],
     "sortByMostUsed": false,
-    "terminalCommand": "alacritty -e",
+    "terminalCommand": "sunsd-terminal -e",
     "customLaunchPrefixEnabled": false,
     "customLaunchPrefix": "",
     "viewMode": "grid",
