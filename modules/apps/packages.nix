@@ -1,5 +1,5 @@
 { ... }: {
-  flake.nixosModules.packages = { pkgs, ... }: {
+  flake.nixosModules.packages = { pkgs, lib, ... }: {
     home-manager.users.SunSD = { pkgs, ... }: {
       home.packages =
         let
@@ -25,30 +25,15 @@
           };
           sunsd-focus-or-spawn =
             let
-              # jq program in the store — avoids raw `'` inside the Nix `''` shell string (that breaks parsing).
-              niriFocusJq = pkgs.writeText "sunsd-niri-focus.jq" ''
-                [.Ok.Windows[]? | select(.app_id != null and (.app_id | test(''$p)))] | sort_by(.id) | .[-1].id // empty
-              '';
+              jqFilter = "${./niri-focus-windows.jq}";
+              jqExe = lib.getExe pkgs.jq;
+              scriptBody = builtins.replaceStrings [ "@JQ@" "@FILTER@" ] [ jqExe jqFilter ]
+                (builtins.readFile ./sunsd-focus-or-spawn.sh);
             in
             pkgs.writeShellApplication {
               name = "sunsd-focus-or-spawn";
               runtimeInputs = with pkgs; [ jq ];
-              text = ''
-                set -euo pipefail
-                niri_bin=/run/current-system/sw/bin/niri
-                if [[ ! -x ''$niri_bin ]]; then
-                  niri_bin=''$(command -v niri 2>/dev/null || true)
-                fi
-                [[ -n ''$niri_bin ]] || { echo "niri not found" >&2; exit 1; }
-                pattern=''${1?}
-                shift
-                id=''$( "''$niri_bin" msg --json windows | ${pkgs.jq}/bin/jq -r --arg p "''$pattern" -f ${niriFocusJq})
-                if [[ -n ''$id && ''$id != "null" ]]; then
-                  exec "''$niri_bin" msg action focus-window "''$id"
-                else
-                  exec "''$@"
-                fi
-              '';
+              text = scriptBody;
             };
         in
         (with pkgs; [
