@@ -1,7 +1,5 @@
 # NixOS Config
 
-Personal NixOS flake — Niri compositor, Catppuccin theming, btrfs, systemd-boot.
-
 ## Hosts
 
 | Host | Description |
@@ -12,7 +10,7 @@ Personal NixOS flake — Niri compositor, Catppuccin theming, btrfs, systemd-boo
 
 ## Install
 
-Connect to Wi-Fi (skip if wired):
+Connect to Wi-Fi:
 
 ```bash
 nmtui
@@ -25,9 +23,3 @@ bash <(curl -fsSL https://raw.githubusercontent.com/SunSinD/NixOS-Config/main/in
 ```
 
 VMs are auto-detected. On bare metal, the installer will prompt you to pick a host.
-
-You can also pass the host directly:
-
-```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/SunSinD/NixOS-Config/main/install.sh) generic
-```
