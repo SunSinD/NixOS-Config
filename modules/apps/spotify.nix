@@ -20,13 +20,17 @@
 
         xdg.enable = true;
 
+        # Provide a stable icon that doesn't depend on Flatpak export paths.
+        home.file.".local/share/icons/hicolor/scalable/apps/spotx.svg".source =
+          ../../../assets/icons/spotx.svg;
+
         home.file.".local/share/applications/spotx.desktop".text = ''
           [Desktop Entry]
           Name=Spotify
           GenericName=Music Player
           Comment=Spotify desktop client patched by SpotX-Bash
           Exec=flatpak run com.spotify.Client %U
-          Icon=/home/SunSD/.local/share/flatpak/exports/share/icons/hicolor/256x256/apps/com.spotify.Client.png
+          Icon=spotx
           Terminal=false
           Type=Application
           Categories=Audio;Music;Player;AudioVideo;
