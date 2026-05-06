@@ -25,10 +25,11 @@
           };
           sunsd-focus-or-spawn =
             let
-              jqFilter = "${./niri-focus-windows.jq}";
+              jqFilter = pkgs.writeText "niri-focus-windows.jq"
+                (builtins.replaceStrings [ "\r" ] [ "" ] (builtins.readFile ./niri-focus-windows.jq));
               jqExe = lib.getExe pkgs.jq;
               scriptBody = builtins.replaceStrings [ "@JQ@" "@FILTER@" ] [ jqExe jqFilter ]
-                (builtins.readFile ./sunsd-focus-or-spawn.sh);
+                (builtins.replaceStrings [ "\r" ] [ "" ] (builtins.readFile ./sunsd-focus-or-spawn.sh));
             in
             pkgs.writeShellApplication {
               name = "sunsd-focus-or-spawn";
