@@ -226,7 +226,7 @@
           Type=Application
           NoDisplay=true
         '';
-        ".local/share/applications/footserver.desktop".text = ''
+        ".local/share/applications/foot-server.desktop".text = ''
           [Desktop Entry]
           Name=Foot Server
           Type=Application

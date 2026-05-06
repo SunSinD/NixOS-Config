@@ -114,7 +114,7 @@
     "middleClickAction": "none",
     "middleClickFollowMouse": false,
     "middleClickCommand": "",
-    "rightClickAction": "none",
+    "rightClickAction": "controlCenter",
     "rightClickFollowMouse": true,
     "rightClickCommand": "",
     "screenOverrides": []
@@ -288,7 +288,7 @@
     "useWallpaperColors": false
   },
   "appLauncher": {
-    "enableClipboardHistory": false,
+    "enableClipboardHistory": true,
     "autoPasteClipboard": false,
     "enableClipPreview": true,
     "clipboardWrapText": true,
@@ -302,9 +302,7 @@
       "spotx.desktop",
       "moonlight.desktop",
       "vivaldi-stable.desktop",
-      "dev.zed.Zed.desktop",
-      "zeditor.desktop",
-      "zed.desktop"
+      "dev.zed.Zed.desktop"
     ],
     "sortByMostUsed": false,
     "terminalCommand": "sunsd-terminal -e",
@@ -314,7 +312,7 @@
     "showCategories": false,
     "iconMode": "tabler",
     "showIconBackground": false,
-    "enableSettingsSearch": false,
+    "enableSettingsSearch": true,
     "enableWindowsSearch": false,
     "enableSessionSearch": false,
     "ignoreMouseInput": false,

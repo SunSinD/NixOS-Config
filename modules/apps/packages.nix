@@ -23,11 +23,37 @@
               exec foot "$@"
             '';
           };
+          sunsd-focus-or-spawn = pkgs.writeShellApplication {
+            name = "sunsd-focus-or-spawn";
+            runtimeInputs = with pkgs; [ jq ];
+            text = ''
+              set -euo pipefail
+              niri_bin="/run/current-system/sw/bin/niri"
+              if [[ ! -x "$niri_bin" ]]; then
+                niri_bin="$(command -v niri || true)"
+              fi
+              [[ -n "$niri_bin" ]] || { echo "niri not found" >&2; exit 1; }
+              pattern="$1"
+              shift
+              id="$("$niri_bin" msg --json windows | ${pkgs.jq}/bin/jq -r --arg p "$pattern" '
+                [.Ok.Windows[]? |
+                  select(.app_id != null and (.app_id | test($p)))] |
+                sort_by(.id) | .[-1].id // empty
+              ')"
+              if [[ -n "$id" && "$id" != "null" ]]; then
+                exec "$niri_bin" msg action focus-window "$id"
+              else
+                exec "$@"
+              fi
+            '';
+          };
         in
         (with pkgs; [
         # ── CLI tools ──────────────────────────────────────────────────────────
         neovim
         curl
+        jq
+        cliphist
         lstr
         bat
         fastfetch
@@ -75,7 +101,7 @@
         libnotify
         fuzzel
         swaybg
-        ]) ++ [ sunsd-terminal ];
+        ]) ++ [ sunsd-terminal sunsd-focus-or-spawn ];
 
       gtk = {
         enable = true;

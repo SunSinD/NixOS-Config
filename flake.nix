@@ -50,5 +50,12 @@
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } {
     imports = [ (inputs.import-tree ./modules) ];
     systems = [ "x86_64-linux" ];
+
+    perSystem = { system, ... }: {
+      _module.args.pkgs = import inputs.nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
+    };
   };
 }
