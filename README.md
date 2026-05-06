@@ -4,9 +4,9 @@
 
 | Host | Description |
 |------|-------------|
-| `main-pc` | Desktop — AMD/Nvidia, CachyOS kernel, Secure Boot ready |
-| `vm` | VM — QEMU/SPICE/VMware guest tools |
-| `generic` | Portable — works on any UEFI laptop/desktop |
+| `main-pc` | Desktop - AMD/Nvidia, CachyOS kernel, Secure Boot ready |
+| `vm` | VM - QEMU/SPICE/VMware guest tools |
+| `generic` | Portable - works on any UEFI laptop/desktop |
 
 ## Install
 
@@ -22,4 +22,4 @@ Run the installer:
 bash <(curl -fsSL https://raw.githubusercontent.com/SunSinD/NixOS-Config/main/install.sh)
 ```
 
-VMs are auto-detected. On bare metal, the installer will prompt you to pick a host.
+VMs are auto-detected.
