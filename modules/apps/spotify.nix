@@ -30,7 +30,7 @@
           GenericName=Music Player
           Comment=Spotify desktop client patched by SpotX-Bash
           Exec=flatpak run com.spotify.Client %U
-          Icon=spotx
+          Icon=/home/SunSD/.local/share/icons/hicolor/scalable/apps/spotx.svg
           Terminal=false
           Type=Application
           Categories=Audio;Music;Player;AudioVideo;
