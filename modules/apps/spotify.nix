@@ -26,7 +26,7 @@
           GenericName=Music Player
           Comment=Spotify desktop client patched by SpotX-Bash
           Exec=flatpak run com.spotify.Client %U
-          Icon=com.spotify.Client
+          Icon=spotify
           Terminal=false
           Type=Application
           Categories=Audio;Music;Player;AudioVideo;

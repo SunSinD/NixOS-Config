@@ -312,7 +312,7 @@
     "viewMode": "grid",
     "showCategories": false,
     "iconMode": "tabler",
-    "showIconBackground": true,
+    "showIconBackground": false,
     "enableSettingsSearch": false,
     "enableWindowsSearch": false,
     "enableSessionSearch": false,
