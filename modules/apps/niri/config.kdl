@@ -132,10 +132,10 @@ window-rule {
 }
 
 binds {
-    Mod+Return { spawn "sunsd-terminal"; }
-    Mod+B      { spawn "sunsd-focus-or-spawn" "vivaldi" "vivaldi" "--password-store=basic"; }
-    Mod+D      { spawn "sunsd-focus-or-spawn" "equibop|discord|Discord" "equibop"; }
-    Mod+Z      { spawn "sunsd-focus-or-spawn" "zed|Zed" "zeditor"; }
+    Mod+Return { spawn "sunsd-focus-or-spawn" "(?i)foot|ghostty|mitchellh" "sunsd-terminal"; }
+    Mod+B      { spawn "sunsd-focus-or-spawn" "(?i)vivaldi" "vivaldi" "--password-store=basic"; }
+    Mod+D      { spawn "sunsd-focus-or-spawn" "(?i)equibop|discord|electron" "equibop"; }
+    Mod+Z      { spawn "sunsd-focus-or-spawn" "(?i)zed" "zeditor"; }
     Mod+E      { spawn "thunar" "/home/SunSD/Files"; }
 
     Mod+P       { spawn "bash" "-c" "systemctl poweroff"; }
@@ -147,6 +147,7 @@ binds {
     Mod+Period { spawn "noctalia-shell" "ipc" "call" "launcher" "emoji"; }
     Mod+V      { spawn "noctalia-shell" "ipc" "call" "launcher" "clipboard"; }
     Mod+O     { spawn "noctalia-shell" "ipc" "call" "bar" "toggle"; }
+    Mod+C     { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
 
     XF86AudioRaiseVolume { spawn "noctalia-shell" "ipc" "call" "volume" "increase"; }
     XF86AudioLowerVolume { spawn "noctalia-shell" "ipc" "call" "volume" "decrease"; }

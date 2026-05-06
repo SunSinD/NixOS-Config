@@ -114,7 +114,7 @@
     "middleClickAction": "none",
     "middleClickFollowMouse": false,
     "middleClickCommand": "",
-    "rightClickAction": "controlCenter",
+    "rightClickAction": "none",
     "rightClickFollowMouse": true,
     "rightClickCommand": "",
     "screenOverrides": []
@@ -199,8 +199,8 @@
   },
   "location": {
     "name": "Laval",
-    "weatherEnabled": false,
-    "weatherShowEffects": false,
+    "weatherEnabled": true,
+    "weatherShowEffects": true,
     "weatherTaliaMascotAlways": false,
     "useFahrenheit": false,
     "use12hourFormat": true,
@@ -329,7 +329,7 @@
     },
     "cards": [
       {
-        "enabled": false,
+        "enabled": true,
         "id": "profile-card"
       },
       {
@@ -345,7 +345,7 @@
         "id": "brightness-card"
       },
       {
-        "enabled": false,
+        "enabled": true,
         "id": "weather-card"
       },
       {
