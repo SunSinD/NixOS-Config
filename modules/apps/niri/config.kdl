@@ -208,6 +208,9 @@ binds {
 
     Mod+Shift+WheelScrollUp  { focus-column-left; }
     Mod+Shift+WheelScrollDown { focus-column-right; }
+
+    Mod+WheelScrollUp   cooldown-ms=150 { focus-workspace-up; }
+    Mod+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
 }
 
 spawn-at-startup "/run/current-system/sw/bin/swaybg" "-m" "fill" "-i" "/home/SunSD/Pictures/Wallpapers/clouds.jpg"
