@@ -14,14 +14,19 @@ input {
 }
 
 // To find your exact monitor name, run: niri msg outputs
+// MARK_ASUS_OUTPUT_BEGIN
 output "ASUS VG279QM" {
     mode "1920x1080@280.000"
 }
+// MARK_ASUS_OUTPUT_END
 
-// VMware virtual display: force 1x scale to prevent oversized desktop.
+// VMware: vmwgfx connector name varies by driver/VM settings; forcing the wrong name blanks the screen.
+// Stripped entirely for hostname "vm" in niri.nix — niri then uses defaults for whatever output exists.
+// MARK_VM_VIRTUAL_OUTPUT_BEGIN
 output "Virtual-1" {
     scale 1.0
 }
+// MARK_VM_VIRTUAL_OUTPUT_END
 
 cursor {
     xcursor-theme "Bibata-Modern-Classic"
