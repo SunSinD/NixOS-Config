@@ -1,7 +1,7 @@
 { inputs, ... }: {
   flake.nixosModules.core = { config, pkgs, lib, ... }:
   let
-    # Built without Nix '' multiline strings so CRLF / '' rules cannot break systemd’s generated wrapper.
+    # Built without Nix '' multiline strings so CRLF / '' rules cannot break systemd's generated wrapper.
     btrfsSwapInit = pkgs.writeShellScript "create-swapfile" (
       lib.concatStringsSep "\n" [
         "set -euo pipefail"
@@ -18,8 +18,16 @@
       mkdir -p "$log_dir"
       exec >> "$log_dir/session.log" 2>&1
 
-      # Home Manager user packages (sunsd-focus-or-spawn, etc.) — niri spawn does not use a login shell.
-      export PATH=/etc/profiles/per-user/SunSD/bin:''$PATH
+      # NixOS: environment.variables (e.g. NOCTALIA_SETTINGS_FILE) live here; greetd is not a login shell.
+      if [ -r /etc/set-environment ]; then
+        set -a
+        # shellcheck disable=SC1091
+        . /etc/set-environment
+        set +a
+      fi
+
+      # Must include /run/current-system/sw/bin so niri spawn + sunsd-focus-or-spawn always resolve.
+      export PATH="/run/wrappers/bin:/run/current-system/sw/bin:/etc/profiles/per-user/SunSD/bin''${HOME+:$HOME/.nix-profile/bin}:$PATH"
 
       export XDG_CURRENT_DESKTOP=niri
       export XDG_SESSION_DESKTOP=niri
@@ -106,6 +114,18 @@
 
     fonts.packages = with pkgs; [ inter jetbrains-mono noto-fonts-color-emoji ];
 
+    fonts.fontconfig.localConf = ''
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+      <fontconfig>
+        <match target="pattern">
+          <test name="family" qual="any" compare="eq"><string>Inter Display Black</string></test>
+          <edit name="family" mode="assign" binding="same"><string>Inter Display</string></edit>
+          <edit name="weight" mode="assign"><int>210</int></edit>
+        </match>
+      </fontconfig>
+    '';
+
     home-manager = {
       useGlobalPkgs   = true;
       useUserPackages = true;
@@ -154,7 +174,6 @@
 
     boot.loader.systemd-boot.configurationLimit = lib.mkForce 1;
     boot.loader.timeout = lib.mkForce 0;
-    # Verbose boot (greyxp1-style: no "quiet"); see kernel/docs for loglevel.
     boot.consoleLogLevel = 7;
     boot.kernelParams = [ "loglevel=4" "udev.log_level=info" ];
 
@@ -191,8 +210,9 @@
         keyboards.default = {
           ids = [ "*" ];
           settings.main = {
-            leftmeta = "overload(meta, f13)";
-            rightmeta = "overload(meta, f13)";
+            # overload(meta, f13) breaks Mod+Enter etc. (niri sees F13+key).
+            leftmeta = "meta";
+            rightmeta = "meta";
           };
         };
       };
@@ -207,7 +227,7 @@
           unitConfig.DefaultDependencies = false;
           serviceConfig = {
             Type = "oneshot";
-            ExecStart = "${btrfsSwapInit}/bin/create-swapfile";
+            ExecStart = "${btrfsSwapInit}";
           };
         };
 
