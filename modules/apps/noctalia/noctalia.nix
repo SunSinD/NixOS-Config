@@ -2,12 +2,13 @@
   flake.nixosModules.noctalia = { pkgs, lib, ... }:
   let
     wallpaperPath = ../../../assets/wallpapers/clouds.jpg;
-    wallpaperPathString = "${wallpaperPath}";
+    # JSON parsing rejects strings with Nix store-path context; discard it.
+    wallpaperPathString = builtins.unsafeDiscardStringContext "${wallpaperPath}";
     settingsJson =
       builtins.replaceStrings
         [ "/home/SunSD/Pictures/Wallpapers/clouds.jpg" ]
         [ wallpaperPathString ]
-        (builtins.readFile ./noctalia.json);
+        (builtins.unsafeDiscardStringContext (builtins.readFile ./noctalia.json));
   in {
     home-manager.users.SunSD = { ... }: {
       imports = [ inputs.noctalia.homeModules.default ];
