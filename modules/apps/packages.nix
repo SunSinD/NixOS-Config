@@ -87,9 +87,11 @@
 
         noctalia_bin="$(command -v noctalia-shell 2>/dev/null || true)"
         qs_bin="$(command -v qs 2>/dev/null || true)"
+        quickshell_bin="$(command -v quickshell 2>/dev/null || true)"
         swaybg_bin="$(command -v swaybg 2>/dev/null || true)"
         echo "noctalia-shell=$(printf %s "$noctalia_bin")" >>"$log" 2>&1 || true
         echo "qs=$(printf %s "$qs_bin")" >>"$log" 2>&1 || true
+        echo "quickshell=$(printf %s "$quickshell_bin")" >>"$log" 2>&1 || true
         echo "swaybg=$(printf %s "$swaybg_bin")" >>"$log" 2>&1 || true
 
         ensure_wallpaper() {
@@ -127,6 +129,8 @@
             # Noctalia IPC is handled by quickshell (`qs`) on newer releases.
             if [[ -n "$qs_bin" ]]; then
               "$qs_bin" ipc -c noctalia-shell --any-display call "$1" "$2" "''${@:3}" >>"$log" 2>&1 || true
+            elif [[ -n "$quickshell_bin" ]]; then
+              "$quickshell_bin" ipc -c noctalia-shell --any-display call "$1" "$2" "''${@:3}" >>"$log" 2>&1 || true
             else
               # Fallback for older builds.
               "$noctalia_bin" ipc call "$1" "$2" "''${@:3}" >>"$log" 2>&1 || true
@@ -140,6 +144,24 @@
         esac
 
         echo "done" >>"$log" 2>&1 || true
+      ''
+    );
+
+    sunsd-hotkey = pkgs.writeShellScriptBin "sunsd-hotkey" (
+      builtins.replaceStrings [ "\r" ] [ "" ] ''
+        set -euo pipefail
+
+        export PATH="/run/wrappers/bin:/run/current-system/sw/bin:/etc/profiles/per-user/SunSD/bin''${HOME+:$HOME/.nix-profile/bin}:$PATH"
+
+        name="''${1:-hotkey}"
+        shift || true
+
+        # Prove the bind fired.
+        if command -v notify-send >/dev/null 2>&1; then
+          notify-send -t 900 "Hotkey" "$name"
+        fi
+
+        exec sunsd-session-ensure "''${@}"
       ''
     );
 
@@ -163,6 +185,7 @@
         sunsd-noctalia-launcher-toggle
         sunsd-noctalia-ipc
         sunsd-session-ensure
+        sunsd-hotkey
         sunsd-focus-or-spawn
       ]
       ++ (with pkgs; [

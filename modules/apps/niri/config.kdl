@@ -161,15 +161,15 @@ binds {
 
     Mod+P       { spawn "/run/current-system/sw/bin/bash" "-c" "systemctl poweroff"; }
     Mod+Shift+P { spawn "/run/current-system/sw/bin/bash" "-c" "systemctl reboot"; }
-    Mod+I       { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "lockScreen" "lock"; }
+    Mod+I       { spawn "/run/current-system/sw/bin/sunsd-hotkey" "Super+I" "ipc" "lockScreen" "lock"; }
     F13       { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "launcher" "toggle"; }
     Mod+F13   { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "launcher" "toggle"; }
-    Mod+Space { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "launcher" "toggle"; }
+    Mod+Space { spawn "/run/current-system/sw/bin/sunsd-hotkey" "Super+Space" "ipc" "launcher" "toggle"; }
     Alt+Space { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "launcher" "toggle"; }
-    Mod+Period { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "launcher" "emoji"; }
-    Mod+V      { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "launcher" "clipboard"; }
-    Mod+O     { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "bar" "toggle"; }
-    Mod+C     { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "controlCenter" "toggle"; }
+    Mod+Period { spawn "/run/current-system/sw/bin/sunsd-hotkey" "Super+." "ipc" "launcher" "emoji"; }
+    Mod+V      { spawn "/run/current-system/sw/bin/sunsd-hotkey" "Super+V" "ipc" "launcher" "clipboard"; }
+    Mod+O     { spawn "/run/current-system/sw/bin/sunsd-hotkey" "Super+O" "ipc" "bar" "toggle"; }
+    Mod+C     { spawn "/run/current-system/sw/bin/sunsd-hotkey" "Super+C" "ipc" "controlCenter" "toggle"; }
     Alt+C     { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "controlCenter" "toggle"; }
 
     XF86AudioRaiseVolume { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "volume" "increase"; }
