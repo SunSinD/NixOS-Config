@@ -17,11 +17,13 @@
       '';
     };
 
-    sunsd-noctalia-launcher-toggle = pkgs.writeShellApplication {
-      name = "sunsd-noctalia-launcher-toggle";
-      runtimeInputs = with pkgs; [ coreutils procps ];
-      text = builtins.replaceStrings [ "\r" ] [ "" ] ''
+    # NOTE: Don't use writeShellApplication here: it wraps PATH to runtimeInputs
+    # only, which breaks when `noctalia-shell` is provided by Home Manager.
+    sunsd-noctalia-launcher-toggle = pkgs.writeShellScriptBin "sunsd-noctalia-launcher-toggle" (
+      builtins.replaceStrings [ "\r" ] [ "" ] ''
         set -euo pipefail
+
+        export PATH="/run/wrappers/bin:/run/current-system/sw/bin:/etc/profiles/per-user/SunSD/bin''${HOME+:$HOME/.nix-profile/bin}:$PATH"
 
         # niri injects NOCTALIA_SETTINGS_FILE via its config environment block.
         export NOCTALIA_SETTINGS_FILE="''${NOCTALIA_SETTINGS_FILE:-}"
@@ -36,17 +38,17 @@
         pgrep -x noctalia-shell >/dev/null 2>&1 || exit 0
 
         noctalia-shell ipc call launcher toggle >/dev/null 2>&1 || true
-      '';
-    };
+      ''
+    );
 
-    sunsd-noctalia-ipc = pkgs.writeShellApplication {
-      name = "sunsd-noctalia-ipc";
-      runtimeInputs = with pkgs; [ coreutils procps ];
-      text = builtins.replaceStrings [ "\r" ] [ "" ] ''
+    sunsd-noctalia-ipc = pkgs.writeShellScriptBin "sunsd-noctalia-ipc" (
+      builtins.replaceStrings [ "\r" ] [ "" ] ''
         set -euo pipefail
 
         # Usage: sunsd-noctalia-ipc <module> <method> [args...]
         [[ $# -ge 2 ]] || exit 0
+
+        export PATH="/run/wrappers/bin:/run/current-system/sw/bin:/etc/profiles/per-user/SunSD/bin''${HOME+:$HOME/.nix-profile/bin}:$PATH"
 
         # niri injects NOCTALIA_SETTINGS_FILE via its config environment block.
         export NOCTALIA_SETTINGS_FILE="''${NOCTALIA_SETTINGS_FILE:-}"
@@ -59,8 +61,8 @@
         pgrep -x noctalia-shell >/dev/null 2>&1 || exit 0
 
         noctalia-shell ipc call "$1" "$2" "''${@:3}" >/dev/null 2>&1 || true
-      '';
-    };
+      ''
+    );
 
     sunsd-focus-or-spawn =
       let
