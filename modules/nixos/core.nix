@@ -114,18 +114,6 @@
 
     fonts.packages = with pkgs; [ inter jetbrains-mono noto-fonts-color-emoji ];
 
-    fonts.fontconfig.localConf = ''
-      <?xml version="1.0" encoding="UTF-8"?>
-      <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
-      <fontconfig>
-        <match target="pattern">
-          <test name="family" qual="any" compare="eq"><string>Inter Display Black</string></test>
-          <edit name="family" mode="assign" binding="same"><string>Inter Display</string></edit>
-          <edit name="weight" mode="assign"><int>210</int></edit>
-        </match>
-      </fontconfig>
-    '';
-
     home-manager = {
       useGlobalPkgs   = true;
       useUserPackages = true;
@@ -211,8 +199,6 @@
           ids = [ "*" ];
           settings.main = {
             # overload(meta, f13) breaks Mod+Enter etc. (niri sees F13+key).
-            leftmeta = "meta";
-            rightmeta = "meta";
           };
         };
       };
