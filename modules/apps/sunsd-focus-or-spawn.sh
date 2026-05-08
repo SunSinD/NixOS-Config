@@ -6,7 +6,8 @@ fi
 [[ -n "$niri_bin" ]] || { echo "niri not found" >&2; exit 1; }
 pattern="${1?}"
 shift
-id="$("$niri_bin" msg --json windows | @JQ@ -r --arg p "$pattern" -f @FILTER@)"
+# If niri's JSON output format changes or msg fails, don't break hotkeys — just spawn.
+id="$("$niri_bin" msg --json windows 2>/dev/null | @JQ@ -r --arg p "$pattern" -f @FILTER@ 2>/dev/null || true)"
 if [[ -n "$id" && "$id" != "null" ]]; then
   exec "$niri_bin" msg action focus-window "$id"
 else

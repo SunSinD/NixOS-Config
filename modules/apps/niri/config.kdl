@@ -121,7 +121,8 @@ layer-rule {
 }
 
 layer-rule {
-    match namespace=r"^(swaybg|wallpaper)$"
+    // swaybg's namespace can be "swaybg" or "swaybg-<n>"; match both.
+    match namespace=r"^(swaybg($|-)|wallpaper($|-))"
     place-within-backdrop true
 }
 
