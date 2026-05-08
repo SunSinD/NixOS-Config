@@ -162,8 +162,15 @@
 
     boot.loader.systemd-boot.configurationLimit = lib.mkForce 1;
     boot.loader.timeout = lib.mkForce 0;
-    boot.consoleLogLevel = 7;
-    boot.kernelParams = [ "loglevel=4" "udev.log_level=info" ];
+    # Reduce boot/shutdown noise (and avoids wide "[    OK    ]" status blocks).
+    boot.consoleLogLevel = lib.mkDefault 0;
+    boot.kernelParams = lib.mkDefault [
+      "quiet"
+      "loglevel=3"
+      "udev.log_level=0"
+      "systemd.show_status=false"
+      "rd.systemd.show_status=false"
+    ];
 
     hardware.graphics = {
       enable      = true;

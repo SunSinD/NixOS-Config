@@ -1,7 +1,10 @@
+def appid: (.app_id // .appId // .["app-id"] // "");
+def title: (.title // .name // "");
+
 [
   (
-    (.Ok.Windows // .windows // [])[]?
-    | select(.app_id != null and (.app_id | test($p)))
+    (.Ok.Windows // .windows // .Windows // [])[]?
+    | select(((appid | tostring) + " " + (title | tostring)) | test($p))
   )
 ]
 | sort_by(.id)
