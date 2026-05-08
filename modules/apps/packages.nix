@@ -73,7 +73,7 @@
         {
           echo "---- $(date -Is) ----"
           echo "argv: $*"
-          echo "uid: $(id -u) user: $(id -un) home: ${HOME:-<unset>}"
+          echo "uid: $(id -u) user: $(id -un) home: ''${HOME:-<unset>}"
         } >>"$log" 2>&1 || true
 
         export PATH="/run/wrappers/bin:/run/current-system/sw/bin:/etc/profiles/per-user/SunSD/bin''${HOME+:$HOME/.nix-profile/bin}:$PATH"
