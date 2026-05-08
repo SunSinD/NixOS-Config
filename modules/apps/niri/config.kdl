@@ -163,8 +163,8 @@ binds {
     Mod+I       { spawn "/run/current-system/sw/bin/noctalia-shell" "ipc" "call" "lockScreen" "lock"; }
     F13       { spawn "/run/current-system/sw/bin/noctalia-shell" "ipc" "call" "launcher" "toggle"; }
     Mod+F13   { spawn "/run/current-system/sw/bin/noctalia-shell" "ipc" "call" "launcher" "toggle"; }
-    Mod+Space { spawn "/run/current-system/sw/bin/noctalia-shell" "ipc" "call" "launcher" "toggle"; }
-    Alt+Space { spawn "/run/current-system/sw/bin/noctalia-shell" "ipc" "call" "launcher" "toggle"; }
+    Mod+Space { spawn "/run/current-system/sw/bin/sunsd-noctalia-launcher-toggle"; }
+    Alt+Space { spawn "/run/current-system/sw/bin/sunsd-noctalia-launcher-toggle"; }
     Mod+Period { spawn "/run/current-system/sw/bin/noctalia-shell" "ipc" "call" "launcher" "emoji"; }
     Mod+V      { spawn "/run/current-system/sw/bin/noctalia-shell" "ipc" "call" "launcher" "clipboard"; }
     Mod+O     { spawn "/run/current-system/sw/bin/noctalia-shell" "ipc" "call" "bar" "toggle"; }

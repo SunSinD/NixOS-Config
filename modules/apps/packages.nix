@@ -17,6 +17,28 @@
       '';
     };
 
+    sunsd-noctalia-launcher-toggle = pkgs.writeShellApplication {
+      name = "sunsd-noctalia-launcher-toggle";
+      runtimeInputs = with pkgs; [ coreutils procps ];
+      text = builtins.replaceStrings [ "\r" ] [ "" ] ''
+        set -euo pipefail
+
+        # niri injects NOCTALIA_SETTINGS_FILE via its config environment block.
+        export NOCTALIA_SETTINGS_FILE="${NOCTALIA_SETTINGS_FILE:-}"
+
+        if ! pgrep -x noctalia-shell >/dev/null 2>&1; then
+          # Start Noctalia if it isn't running, then give it a moment to come up.
+          ( nohup noctalia-shell >/tmp/noctalia-shell.log 2>&1 & ) || true
+          sleep 0.4
+        fi
+
+        # If it's still not up, just exit quietly (so the hotkey doesn't block).
+        pgrep -x noctalia-shell >/dev/null 2>&1 || exit 0
+
+        noctalia-shell ipc call launcher toggle >/dev/null 2>&1 || true
+      '';
+    };
+
     sunsd-focus-or-spawn =
       let
         jqFilter = pkgs.writeText "niri-focus-windows.jq"
@@ -34,6 +56,7 @@
     environment.systemPackages =
       [
         sunsd-terminal
+        sunsd-noctalia-launcher-toggle
         sunsd-focus-or-spawn
       ]
       ++ (with pkgs; [
