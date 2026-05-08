@@ -216,7 +216,9 @@
         settings = {
           main = {
             # Make text comfortably readable.
-            font = "JetBrainsMono Nerd Font:size=14";
+            # Use the actual font family name present in nixpkgs packages.
+            # (Avoids foot falling back to DejaVu Sans + spacing issues.)
+            font = "JetBrains Mono:size=14";
           };
         };
       };

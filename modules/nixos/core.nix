@@ -112,7 +112,11 @@
       cursors.enable = false;
     };
 
-    fonts.packages = with pkgs; [ inter jetbrains-mono noto-fonts-color-emoji ];
+    fonts.packages = with pkgs; [
+      inter
+      jetbrains-mono
+      noto-fonts-color-emoji
+    ];
 
     home-manager = {
       useGlobalPkgs   = true;
