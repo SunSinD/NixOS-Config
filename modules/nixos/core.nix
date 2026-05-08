@@ -162,7 +162,7 @@
 
     # Keep multiple generations and show the boot menu briefly so you can
     # choose older configs when needed.
-    boot.loader.systemd-boot.configurationLimit = lib.mkDefault 10;
+    boot.loader.systemd-boot.configurationLimit = lib.mkDefault 3;
     boot.loader.timeout = lib.mkDefault 3;
     # Reduce boot/shutdown noise (and avoids wide "[    OK    ]" status blocks).
     boot.consoleLogLevel = lib.mkDefault 0;

@@ -9,7 +9,9 @@
 
         # Fast path: footclient connects to the already-running foot server.
         if command -v footclient >/dev/null 2>&1; then
-          exec footclient "$@"
+          if footclient "$@" >/dev/null 2>&1; then
+            exit 0
+          fi
         fi
 
         exec foot "$@"
