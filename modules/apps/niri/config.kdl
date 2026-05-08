@@ -160,20 +160,20 @@ binds {
 
     Mod+P       { spawn "/run/current-system/sw/bin/bash" "-c" "systemctl poweroff"; }
     Mod+Shift+P { spawn "/run/current-system/sw/bin/bash" "-c" "systemctl reboot"; }
-    Mod+I       { spawn "/run/current-system/sw/bin/noctalia-shell" "ipc" "call" "lockScreen" "lock"; }
-    F13       { spawn "/run/current-system/sw/bin/noctalia-shell" "ipc" "call" "launcher" "toggle"; }
-    Mod+F13   { spawn "/run/current-system/sw/bin/noctalia-shell" "ipc" "call" "launcher" "toggle"; }
+    Mod+I       { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "lockScreen" "lock"; }
+    F13       { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "launcher" "toggle"; }
+    Mod+F13   { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "launcher" "toggle"; }
     Mod+Space { spawn "/run/current-system/sw/bin/sunsd-noctalia-launcher-toggle"; }
     Alt+Space { spawn "/run/current-system/sw/bin/sunsd-noctalia-launcher-toggle"; }
-    Mod+Period { spawn "/run/current-system/sw/bin/noctalia-shell" "ipc" "call" "launcher" "emoji"; }
-    Mod+V      { spawn "/run/current-system/sw/bin/noctalia-shell" "ipc" "call" "launcher" "clipboard"; }
-    Mod+O     { spawn "/run/current-system/sw/bin/noctalia-shell" "ipc" "call" "bar" "toggle"; }
-    Mod+C     { spawn "/run/current-system/sw/bin/noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
-    Alt+C     { spawn "/run/current-system/sw/bin/noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
+    Mod+Period { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "launcher" "emoji"; }
+    Mod+V      { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "launcher" "clipboard"; }
+    Mod+O     { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "bar" "toggle"; }
+    Mod+C     { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "controlCenter" "toggle"; }
+    Alt+C     { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "controlCenter" "toggle"; }
 
-    XF86AudioRaiseVolume { spawn "/run/current-system/sw/bin/noctalia-shell" "ipc" "call" "volume" "increase"; }
-    XF86AudioLowerVolume { spawn "/run/current-system/sw/bin/noctalia-shell" "ipc" "call" "volume" "decrease"; }
-    XF86AudioMute        { spawn "/run/current-system/sw/bin/noctalia-shell" "ipc" "call" "volume" "muteOutput"; }
+    XF86AudioRaiseVolume { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "volume" "increase"; }
+    XF86AudioLowerVolume { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "volume" "decrease"; }
+    XF86AudioMute        { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "volume" "muteOutput"; }
 
     Mod+W       { close-window; }
     Mod+F       { maximize-column; }

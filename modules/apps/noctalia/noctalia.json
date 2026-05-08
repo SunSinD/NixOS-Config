@@ -4,15 +4,15 @@
     "barType": "simple",
     "position": "top",
     "monitors": [],
-    "density": "default",
+    "density": "compact",
     "showOutline": false,
     "showCapsule": true,
     "capsuleOpacity": 0.78,
     "capsuleColorKey": "none",
     "widgetSpacing": 11,
     "contentPadding": 5,
-    "fontScale": 1.16,
-    "enableExclusionZoneInset": true,
+    "fontScale": 1.0,
+    "enableExclusionZoneInset": false,
     "backgroundOpacity": 0,
     "useSeparateOpacity": false,
     "marginVertical": 9,
@@ -63,19 +63,19 @@
       "right": [
         {
           "id": "Network",
-          "displayMode": "onhover",
+          "displayMode": "icon",
           "iconColor": "none",
           "textColor": "none"
         },
         {
           "id": "Bluetooth",
-          "displayMode": "onhover",
+          "displayMode": "icon",
           "iconColor": "none",
           "textColor": "none"
         },
         {
           "id": "Volume",
-          "displayMode": "onhover",
+          "displayMode": "icon",
           "middleClickCommand": "pavucontrol",
           "iconColor": "none",
           "textColor": "none"

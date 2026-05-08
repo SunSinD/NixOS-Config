@@ -39,6 +39,29 @@
       '';
     };
 
+    sunsd-noctalia-ipc = pkgs.writeShellApplication {
+      name = "sunsd-noctalia-ipc";
+      runtimeInputs = with pkgs; [ coreutils procps ];
+      text = builtins.replaceStrings [ "\r" ] [ "" ] ''
+        set -euo pipefail
+
+        # Usage: sunsd-noctalia-ipc <module> <method> [args...]
+        [[ $# -ge 2 ]] || exit 0
+
+        # niri injects NOCTALIA_SETTINGS_FILE via its config environment block.
+        export NOCTALIA_SETTINGS_FILE="''${NOCTALIA_SETTINGS_FILE:-}"
+
+        if ! pgrep -x noctalia-shell >/dev/null 2>&1; then
+          ( nohup noctalia-shell >/tmp/noctalia-shell.log 2>&1 & ) || true
+          sleep 0.4
+        fi
+
+        pgrep -x noctalia-shell >/dev/null 2>&1 || exit 0
+
+        noctalia-shell ipc call "$1" "$2" "''${@:3}" >/dev/null 2>&1 || true
+      '';
+    };
+
     sunsd-focus-or-spawn =
       let
         jqFilter = pkgs.writeText "niri-focus-windows.jq"
@@ -57,6 +80,7 @@
       [
         sunsd-terminal
         sunsd-noctalia-launcher-toggle
+        sunsd-noctalia-ipc
         sunsd-focus-or-spawn
       ]
       ++ (with pkgs; [
