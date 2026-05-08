@@ -24,7 +24,7 @@
         set -euo pipefail
 
         # niri injects NOCTALIA_SETTINGS_FILE via its config environment block.
-        export NOCTALIA_SETTINGS_FILE="${NOCTALIA_SETTINGS_FILE:-}"
+        export NOCTALIA_SETTINGS_FILE="''${NOCTALIA_SETTINGS_FILE:-}"
 
         if ! pgrep -x noctalia-shell >/dev/null 2>&1; then
           # Start Noctalia if it isn't running, then give it a moment to come up.
