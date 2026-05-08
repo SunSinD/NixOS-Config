@@ -94,6 +94,11 @@
         echo "quickshell=$(printf %s "$quickshell_bin")" >>"$log" 2>&1 || true
         echo "swaybg=$(printf %s "$swaybg_bin")" >>"$log" 2>&1 || true
 
+        noctalia_ipc() {
+          [[ -n "$noctalia_bin" ]] || return 127
+          "$noctalia_bin" ipc call "$1" "$2" "''${@:3}" >>"$log" 2>&1
+        }
+
         ensure_wallpaper() {
           [[ -n "$WALLPAPER_PATH" ]] || return 0
           if ! pgrep -x swaybg >/dev/null 2>&1; then
@@ -105,11 +110,25 @@
 
         ensure_noctalia() {
           export NOCTALIA_SETTINGS_FILE="$NOCTALIA_SETTINGS_FILE"
-          if ! pgrep -x noctalia-shell >/dev/null 2>&1; then
-            [[ -n "$noctalia_bin" ]] || { echo "noctalia-shell not found" >>"$log" 2>&1; return 0; }
-            ( nohup "$noctalia_bin" >/tmp/noctalia-shell.log 2>&1 & ) || true
-            sleep 0.4
+          [[ -n "$noctalia_bin" ]] || { echo "noctalia-shell not found" >>"$log" 2>&1; return 0; }
+
+          # If IPC responds, Noctalia is already up (even if process name differs).
+          if noctalia_ipc state all >/dev/null 2>&1; then
+            return 0
           fi
+
+          # Start (or restart) Noctalia and wait for IPC readiness.
+          ( nohup "$noctalia_bin" >/tmp/noctalia-shell.log 2>&1 & ) || true
+
+          for _ in $(seq 1 30); do
+            if noctalia_ipc state all >/dev/null 2>&1; then
+              echo "noctalia ipc ready" >>"$log" 2>&1 || true
+              return 0
+            fi
+            sleep 0.2
+          done
+
+          echo "noctalia ipc not ready after wait" >>"$log" 2>&1 || true
         }
 
         case "''${1:-}" in
@@ -120,21 +139,10 @@
           ipc)
             shift || true
             ensure_noctalia
-            if ! pgrep -x noctalia-shell >/dev/null 2>&1; then
-              echo "noctalia-shell still not running; skipping ipc" >>"$log" 2>&1 || true
-              exit 0
-            fi
             [[ $# -ge 2 ]] || exit 0
             echo "ipc: $1 $2 ''${*:3}" >>"$log" 2>&1 || true
-            # Noctalia IPC is handled by quickshell (`qs`) on newer releases.
-            if [[ -n "$qs_bin" ]]; then
-              "$qs_bin" ipc -c noctalia-shell --any-display call "$1" "$2" "''${@:3}" >>"$log" 2>&1 || true
-            elif [[ -n "$quickshell_bin" ]]; then
-              "$quickshell_bin" ipc -c noctalia-shell --any-display call "$1" "$2" "''${@:3}" >>"$log" 2>&1 || true
-            else
-              # Fallback for older builds.
-              "$noctalia_bin" ipc call "$1" "$2" "''${@:3}" >>"$log" 2>&1 || true
-            fi
+            # Use the bundled `noctalia-shell` CLI to talk to the running shell.
+            noctalia_ipc "$1" "$2" "''${@:3}" || true
             ;;
           *)
             # default: just ensure both
@@ -144,24 +152,6 @@
         esac
 
         echo "done" >>"$log" 2>&1 || true
-      ''
-    );
-
-    sunsd-hotkey = pkgs.writeShellScriptBin "sunsd-hotkey" (
-      builtins.replaceStrings [ "\r" ] [ "" ] ''
-        set -euo pipefail
-
-        export PATH="/run/wrappers/bin:/run/current-system/sw/bin:/etc/profiles/per-user/SunSD/bin''${HOME+:$HOME/.nix-profile/bin}:$PATH"
-
-        name="''${1:-hotkey}"
-        shift || true
-
-        # Prove the bind fired.
-        if command -v notify-send >/dev/null 2>&1; then
-          notify-send -t 900 "Hotkey" "$name"
-        fi
-
-        exec sunsd-session-ensure "''${@}"
       ''
     );
 
@@ -185,7 +175,6 @@
         sunsd-noctalia-launcher-toggle
         sunsd-noctalia-ipc
         sunsd-session-ensure
-        sunsd-hotkey
         sunsd-focus-or-spawn
       ]
       ++ (with pkgs; [
