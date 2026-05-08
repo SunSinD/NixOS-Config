@@ -211,6 +211,16 @@
         Install = { WantedBy = [ "graphical-session.target" ]; };
       };
 
+      programs.foot = {
+        enable = true;
+        settings = {
+          main = {
+            # Make text comfortably readable.
+            font = "JetBrainsMono Nerd Font:size=14";
+          };
+        };
+      };
+
       home.packages =
         (with pkgs; [
           neovim
