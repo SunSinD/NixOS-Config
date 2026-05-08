@@ -68,16 +68,33 @@
       builtins.replaceStrings [ "\r" ] [ "" ] ''
         set -euo pipefail
 
+        log="/tmp/sunsd-session-ensure.log"
+        mkdir -p /tmp || true
+        {
+          echo "---- $(date -Is) ----"
+          echo "argv: $*"
+          echo "uid: $(id -u) user: $(id -un) home: ${HOME:-<unset>}"
+        } >>"$log" 2>&1 || true
+
         export PATH="/run/wrappers/bin:/run/current-system/sw/bin:/etc/profiles/per-user/SunSD/bin''${HOME+:$HOME/.nix-profile/bin}:$PATH"
 
         # niri injects these via its config `environment { ... }` block.
         WALLPAPER_PATH="''${WALLPAPER_PATH:-}"
         NOCTALIA_SETTINGS_FILE="''${NOCTALIA_SETTINGS_FILE:-}"
+        echo "PATH=$PATH" >>"$log" 2>&1 || true
+        echo "WALLPAPER_PATH=$WALLPAPER_PATH" >>"$log" 2>&1 || true
+        echo "NOCTALIA_SETTINGS_FILE=$NOCTALIA_SETTINGS_FILE" >>"$log" 2>&1 || true
+
+        noctalia_bin="$(command -v noctalia-shell 2>/dev/null || true)"
+        swaybg_bin="$(command -v swaybg 2>/dev/null || true)"
+        echo "noctalia-shell=$(printf %s "$noctalia_bin")" >>"$log" 2>&1 || true
+        echo "swaybg=$(printf %s "$swaybg_bin")" >>"$log" 2>&1 || true
 
         ensure_wallpaper() {
           [[ -n "$WALLPAPER_PATH" ]] || return 0
           if ! pgrep -x swaybg >/dev/null 2>&1; then
-            ( nohup swaybg -m fill -i "$WALLPAPER_PATH" >/tmp/swaybg.log 2>&1 & ) || true
+            [[ -n "$swaybg_bin" ]] || { echo "swaybg not found" >>"$log" 2>&1; return 0; }
+            ( nohup "$swaybg_bin" -m fill -i "$WALLPAPER_PATH" >/tmp/swaybg.log 2>&1 & ) || true
             sleep 0.15
           fi
         }
@@ -85,7 +102,8 @@
         ensure_noctalia() {
           export NOCTALIA_SETTINGS_FILE="$NOCTALIA_SETTINGS_FILE"
           if ! pgrep -x noctalia-shell >/dev/null 2>&1; then
-            ( nohup noctalia-shell >/tmp/noctalia-shell.log 2>&1 & ) || true
+            [[ -n "$noctalia_bin" ]] || { echo "noctalia-shell not found" >>"$log" 2>&1; return 0; }
+            ( nohup "$noctalia_bin" >/tmp/noctalia-shell.log 2>&1 & ) || true
             sleep 0.4
           fi
         }
@@ -98,9 +116,13 @@
           ipc)
             shift || true
             ensure_noctalia
-            pgrep -x noctalia-shell >/dev/null 2>&1 || exit 0
+            if ! pgrep -x noctalia-shell >/dev/null 2>&1; then
+              echo "noctalia-shell still not running; skipping ipc" >>"$log" 2>&1 || true
+              exit 0
+            fi
             [[ $# -ge 2 ]] || exit 0
-            noctalia-shell ipc call "$1" "$2" "''${@:3}" >/dev/null 2>&1 || true
+            echo "ipc: $1 $2 ''${*:3}" >>"$log" 2>&1 || true
+            "$noctalia_bin" ipc call "$1" "$2" "''${@:3}" >>"$log" 2>&1 || true
             ;;
           *)
             # default: just ensure both
@@ -108,6 +130,8 @@
             ensure_noctalia
             ;;
         esac
+
+        echo "done" >>"$log" 2>&1 || true
       ''
     );
 
