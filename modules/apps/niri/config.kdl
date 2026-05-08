@@ -36,6 +36,7 @@ cursor {
 // Injected by niri.nix — ensures noctalia-shell sees declarative settings (Nix store path).
 environment {
     NOCTALIA_SETTINGS_FILE "@@NOCTALIA_SETTINGS_FILE@@"
+    WALLPAPER_PATH "@@WALLPAPER_PATH@@"
 }
 
 hotkey-overlay {
@@ -61,8 +62,8 @@ layout {
 
         inactive-color "#00000000"
     }
-    // Solid backdrop avoids the default grey flash until swaybg/noctalia paint (matches noctalia wallpaper.solidColor)
-    background-color "#1a1a2e"
+    // Keep transparent so the wallpaper layer always shows through.
+    background-color "#00000000"
     shadow {
         color "#00000077"
     }
@@ -160,20 +161,20 @@ binds {
 
     Mod+P       { spawn "/run/current-system/sw/bin/bash" "-c" "systemctl poweroff"; }
     Mod+Shift+P { spawn "/run/current-system/sw/bin/bash" "-c" "systemctl reboot"; }
-    Mod+I       { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "lockScreen" "lock"; }
-    F13       { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "launcher" "toggle"; }
-    Mod+F13   { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "launcher" "toggle"; }
+    Mod+I       { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "lockScreen" "lock"; }
+    F13       { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "launcher" "toggle"; }
+    Mod+F13   { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "launcher" "toggle"; }
     Mod+Space { spawn "/run/current-system/sw/bin/sunsd-noctalia-launcher-toggle"; }
     Alt+Space { spawn "/run/current-system/sw/bin/sunsd-noctalia-launcher-toggle"; }
-    Mod+Period { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "launcher" "emoji"; }
-    Mod+V      { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "launcher" "clipboard"; }
-    Mod+O     { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "bar" "toggle"; }
-    Mod+C     { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "controlCenter" "toggle"; }
-    Alt+C     { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "controlCenter" "toggle"; }
+    Mod+Period { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "launcher" "emoji"; }
+    Mod+V      { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "launcher" "clipboard"; }
+    Mod+O     { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "bar" "toggle"; }
+    Mod+C     { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "controlCenter" "toggle"; }
+    Alt+C     { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "controlCenter" "toggle"; }
 
-    XF86AudioRaiseVolume { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "volume" "increase"; }
-    XF86AudioLowerVolume { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "volume" "decrease"; }
-    XF86AudioMute        { spawn "/run/current-system/sw/bin/sunsd-noctalia-ipc" "volume" "muteOutput"; }
+    XF86AudioRaiseVolume { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "volume" "increase"; }
+    XF86AudioLowerVolume { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "volume" "decrease"; }
+    XF86AudioMute        { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "volume" "muteOutput"; }
 
     Mod+W       { close-window; }
     Mod+F       { maximize-column; }
@@ -220,10 +221,9 @@ binds {
     Mod+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
 }
 
-spawn-at-startup "/run/current-system/sw/bin/swaybg" "-m" "fill" "-i" "@@WALLPAPER_PATH@@"
+spawn-at-startup "/run/current-system/sw/bin/sunsd-session-ensure" "startup"
 spawn-at-startup "/run/current-system/sw/bin/dbus-update-activation-environment" "--systemd" "--all"
 spawn-at-startup "/run/current-system/sw/bin/xwayland-satellite"
-spawn-at-startup "/run/current-system/sw/bin/bash" "-c" "export NOCTALIA_SETTINGS_FILE=\"@@NOCTALIA_SETTINGS_FILE@@\"; /run/current-system/sw/bin/noctalia-shell >/tmp/noctalia-shell.log 2>&1 || /run/current-system/sw/bin/notify-send -u critical 'Noctalia failed' 'See /tmp/noctalia-shell.log'"
 spawn-at-startup "/run/current-system/sw/bin/niri" "msg" "action" "focus-workspace" "2"
 
 animations {

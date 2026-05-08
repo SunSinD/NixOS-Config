@@ -64,6 +64,53 @@
       ''
     );
 
+    sunsd-session-ensure = pkgs.writeShellScriptBin "sunsd-session-ensure" (
+      builtins.replaceStrings [ "\r" ] [ "" ] ''
+        set -euo pipefail
+
+        export PATH="/run/wrappers/bin:/run/current-system/sw/bin:/etc/profiles/per-user/SunSD/bin''${HOME+:$HOME/.nix-profile/bin}:$PATH"
+
+        # niri injects these via its config `environment { ... }` block.
+        WALLPAPER_PATH="''${WALLPAPER_PATH:-}"
+        NOCTALIA_SETTINGS_FILE="''${NOCTALIA_SETTINGS_FILE:-}"
+
+        ensure_wallpaper() {
+          [[ -n "$WALLPAPER_PATH" ]] || return 0
+          if ! pgrep -x swaybg >/dev/null 2>&1; then
+            ( nohup swaybg -m fill -i "$WALLPAPER_PATH" >/tmp/swaybg.log 2>&1 & ) || true
+            sleep 0.15
+          fi
+        }
+
+        ensure_noctalia() {
+          export NOCTALIA_SETTINGS_FILE="$NOCTALIA_SETTINGS_FILE"
+          if ! pgrep -x noctalia-shell >/dev/null 2>&1; then
+            ( nohup noctalia-shell >/tmp/noctalia-shell.log 2>&1 & ) || true
+            sleep 0.4
+          fi
+        }
+
+        case "''${1:-}" in
+          startup)
+            ensure_wallpaper
+            ensure_noctalia
+            ;;
+          ipc)
+            shift || true
+            ensure_noctalia
+            pgrep -x noctalia-shell >/dev/null 2>&1 || exit 0
+            [[ $# -ge 2 ]] || exit 0
+            noctalia-shell ipc call "$1" "$2" "''${@:3}" >/dev/null 2>&1 || true
+            ;;
+          *)
+            # default: just ensure both
+            ensure_wallpaper
+            ensure_noctalia
+            ;;
+        esac
+      ''
+    );
+
     sunsd-focus-or-spawn =
       let
         jqFilter = pkgs.writeText "niri-focus-windows.jq"
@@ -83,6 +130,7 @@
         sunsd-terminal
         sunsd-noctalia-launcher-toggle
         sunsd-noctalia-ipc
+        sunsd-session-ensure
         sunsd-focus-or-spawn
       ]
       ++ (with pkgs; [
