@@ -122,7 +122,7 @@ layer-rule {
 
 layer-rule {
     // swaybg's namespace can be "swaybg" or "swaybg-<n>"; match both.
-    match namespace=r"^(swaybg($|-)|wallpaper($|-))"
+    match namespace=r"^(swaybg.*|wallpaper.*)$"
     place-within-backdrop true
 }
 
@@ -151,8 +151,9 @@ binds {
     Ctrl+Alt+T { spawn "/run/current-system/sw/bin/sunsd-terminal"; }
     Mod+B      { spawn "/run/current-system/sw/bin/sunsd-focus-or-spawn" "(?i)vivaldi" "/run/current-system/sw/bin/vivaldi" "--password-store=basic"; }
     Alt+B      { spawn "/run/current-system/sw/bin/vivaldi" "--password-store=basic"; }
-    Mod+D      { spawn "/run/current-system/sw/bin/sunsd-focus-or-spawn" "(?i)equibop|discord" "/run/current-system/sw/bin/equibop"; }
-    Alt+D      { spawn "/run/current-system/sw/bin/equibop"; }
+    // equibop is installed via Home Manager, not necessarily in /run/current-system/sw/bin.
+    Mod+D      { spawn "/run/current-system/sw/bin/sunsd-focus-or-spawn" "(?i)equibop|discord" "equibop"; }
+    Alt+D      { spawn "equibop"; }
     Mod+Z      { spawn "/run/current-system/sw/bin/sunsd-focus-or-spawn" "(?i)zed" "/run/current-system/sw/bin/zeditor"; }
     Alt+Z      { spawn "/run/current-system/sw/bin/zeditor"; }
     Mod+E      { spawn "/run/current-system/sw/bin/thunar" "/home/SunSD/Files"; }

@@ -8,13 +8,9 @@
         set -euo pipefail
 
         if command -v ghostty >/dev/null 2>&1; then
-          ghostty "$@" &
-          pid=$!
-          sleep 0.35
-          if kill -0 "$pid" >/dev/null 2>&1; then
-            wait "$pid"
-            exit $?
-          fi
+          # Some ghostty builds daemonize (parent exits quickly), which made
+          # the old logic fall through to foot and open two terminals.
+          exec ghostty "$@"
         fi
 
         exec foot "$@"
