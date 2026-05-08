@@ -3,14 +3,13 @@
   let
     sunsd-terminal = pkgs.writeShellApplication {
       name = "sunsd-terminal";
-      runtimeInputs = with pkgs; [ coreutils procps ghostty foot ];
+      runtimeInputs = with pkgs; [ coreutils procps foot ];
       text = builtins.replaceStrings [ "\r" ] [ "" ] ''
         set -euo pipefail
 
-        if command -v ghostty >/dev/null 2>&1; then
-          # Some ghostty builds daemonize (parent exits quickly), which made
-          # the old logic fall through to foot and open two terminals.
-          exec ghostty "$@"
+        # Fast path: footclient connects to the already-running foot server.
+        if command -v footclient >/dev/null 2>&1; then
+          exec footclient "$@"
         fi
 
         exec foot "$@"
@@ -195,6 +194,21 @@
       ]);
 
     home-manager.users.SunSD = { pkgs, ... }: {
+      # Keep a foot server running so Mod+Enter opens instantly via footclient.
+      systemd.user.services.foot-server = {
+        Unit = {
+          Description = "Foot terminal server";
+          PartOf = [ "graphical-session.target" ];
+          After = [ "graphical-session.target" ];
+        };
+        Service = {
+          ExecStart = "${pkgs.foot}/bin/foot --server";
+          Restart = "on-failure";
+          RestartSec = 1;
+        };
+        Install = { WantedBy = [ "graphical-session.target" ]; };
+      };
+
       home.packages =
         (with pkgs; [
           neovim

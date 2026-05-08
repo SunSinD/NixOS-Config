@@ -146,7 +146,8 @@ window-rule {
 
 binds {
     // Use /run/current-system/sw/bin so niri always finds these (PATH can be minimal for spawned processes).
-    Mod+Return { spawn "/run/current-system/sw/bin/sunsd-focus-or-spawn" "(?i)foot|ghostty|mitchellh" "/run/current-system/sw/bin/sunsd-terminal"; }
+    // Always open a new terminal fast (no window scan).
+    Mod+Return { spawn "/run/current-system/sw/bin/sunsd-terminal"; }
     // VMware / broken Super: duplicates without the Meta key (Alt+ avoids host Ctrl+Alt hotkey grabs).
     Alt+Return { spawn "/run/current-system/sw/bin/sunsd-terminal"; }
     Ctrl+Alt+T { spawn "/run/current-system/sw/bin/sunsd-terminal"; }
