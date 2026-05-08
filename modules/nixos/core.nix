@@ -225,12 +225,15 @@
 
     security.pam.services.greetd.enableGnomeKeyring = true;
 
+    # libvirt can fail to start on some machines after updates when systemd
+    # credentials are TPM-sealed (seen as "TPM key integrity check failed"),
+    # which would make `nixos-rebuild switch` fail. Keep it opt-in per-host.
     virtualisation = {
       libvirtd = {
-        enable           = true;
-        qemu.swtpm.enable = true;
+        enable            = lib.mkDefault false;
+        qemu.swtpm.enable = lib.mkDefault false;
       };
-      spiceUSBRedirection.enable = true;
+      spiceUSBRedirection.enable = lib.mkDefault false;
     };
 
     system.nixos.label     = config.networking.hostName;

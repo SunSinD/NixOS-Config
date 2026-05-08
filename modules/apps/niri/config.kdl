@@ -218,7 +218,7 @@ binds {
     Mod+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
 }
 
-spawn-at-startup "/run/current-system/sw/bin/swaybg" "-m" "fill" "-i" "/home/SunSD/Pictures/Wallpapers/clouds.jpg"
+spawn-at-startup "/run/current-system/sw/bin/swaybg" "-m" "fill" "-i" "@@WALLPAPER_PATH@@"
 spawn-at-startup "/run/current-system/sw/bin/dbus-update-activation-environment" "--systemd" "--all"
 spawn-at-startup "/run/current-system/sw/bin/xwayland-satellite"
 spawn-at-startup "/run/current-system/sw/bin/bash" "-c" "export NOCTALIA_SETTINGS_FILE=\"@@NOCTALIA_SETTINGS_FILE@@\"; /run/current-system/sw/bin/noctalia-shell >/tmp/noctalia-shell.log 2>&1 || /run/current-system/sw/bin/notify-send -u critical 'Noctalia failed' 'See /tmp/noctalia-shell.log'"

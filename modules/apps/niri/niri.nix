@@ -2,6 +2,7 @@
   flake.nixosModules.niri = { pkgs, config, ... }:
   let
     noctaliaDeclarativeSettings = pkgs.writeText "noctalia-settings.json" (builtins.readFile ../noctalia/noctalia.json);
+    wallpaperPath = ../../../assets/wallpapers/clouds.jpg;
 
     # Outputs that do not exist (ASUS on a VM, or wrong Virtual-* name) can leave niri with a blank screen.
     kdlForHost =
@@ -34,9 +35,11 @@ output "Virtual-1" {
       else if config.networking.hostName == "vm" then stripAllOutputs raw
       else stripAllOutputs raw;
 
-    niriConfigKdl = builtins.replaceStrings [ "@@NOCTALIA_SETTINGS_FILE@@" ] [
-      "${noctaliaDeclarativeSettings}"
-    ] kdlForHost;
+    niriConfigKdl =
+      builtins.replaceStrings
+        [ "@@NOCTALIA_SETTINGS_FILE@@" "@@WALLPAPER_PATH@@" ]
+        [ "${noctaliaDeclarativeSettings}" "${wallpaperPath}" ]
+        kdlForHost;
   in {
     imports = [ inputs.niri.nixosModules.niri ];
 

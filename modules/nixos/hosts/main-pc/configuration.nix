@@ -12,6 +12,17 @@
           networking.hostName = "main-pc";
           custom.secureBoot.enable = false;
 
+          # ── Virtualization (opt-in) ────────────────────────────────────────────
+          # Enabled here so portable hosts (e.g. "generic") can't break upgrades
+          # due to TPM-sealed systemd credentials on libvirt/swtpm.
+          virtualisation = {
+            libvirtd = {
+              enable = true;
+              qemu.swtpm.enable = true;
+            };
+            spiceUSBRedirection.enable = true;
+          };
+
           # ── Disk ───────────────────────────────────────────────────────────────
           # Only needed for manual disko re-runs. Install script overrides this.
           custom.disk.device = "/dev/disk/by-id/nvme-KINGSTON_SNV2S1000G_50026B778557B959";
