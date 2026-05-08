@@ -164,8 +164,8 @@ binds {
     Mod+I       { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "lockScreen" "lock"; }
     F13       { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "launcher" "toggle"; }
     Mod+F13   { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "launcher" "toggle"; }
-    Mod+Space { spawn "/run/current-system/sw/bin/sunsd-noctalia-launcher-toggle"; }
-    Alt+Space { spawn "/run/current-system/sw/bin/sunsd-noctalia-launcher-toggle"; }
+    Mod+Space { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "launcher" "toggle"; }
+    Alt+Space { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "launcher" "toggle"; }
     Mod+Period { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "launcher" "emoji"; }
     Mod+V      { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "launcher" "clipboard"; }
     Mod+O     { spawn "/run/current-system/sw/bin/sunsd-session-ensure" "ipc" "bar" "toggle"; }
