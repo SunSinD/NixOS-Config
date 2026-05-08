@@ -18,6 +18,7 @@ output "ASUS VG279QM" {
 ''
         ] [ "" ] s;
         stripVmVirtual = s: builtins.replaceStrings [
+        stripAllOutputs = s: stripVmVirtual (stripAsus s);
           ''
 // MARK_VM_VIRTUAL_OUTPUT_BEGIN
 output "Virtual-1" {
