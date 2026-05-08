@@ -30,8 +30,8 @@ output "Virtual-1" {
         ] [ "" ] s;
       in
       if config.networking.hostName == "main-pc" then raw
-      else if config.networking.hostName == "vm" then stripVmVirtual (stripAsus raw)
-      else stripAsus raw;
+      else if config.networking.hostName == "vm" then stripAllOutputs raw
+      else stripAllOutputs raw;
 
     niriConfigKdl = builtins.replaceStrings [ "@@NOCTALIA_SETTINGS_FILE@@" ] [
       "${noctaliaDeclarativeSettings}"
