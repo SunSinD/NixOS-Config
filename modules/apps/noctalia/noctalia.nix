@@ -1,14 +1,14 @@
 { inputs, ... }: {
-  flake.nixosModules.noctalia = { pkgs, lib, ... }: {
-    let
-      wallpaperPath = ../../../assets/wallpapers/clouds.jpg;
-      wallpaperPathString = "${wallpaperPath}";
-      settingsJson =
-        builtins.replaceStrings
-          [ "/home/SunSD/Pictures/Wallpapers/clouds.jpg" ]
-          [ wallpaperPathString ]
-          (builtins.readFile ./noctalia.json);
-    in
+  flake.nixosModules.noctalia = { pkgs, lib, ... }:
+  let
+    wallpaperPath = ../../../assets/wallpapers/clouds.jpg;
+    wallpaperPathString = "${wallpaperPath}";
+    settingsJson =
+      builtins.replaceStrings
+        [ "/home/SunSD/Pictures/Wallpapers/clouds.jpg" ]
+        [ wallpaperPathString ]
+        (builtins.readFile ./noctalia.json);
+  in {
     home-manager.users.SunSD = { ... }: {
       imports = [ inputs.noctalia.homeModules.default ];
 
