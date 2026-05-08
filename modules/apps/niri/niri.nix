@@ -18,7 +18,6 @@ output "ASUS VG279QM" {
 ''
         ] [ "" ] s;
         stripVmVirtual = s: builtins.replaceStrings [
-        stripAllOutputs = s: stripVmVirtual (stripAsus s);
           ''
 // MARK_VM_VIRTUAL_OUTPUT_BEGIN
 output "Virtual-1" {
@@ -28,8 +27,10 @@ output "Virtual-1" {
 
 ''
         ] [ "" ] s;
+
+        stripAllOutputs = s: stripVmVirtual (stripAsus s);
       in
-      if config.networking.hostName == "main-pc" then raw
+      if config.networking.hostName == "main-pc" then stripVmVirtual raw
       else if config.networking.hostName == "vm" then stripAllOutputs raw
       else stripAllOutputs raw;
 
