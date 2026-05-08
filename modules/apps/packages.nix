@@ -86,8 +86,10 @@
         echo "NOCTALIA_SETTINGS_FILE=$NOCTALIA_SETTINGS_FILE" >>"$log" 2>&1 || true
 
         noctalia_bin="$(command -v noctalia-shell 2>/dev/null || true)"
+        qs_bin="$(command -v qs 2>/dev/null || true)"
         swaybg_bin="$(command -v swaybg 2>/dev/null || true)"
         echo "noctalia-shell=$(printf %s "$noctalia_bin")" >>"$log" 2>&1 || true
+        echo "qs=$(printf %s "$qs_bin")" >>"$log" 2>&1 || true
         echo "swaybg=$(printf %s "$swaybg_bin")" >>"$log" 2>&1 || true
 
         ensure_wallpaper() {
@@ -122,7 +124,13 @@
             fi
             [[ $# -ge 2 ]] || exit 0
             echo "ipc: $1 $2 ''${*:3}" >>"$log" 2>&1 || true
-            "$noctalia_bin" ipc call "$1" "$2" "''${@:3}" >>"$log" 2>&1 || true
+            # Noctalia IPC is handled by quickshell (`qs`) on newer releases.
+            if [[ -n "$qs_bin" ]]; then
+              "$qs_bin" ipc -c noctalia-shell --any-display call "$1" "$2" "''${@:3}" >>"$log" 2>&1 || true
+            else
+              # Fallback for older builds.
+              "$noctalia_bin" ipc call "$1" "$2" "''${@:3}" >>"$log" 2>&1 || true
+            fi
             ;;
           *)
             # default: just ensure both
