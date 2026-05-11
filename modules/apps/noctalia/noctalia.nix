@@ -1,3 +1,16 @@
+#
+# noctalia.nix
+# ────────────
+# Noctalia desktop shell (status bar / launcher / control center / lock
+# screen). Reads its options from the JSON files in this folder:
+#   - noctalia.json        — main settings
+#   - colors.json          — theme / palette
+#   - screen-recorder.json — plugin settings
+#
+# The wallpaper path is patched into the JSON at evaluation time so it
+# always points at this repo's assets/wallpapers/clouds.jpg, regardless of
+# what was hard-coded into the original settings file.
+#
 { inputs, ... }: {
   flake.nixosModules.noctalia = { pkgs, lib, ... }:
   let
@@ -13,16 +26,21 @@
     home-manager.users.SunSD = { ... }: {
       imports = [ inputs.noctalia.homeModules.default ];
 
+      # Make wallpapers available under ~/Pictures/Wallpapers.
       home.file."Pictures/Wallpapers" = {
         source = ../../../assets/wallpapers;
         recursive = true;
       };
 
+      # Tell Noctalia which wallpaper to show by default.
       home.file.".cache/noctalia/wallpapers.json".text = builtins.toJSON {
         defaultWallpaper = wallpaperPathString;
         wallpapers = {};
       };
 
+      # ── Noctalia shell config ────────────────────────────────────────────
+      # `package` is patched to hide the lockscreen header and to use our
+      # wallpaper as the lockscreen background image.
       programs.noctalia-shell = {
         enable = true;
         package = lib.mkForce (

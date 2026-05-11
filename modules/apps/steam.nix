@@ -1,12 +1,22 @@
+#
+# steam.nix
+# ─────────
+# Steam, plus a small launcher (`steam-niri`) that exports the right Wayland
+# variables before exec'ing Steam so it picks the modern Vulkan UI under niri.
+# `steam-hardware.enable` adds udev rules for Steam Controllers / VR / etc.
+#
 { ... }: {
   flake.nixosModules.steam = { pkgs, ... }: {
+    # ── System-wide ───────────────────────────────────────────────────────
     programs.steam = {
       enable = true;
+      # Open the firewall ports needed for streaming games to other devices.
       remotePlay.openFirewall = true;
     };
 
     hardware.steam-hardware.enable = true;
 
+    # ── User-level launcher + .desktop entry ──────────────────────────────
     home-manager.users.SunSD = { ... }: {
       home.packages = [
         (pkgs.writeShellApplication {

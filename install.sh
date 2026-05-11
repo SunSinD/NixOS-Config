@@ -1,4 +1,20 @@
 #!/usr/bin/env bash
+#
+# install.sh — fresh NixOS installer for this flake.
+#
+# Usage:  bash <(curl -fsSL https://raw.githubusercontent.com/SunSinD/NixOS-Config/main/install.sh) [host]
+#
+# Pipeline (six phases):
+#   1. Preflight        — UEFI check, Secure Boot guard, host validation
+#   2. Prepare disk     — wipe + partition + mount /mnt
+#   3. Prepare workspace— scratch dirs + clone this repo into /mnt/tmp
+#   4. Resolve flake    — fetch + lock all flake inputs
+#   5. Install NixOS    — `nixos-install --flake .#<host>` to /mnt
+#   6. Verify boot      — sanity-check that an EFI loader actually exists
+#
+# Heartbeat output is provided every PROGRESS_INTERVAL seconds so the user
+# can see the install is making progress even when nix is silent.
+
 set -euo pipefail
 
 # ── Configuration ─────────────────────────────────────────────────────────────

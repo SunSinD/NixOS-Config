@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
-# Dark themed confirmation dialog.
+# confirm.sh — small dark-themed Yes/No popup using zenity.
+#
 # Usage: confirm.sh "Shut down?" && systemctl poweroff
+#
+# We build a temporary GTK3 theme directory, point XDG_CONFIG_HOME at it,
+# and launch zenity so the dialog matches the rest of the desktop instead
+# of inheriting the default light Adwaita look.
+
 D=$(mktemp -d)
 mkdir -p "$D/gtk-3.0"
+# ── Inline GTK theme override (Catppuccin-ish dark palette) ─────────────────
 cat > "$D/gtk-3.0/gtk.css" << 'EOF'
 * {
   background-color: #181825;
@@ -43,6 +50,8 @@ image {
 }
 EOF
 
+# Run zenity using our temp theme dir, then propagate its exit code.
+# Exit 0 = Yes, exit 1 = No / closed.
 XDG_CONFIG_HOME="$D" zenity --question \
   --title=" " \
   --text="$1" \

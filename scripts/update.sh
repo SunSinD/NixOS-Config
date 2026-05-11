@@ -1,22 +1,32 @@
 #!/usr/bin/env bash
-# Clean system update with organized phases.
+# update.sh — `update` alias.
+#
+# Pulls the latest config from GitHub and rebuilds the system.
+# The secure-boot toggle is read BEFORE the reset so a `git reset --hard`
+# can't accidentally turn Secure Boot off; we restore the saved value after.
+
 cd ~/nixconf || exit 1
+
+# Snapshot the local Secure Boot state (if any) before overwriting the tree.
 SECURE_BOOT_STATE=""
 if [ -f modules/nixos/secure-boot-state.json ]; then
   SECURE_BOOT_STATE="$(cat modules/nixos/secure-boot-state.json)"
 fi
 
-# Phase 1: Sync
+# ── Phase 1: Sync with GitHub ────────────────────────────────────────────────
 echo ""
 echo "  Syncing with GitHub..."
 git fetch -q origin && git reset -q --hard origin/main
+# Restore the saved Secure Boot state.
 if [ -n "$SECURE_BOOT_STATE" ]; then
   printf '%s\n' "$SECURE_BOOT_STATE" > modules/nixos/secure-boot-state.json
 fi
 echo "  Done."
 echo ""
 
-# Phase 2: Build
+# ── Phase 2: Rebuild ─────────────────────────────────────────────────────────
+# The `while read` loop filters nixos-rebuild's noisy output down to a few
+# friendly lines: which package is building, then activation events.
 echo "  Building system..."
 echo ""
 sudo nixos-rebuild switch \

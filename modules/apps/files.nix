@@ -1,6 +1,20 @@
+#
+# files.nix
+# ─────────
+# Two responsibilities:
+#
+#   1. Define the user's home folder layout (XDG user directories under
+#      ~/Files/, plus empty .keep files so the subfolders exist).
+#
+#   2. Override .desktop entries for installed apps: most are set to
+#      `NoDisplay=true` so they don't clutter the launcher (Noctalia +
+#      fuzzel), and a custom Chrome entry launches a clean dark profile.
+#
 { ... }: {
   flake.nixosModules.files = { pkgs, ... }: {
     home-manager.users.SunSD = { config, ... }: {
+      # ── XDG user directories ──────────────────────────────────────────────
+      # Point Downloads + Documents into ~/Files (a single tidy hub).
       xdg = {
         enable = true;
         userDirs = {
@@ -12,6 +26,7 @@
       };
 
       home.file = {
+        # Hide the nixconf checkout from the file manager listings.
         ".hidden".text = ''
           nixconf
           NixOS-Config
@@ -22,11 +37,16 @@
           NixOS-Config
         '';
 
+        # ── Folder placeholders ────────────────────────────────────────────
+        # Empty `.keep` files so `~/Files/...` subfolders always exist.
         "Files/Downloads/.keep".text = "";
         "Files/Games/Co-op Games/.keep".text = "";
         "Files/Games/Solo Games/.keep".text = "";
         "Files/Others/.keep".text = "";
 
+        # ── Custom Chrome launcher ────────────────────────────────────────
+        # Opens a dedicated profile with dark mode forced on and no first-run
+        # prompts. Useful as a clean second browser alongside Vivaldi.
         ".local/share/applications/google-chrome-fresh.desktop".text = ''
           [Desktop Entry]
           Name=Chrome
@@ -40,6 +60,9 @@
           StartupNotify=true
         '';
 
+        # ── Hidden launcher entries ───────────────────────────────────────
+        # Everything below is `NoDisplay=true` so duplicate / helper /
+        # uninteresting .desktop files don't show in the launcher grid.
         ".local/share/applications/google-chrome.desktop".text = ''
           [Desktop Entry]
           Name=Google Chrome

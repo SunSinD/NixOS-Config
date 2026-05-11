@@ -1,7 +1,19 @@
+#
+# equibop.nix
+# ───────────
+# Equibop (a Discord client based on Vesktop). Two pieces:
+#
+#   1. Wrap the upstream package to force the discrete GPU and enable
+#      hardware video decoding via VAAPI (so screen-sharing isn't laggy).
+#
+#   2. On every Home Manager switch, copy the JSON/CSS configs from this
+#      folder into ~/.config/equibop so the app picks them up next launch.
+#
 { ... }: {
   flake.nixosModules.equibop = { ... }: {
     home-manager.users.SunSD = { pkgs, lib, ... }: {
 
+      # ── Patched Equibop binary ────────────────────────────────────────────
       home.packages = [
         (pkgs.equibop.overrideAttrs (old: {
           nativeBuildInputs = (old.nativeBuildInputs or []) ++ [ pkgs.makeWrapper ];
@@ -13,6 +25,8 @@
         }))
       ];
 
+      # ── Settings sync ────────────────────────────────────────────────────
+      # Copy the local JSON/CSS into the live config dir after HM finishes.
       home.activation.equibopSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         EQUIBOP_DIR="$HOME/.config/equibop"
         mkdir -p "$EQUIBOP_DIR"/settings

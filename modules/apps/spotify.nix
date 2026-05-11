@@ -1,7 +1,21 @@
+#
+# spotify.nix
+# ───────────
+# Spotify (Flatpak edition) + SpotX patches (ad-blocking / experimental
+# features) + a custom .desktop entry so the launcher icon resolves.
+#
+# The `home.activation.spotifySpotX` block runs after every HM switch:
+#   1. ensure the Flathub remote is added
+#   2. install Spotify if missing
+#   3. apply SpotX patches
+#   4. copy the icon to ~/.local/share/icons so launchers can find it
+#
 { ... }: {
   flake.nixosModules.spotify = { pkgs, ... }: {
     home-manager.users.SunSD = { lib, ... }:
       let
+        # `spotx`: a tiny wrapper around the upstream SpotX-Bash one-liner
+        # so it ends up on PATH as a normal Nix-built binary.
         spotx = pkgs.writeShellApplication {
           name = "spotx";
           runtimeInputs = with pkgs; [

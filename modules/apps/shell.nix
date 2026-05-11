@@ -1,6 +1,15 @@
+#
+# shell.nix
+# ─────────
+# The interactive shell setup: the Starship prompt + Bash with the project's
+# convenience aliases (`rebuild`, `update`, etc.).
+#
 { ... }: {
   flake.nixosModules.shell = { ... }: {
     home-manager.users.SunSD = { ... }: {
+      # ── Starship prompt ─────────────────────────────────────────────────
+      # Compact prompt; expensive cloud modules (aws / gcloud) are disabled
+      # so the prompt never stalls in unrelated directories.
       programs.starship = {
         enable   = true;
         settings = {
@@ -13,6 +22,12 @@
         };
       };
 
+      # ── Bash ────────────────────────────────────────────────────────────
+      # Aliases for everyday system maintenance:
+      #   rebuild             — nixos-rebuild switch with retries (logged)
+      #   update              — git pull + rebuild
+      #   enable-lanzaboote   — turn on Secure Boot (Lanzaboote)
+      #   finish-install      — post-install setup wizard
       programs.bash = {
         enable           = true;
         enableCompletion = true;
