@@ -1,3 +1,10 @@
+#
+# hosts/vm/configuration.nix
+# ──────────────────────────
+# The "vm" host: a portable virtual machine config that boots cleanly under
+# VMware, QEMU/KVM (VirtIO), and similar hypervisors. Pulls in the shared
+# core via the import at the bottom.
+#
 { inputs, withSystem, ... }: {
   flake.nixosConfigurations.vm = withSystem "x86_64-linux" ({ config, ... }:
     inputs.nixpkgs.lib.nixosSystem {
@@ -10,13 +17,14 @@
       modules = [
         ({ pkgs, ... }: {
           networking.hostName = "vm";
+          # Secure Boot rarely makes sense in a VM; kept off.
           custom.secureBoot.enable = false;
 
-          # Disk
+          # ── Disk ─────────────────────────────────────────────────────────
           # Placeholder only. The installer mounts filesystems by label.
           custom.disk.device = "/dev/sda";
 
-          # Hardware
+          # ── Hardware ─────────────────────────────────────────────────────
           # Covers VMware, QEMU/KVM VirtIO, SATA, and common SCSI boot disks.
           boot.initrd.availableKernelModules = [
             "ahci"
@@ -36,9 +44,11 @@
             "vmw_pvscsi"
           ];
           boot.initrd.kernelModules = [ "vmwgfx" ];
+          # Both KVM modules included since the VM may run on AMD or Intel hosts.
           boot.kernelModules       = [ "kvm-amd" "kvm-intel" ];
 
-          # Boot
+          # ── Boot ─────────────────────────────────────────────────────────
+          # Latest mainline kernel + systemd-boot on the EFI partition.
           boot = {
             kernelPackages              = pkgs.linuxPackages_latest;
             supportedFilesystems        = [ "btrfs" ];
@@ -48,7 +58,8 @@
             loader.efi.canTouchEfiVariables  = true;
           };
 
-          # VM guest integration
+          # ── VM guest integration ─────────────────────────────────────────
+          # Clipboard sharing, dynamic resolution, time sync, etc.
           services.spice-vdagentd.enable = true;
           services.qemuGuest.enable      = true;
           virtualisation.vmware.guest.enable = true;
@@ -56,6 +67,7 @@
           # VMware Wayland compatibility
           # VMware's vmwgfx needs 3D acceleration enabled in VMware settings.
 
+          # ── Extra guest tools ────────────────────────────────────────────
           environment.systemPackages = [
             pkgs.spice-vdagent
             pkgs.open-vm-tools

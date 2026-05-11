@@ -1,6 +1,17 @@
+#
+# core.nix
+# ────────
+# Shared NixOS module that every host (`main-pc`, `vm`, `generic`) imports.
+# Anything that should be true *everywhere* lives here: locale, networking,
+# the user account, sound, Bluetooth, fonts, the window manager session, etc.
+# Host-specific tweaks live in modules/nixos/hosts/<host>/configuration.nix.
+#
 { inputs, ... }: {
   flake.nixosModules.core = { config, pkgs, lib, ... }:
   let
+    # ── Helper: btrfs swapfile creator ─────────────────────────────────────
+    # systemd runs this once on boot to make sure /swapfile exists before
+    # the kernel tries to swap on it.
     # Built without Nix '' multiline strings so CRLF / '' rules cannot break systemd's generated wrapper.
     btrfsSwapInit = pkgs.writeShellScript "create-swapfile" (
       lib.concatStringsSep "\n" [
@@ -11,6 +22,9 @@
       ]
     );
 
+    # ── Helper: niri session launcher ──────────────────────────────────────
+    # This is the program greetd starts when you log in. It loads the system
+    # environment, sets the right Wayland variables, and then exec's niri.
     sunsdNiriSession = pkgs.writeShellScriptBin "sunsd-niri-session" ''
       set -eu
 
@@ -43,12 +57,15 @@
       exec ${lib.getExe config.programs.niri.package}
     '';
   in {
+    # Pull in the modules from external flakes that we want available system-wide.
     imports = [
       inputs.home-manager.nixosModules.home-manager
       inputs.catppuccin.nixosModules.catppuccin
       inputs.disko.nixosModules.disko
     ];
 
+    # ── Locale & networking ────────────────────────────────────────────────
+    # Time zone, the network manager (Wi-Fi / Ethernet), and DNS resolvers.
     time.timeZone                          = "America/Montreal";
     networking.networkmanager.enable       = true;
     networking.networkmanager.dns          = "systemd-resolved";
@@ -59,9 +76,13 @@
       settings.Resolve.DNSSEC       = "false";
       settings.Resolve.FallbackDNS  = [ "1.1.1.1" "8.8.8.8" ];
     };
+    # Ship binary firmware blobs (Wi-Fi, GPU, etc.) and allow non-free packages.
     hardware.enableRedistributableFirmware = true;
     nixpkgs.config.allowUnfree            = true;
 
+    # ── Swap ───────────────────────────────────────────────────────────────
+    # zram = compressed RAM acting as fast swap. The /swapfile on disk is the
+    # backing slower swap (created by the systemd unit further down).
     zramSwap = {
       enable    = true;
       algorithm = "zstd";
@@ -71,6 +92,10 @@
       { device = "/swapfile"; }
     ];
 
+    # ── Users ──────────────────────────────────────────────────────────────
+    # `mutableUsers = false` means users are defined ONLY here in Nix; you
+    # can't add/remove them with passwd/useradd. Empty hashedPassword lets
+    # you log in without a password (auto-login is configured below).
     users = {
       mutableUsers = false;
       users.SunSD = {
@@ -80,11 +105,16 @@
       };
     };
 
+    # ── Security ───────────────────────────────────────────────────────────
+    # Passwordless sudo for anyone in the `wheel` group, and PAM allows the
+    # empty password set above to actually log in.
     security = {
       sudo.wheelNeedsPassword = false;
       pam.services.login.allowNullPassword = true;
     };
 
+    # ── Bluetooth ──────────────────────────────────────────────────────────
+    # Enable the stack at boot and run blueman as the GUI manager.
     hardware.bluetooth = {
       enable = true;
       powerOnBoot = true;
@@ -93,6 +123,9 @@
 
     services.blueman.enable = true;
 
+    # ── Nix daemon settings ────────────────────────────────────────────────
+    # `extra-substituters` are extra binary caches; `trusted-public-keys` lets
+    # Nix verify their downloads. Trusted-users may use these caches too.
     nix.settings = {
       trusted-users         = [ "root" "@wheel" ];
       experimental-features = [ "nix-command" "flakes" ];
@@ -107,17 +140,24 @@
       ];
     };
 
+    # ── Theme ──────────────────────────────────────────────────────────────
+    # Catppuccin theming is currently off; colors come from app-level configs.
     catppuccin = {
       enable = false;
       cursors.enable = false;
     };
 
+    # ── Fonts ──────────────────────────────────────────────────────────────
+    # Inter for UI, JetBrains Mono for terminals/editors, Noto for emoji.
     fonts.packages = with pkgs; [
       inter
       jetbrains-mono
       noto-fonts-color-emoji
     ];
 
+    # ── Home Manager ───────────────────────────────────────────────────────
+    # Manages user-level dotfiles in the same Nix language. `useGlobalPkgs`
+    # makes HM share the system's `pkgs` instead of importing its own.
     home-manager = {
       useGlobalPkgs   = true;
       useUserPackages = true;
@@ -133,8 +173,12 @@
       };
     };
 
+    # Make .desktop entries from system packages visible to launchers.
     environment.pathsToLink = [ "/share/applications" ];
 
+    # ── XDG portals & default apps ─────────────────────────────────────────
+    # Portals are how Wayland apps ask the system for screenshots, file
+    # pickers, etc. The MIME table picks the default browser/file manager.
     xdg = {
       portal = {
         enable = true;
@@ -156,6 +200,9 @@
       };
     };
 
+    # ── Session environment ────────────────────────────────────────────────
+    # Variables exported into every graphical session so apps render natively
+    # under Wayland and use a dark GTK theme.
     environment.sessionVariables = {
       NIXOS_OZONE_WL              = "1";
       ELECTRON_OZONE_PLATFORM_HINT = "wayland";
@@ -164,6 +211,7 @@
       GTK_THEME                   = "Adwaita:dark";
     };
 
+    # ── Boot loader & kernel quiet flags ───────────────────────────────────
     # Keep multiple generations and show the boot menu briefly so you can
     # choose older configs when needed.
     boot.loader.systemd-boot.configurationLimit = lib.mkDefault 3;
@@ -178,11 +226,17 @@
       "rd.systemd.show_status=false"
     ];
 
+    # ── Graphics ───────────────────────────────────────────────────────────
+    # Enable the Mesa stack plus 32-bit libraries so 32-bit apps (Steam, Wine)
+    # can use the GPU.
     hardware.graphics = {
       enable      = true;
       enable32Bit = true;
     };
 
+    # ── System services ────────────────────────────────────────────────────
+    # Auto-login on tty1, greetd as the display manager (it just runs the
+    # niri session script), PipeWire for audio, plus a few utility daemons.
     services = {
       getty.autologinUser = "SunSD";
 
@@ -217,6 +271,9 @@
       };
     };
 
+    # ── systemd units ──────────────────────────────────────────────────────
+    # One-shot unit that runs `btrfsSwapInit` (defined at the top) to create
+    # /swapfile right before the kernel mounts it as swap.
     systemd = {
       services = {
         create-swapfile = {
@@ -236,8 +293,10 @@
       network.wait-online.enable = false;
     };
 
+    # Unlock the GNOME keyring on login so apps can read stored secrets.
     security.pam.services.greetd.enableGnomeKeyring = true;
 
+    # ── Virtualization (opt-in) ────────────────────────────────────────────
     # libvirt can fail to start on some machines after updates when systemd
     # credentials are TPM-sealed (seen as "TPM key integrity check failed"),
     # which would make `nixos-rebuild switch` fail. Keep it opt-in per-host.
@@ -249,6 +308,10 @@
       spiceUSBRedirection.enable = lib.mkDefault false;
     };
 
+    # ── Misc ───────────────────────────────────────────────────────────────
+    # `system.nixos.label` shows the hostname in the systemd-boot menu.
+    # `stateVersion` tells NixOS which release semantics to keep stable for
+    # this install — DO NOT change it after the system is set up.
     system.nixos.label     = config.networking.hostName;
     security.polkit.enable = true;
     system.stateVersion    = "25.11";

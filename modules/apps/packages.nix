@@ -1,6 +1,21 @@
+#
+# packages.nix
+# ────────────
+# Two things live here:
+#
+#   1. Small "sunsd-*" helper scripts wrapped as Nix packages so they end up
+#      on PATH like any other binary (sunsd-terminal, sunsd-noctalia-*, etc.).
+#      These are what the niri keybindings call.
+#
+#   2. The actual list of programs installed system-wide
+#      (`environment.systemPackages`) and per-user via Home Manager
+#      (`home.packages`).
+#
 { ... }: {
   flake.nixosModules.packages = { pkgs, lib, ... }:
   let
+    # sunsd-terminal: opens a foot terminal instantly. Tries the foot SERVER
+    # first (footclient is near-instant) and falls back to a fresh `foot`.
     sunsd-terminal = pkgs.writeShellApplication {
       name = "sunsd-terminal";
       runtimeInputs = with pkgs; [ coreutils procps foot ];

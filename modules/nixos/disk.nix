@@ -1,3 +1,14 @@
+#
+# disk.nix
+# ────────
+# Declarative disk layout + filesystem mounts.
+#
+# The install script (install.sh) handles the *initial* partitioning. This
+# module describes what the layout SHOULD look like so it can be replicated:
+#   - disko: GPT, ESP for /boot, btrfs for everything else with subvolumes
+#   - fileSystems (below): mounts those subvolumes by LABEL, so the same
+#     config works on any machine without changing device paths.
+#
 { ... }: {
   flake.nixosModules.disk = { lib, config, inputs, ... }: {
 

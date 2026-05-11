@@ -1,3 +1,11 @@
+#
+# hosts/main-pc/configuration.nix
+# ───────────────────────────────
+# The "main-pc" host: my AMD CPU + Nvidia GPU desktop running the CachyOS
+# kernel. This file only contains things that DIFFER from the shared core
+# (modules/nixos/core.nix); everything else is inherited via the import
+# at the bottom (`builtins.attrValues inputs.self.nixosModules`).
+#
 { inputs, withSystem, ... }: {
   flake.nixosConfigurations.main-pc = withSystem "x86_64-linux" ({ config, ... }:
     inputs.nixpkgs.lib.nixosSystem {
@@ -9,7 +17,9 @@
 
       modules = [
         ({ pkgs, lib, ... }: {
+          # Identifies the host on the network and in the boot menu label.
           networking.hostName = "main-pc";
+          # Secure Boot off here; flip on with `enable-lanzaboote` after install.
           custom.secureBoot.enable = false;
 
           # ── Virtualization (opt-in) ────────────────────────────────────────────
