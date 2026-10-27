@@ -3,18 +3,18 @@
 # ────────
 # Declarative disk layout + filesystem mounts.
 #
-# The install script (install.sh) handles the *initial* partitioning. This
-# module describes what the layout SHOULD look like so it can be replicated:
-#   - disko: GPT, ESP for /boot, btrfs for everything else with subvolumes
+# install.sh does the *initial* partitioning itself (parted + mkfs). This
+# module describes the same layout so the system knows how to mount it:
+#   - disko: GPT, ESP for /boot, btrfs for everything else with subvolumes.
+#     Only used if you re-run disko by hand to repartition.
 #   - fileSystems (below): mounts those subvolumes by LABEL, so the same
 #     config works on any machine without changing device paths.
 #
 { ... }: {
-  flake.nixosModules.disk = { lib, config, inputs, ... }: {
+  flake.nixosModules.disk = { lib, config, ... }: {
 
     # The disk device is only needed if you want to re-run disko manually
-    # to repartition an existing installation. The install script always
-    # provides this via --disk main <device> at install time.
+    # to repartition an existing installation.
     options.custom.disk.device = lib.mkOption {
       type        = lib.types.str;
       default     = "/dev/sda";
@@ -27,8 +27,7 @@
 
     config = {
       # ── Disko partition layout ─────────────────────────────────────────────
-      # Used by the install script (via disko standalone) and available for
-      # manual repartitioning. The device is overridden at install time.
+      # Mirrors what install.sh creates. Only used for manual repartitioning.
       disko.devices.disk.main = {
         type   = "disk";
         device = config.custom.disk.device;

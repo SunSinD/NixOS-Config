@@ -5,77 +5,65 @@
 # VMware, QEMU/KVM (VirtIO), and similar hypervisors. Pulls in the shared
 # core via the import at the bottom.
 #
-{ inputs, withSystem, ... }: {
-  flake.nixosConfigurations.vm = withSystem "x86_64-linux" ({ config, ... }:
-    inputs.nixpkgs.lib.nixosSystem {
-      system      = "x86_64-linux";
-      specialArgs = {
-        inherit inputs;
-        flakePackages = config.packages;
-      };
+{ inputs, ... }: {
+  flake.nixosConfigurations.vm = inputs.nixpkgs.lib.nixosSystem {
+    specialArgs = { inherit inputs; };
 
-      modules = [
-        ({ pkgs, ... }: {
-          networking.hostName = "vm";
-          # Secure Boot rarely makes sense in a VM; kept off.
-          custom.secureBoot.enable = false;
+    modules = [
+      ({ pkgs, ... }: {
+        nixpkgs.hostPlatform = "x86_64-linux";
+        networking.hostName  = "vm";
+        # Secure Boot rarely makes sense in a VM; kept off.
+        custom.secureBoot.enable = false;
 
-          # ── Disk ─────────────────────────────────────────────────────────
-          # Placeholder only. The installer mounts filesystems by label.
-          custom.disk.device = "/dev/sda";
+        # ── Hardware ─────────────────────────────────────────────────────────
+        # Covers VMware, QEMU/KVM VirtIO, SATA, and common SCSI boot disks.
+        boot.initrd.availableKernelModules = [
+          "ahci"
+          "ata_piix"
+          "sd_mod"
+          "sr_mod"
+          "xhci_pci"
+          "ehci_pci"
+          "ohci_pci"
+          "usbhid"
+          "virtio_pci"
+          "virtio_blk"
+          "virtio_scsi"
+          "mptbase"
+          "mptscsih"
+          "mptspi"
+          "vmw_pvscsi"
+        ];
+        # VMware's vmwgfx needs 3D acceleration enabled in the VM settings.
+        boot.initrd.kernelModules = [ "vmwgfx" ];
+        # Both KVM modules included since the VM may run on AMD or Intel hosts.
+        boot.kernelModules        = [ "kvm-amd" "kvm-intel" ];
 
-          # ── Hardware ─────────────────────────────────────────────────────
-          # Covers VMware, QEMU/KVM VirtIO, SATA, and common SCSI boot disks.
-          boot.initrd.availableKernelModules = [
-            "ahci"
-            "ata_piix"
-            "sd_mod"
-            "sr_mod"
-            "xhci_pci"
-            "ehci_pci"
-            "ohci_pci"
-            "usbhid"
-            "virtio_pci"
-            "virtio_blk"
-            "virtio_scsi"
-            "mptbase"
-            "mptscsih"
-            "mptspi"
-            "vmw_pvscsi"
-          ];
-          boot.initrd.kernelModules = [ "vmwgfx" ];
-          # Both KVM modules included since the VM may run on AMD or Intel hosts.
-          boot.kernelModules       = [ "kvm-amd" "kvm-intel" ];
+        # ── Boot ─────────────────────────────────────────────────────────────
+        # Latest mainline kernel + systemd-boot on the EFI partition.
+        boot = {
+          kernelPackages              = pkgs.linuxPackages_latest;
+          supportedFilesystems        = [ "btrfs" ];
+          initrd.supportedFilesystems = [ "btrfs" ];
 
-          # ── Boot ─────────────────────────────────────────────────────────
-          # Latest mainline kernel + systemd-boot on the EFI partition.
-          boot = {
-            kernelPackages              = pkgs.linuxPackages_latest;
-            supportedFilesystems        = [ "btrfs" ];
-            initrd.supportedFilesystems = [ "btrfs" ];
+          loader.systemd-boot.enable      = true;
+          loader.efi.canTouchEfiVariables = true;
+        };
 
-            loader.systemd-boot.enable       = true;
-            loader.efi.canTouchEfiVariables  = true;
-          };
+        # ── VM guest integration ─────────────────────────────────────────────
+        # Clipboard sharing, dynamic resolution, time sync, etc.
+        services.spice-vdagentd.enable     = true;
+        services.qemuGuest.enable          = true;
+        virtualisation.vmware.guest.enable = true;
 
-          # ── VM guest integration ─────────────────────────────────────────
-          # Clipboard sharing, dynamic resolution, time sync, etc.
-          services.spice-vdagentd.enable = true;
-          services.qemuGuest.enable      = true;
-          virtualisation.vmware.guest.enable = true;
-
-          # VMware Wayland compatibility
-          # VMware's vmwgfx needs 3D acceleration enabled in VMware settings.
-
-          # ── Extra guest tools ────────────────────────────────────────────
-          environment.systemPackages = [
-            pkgs.spice-vdagent
-            pkgs.open-vm-tools
-            pkgs.mesa-demos
-            pkgs.wlr-randr
-          ];
-        })
-      ] ++ builtins.attrValues inputs.self.nixosModules;
-    }
-  );
+        environment.systemPackages = with pkgs; [
+          spice-vdagent
+          open-vm-tools
+          mesa-demos
+          wlr-randr
+        ];
+      })
+    ] ++ builtins.attrValues inputs.self.nixosModules;
+  };
 }

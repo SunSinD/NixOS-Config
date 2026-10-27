@@ -13,20 +13,7 @@ input {
     mouse
 }
 
-// To find your exact monitor name, run: niri msg outputs
-// MARK_ASUS_OUTPUT_BEGIN
-output "ASUS VG279QM" {
-    mode "1920x1080@280.000"
-}
-// MARK_ASUS_OUTPUT_END
-
-// VMware: vmwgfx connector name varies by driver/VM settings; forcing the wrong name blanks the screen.
-// Stripped entirely for hostname "vm" in niri.nix — niri then uses defaults for whatever output exists.
-// MARK_VM_VIRTUAL_OUTPUT_BEGIN
-output "Virtual-1" {
-    scale 1.0
-}
-// MARK_VM_VIRTUAL_OUTPUT_END
+// Monitor (output) settings are added per host in niri.nix.
 
 cursor {
     xcursor-theme "Bibata-Modern-Classic"
@@ -51,15 +38,14 @@ debug {
 
 workspace "1"
 workspace "2"
+workspace "3"
 
 layout {
     gaps 10
     focus-ring {
         on
-
         width 2
         active-color "#b0b0b0"
-
         inactive-color "#00000000"
     }
     // Keep transparent so the wallpaper layer always shows through.
@@ -70,17 +56,13 @@ layout {
     border {
         off
         width 3
-
-        inactive-color "#00000000"
-
         active-color "#b0b0b0"
+        inactive-color "#00000000"
     }
 }
 
 overview {
     workspace-shadow {
-
-
         off
     }
 }
@@ -127,9 +109,9 @@ layer-rule {
     place-within-backdrop true
 }
 
+// Pinned screenshots (Mod+Delete) only, not every mpv window.
 window-rule {
-    match app-id=r"mpv"
-    match title=r"(?i)_pin_"
+    match app-id=r"^mpv$" title=r"^_pin_$"
     open-floating true
     draw-border-with-background false
     focus-ring { off; }
@@ -195,10 +177,10 @@ binds {
     Insert { spawn "/run/current-system/sw/bin/bash" "-c" "mkdir -p ~/Screenshots && F=~/Screenshots/screenshot_$(date +%Y%m%d_%H%M%S).png && grim -g \"$(slurp -b 00000040 -c b0b0b0 -w 2)\" $F && wl-copy < $F && notify-send -t 2000 'Screenshot' 'Saved & copied'"; }
 
     // Alt+T = OCR region -> text to clipboard (upscaled for accuracy)
-    Alt+T  { spawn "/run/current-system/sw/bin/bash" "-c" "grim -g \"$(slurp -b 00000040 -c b0b0b0 -w 2)\" /tmp/_ocr.png && convert /tmp/_ocr.png -resize 200% -colorspace Gray -sharpen 0x1 /tmp/_ocr_up.png && tesseract /tmp/_ocr_up.png /tmp/_ocr -l eng --oem 1 --psm 3 2>/dev/null && TEXT=$(sed '/^$/d' /tmp/_ocr.txt | sed 's/[[:space:]]*$//') && printf '%s' \"$TEXT\" | wl-copy && notify-send -t 3000 'OCR - Copied' \"$TEXT\" && rm -f /tmp/_ocr.png /tmp/_ocr_up.png /tmp/_ocr.txt"; }
+    Alt+T  { spawn "/run/current-system/sw/bin/bash" "-c" "grim -g \"$(slurp -b 00000040 -c b0b0b0 -w 2)\" /tmp/_ocr.png && magick /tmp/_ocr.png -resize 200% -colorspace Gray -sharpen 0x1 /tmp/_ocr_up.png && tesseract /tmp/_ocr_up.png /tmp/_ocr -l eng --oem 1 --psm 3 2>/dev/null && TEXT=$(sed '/^$/d' /tmp/_ocr.txt | sed 's/[[:space:]]*$//') && printf '%s' \"$TEXT\" | wl-copy && notify-send -t 3000 'OCR - Copied' \"$TEXT\" && rm -f /tmp/_ocr.png /tmp/_ocr_up.png /tmp/_ocr.txt"; }
 
     // Mod+Delete = pin region to screen. Mouse wheel zooms image; Q or Mod+W closes it.
-    Mod+Delete { spawn "/run/current-system/sw/bin/bash" "-c" "F=/tmp/_pin_$(date +%s).png; I=/tmp/_pin_input_$(date +%s).conf; printf '%s\n' 'WHEEL_UP add video-zoom 0.1' 'WHEEL_DOWN add video-zoom -0.1' 'MBTN_LEFT cycle pause' 'q quit' > $I; grim -g \"$(slurp -b 00000040 -c b0b0b0 -w 2)\" $F && mpv --image-display-duration=inf --no-border --ontop --no-osc --really-quiet --title=_pin_ --input-conf=$I $F"; }
+    Mod+Delete { spawn "/run/current-system/sw/bin/bash" "-c" "F=/tmp/_pin_$(date +%s).png; I=/tmp/_pin_input_$(date +%s).conf; printf '%s\n' 'WHEEL_UP add video-zoom 0.1' 'WHEEL_DOWN add video-zoom -0.1' 'MBTN_LEFT cycle pause' 'q quit' > $I; grim -g \"$(slurp -b 00000040 -c b0b0b0 -w 2)\" $F && mpv --image-display-duration=inf --no-border --ontop --no-osc --really-quiet --title=_pin_ --input-conf=$I $F; rm -f $F $I"; }
 
     Mod+H { focus-column-left; }
     Mod+L { focus-column-right; }
@@ -225,13 +207,11 @@ binds {
 spawn-at-startup "/run/current-system/sw/bin/dbus-update-activation-environment" "--systemd" "--all"
 spawn-at-startup "/run/current-system/sw/bin/sunsd-session-ensure" "startup"
 spawn-at-startup "/run/current-system/sw/bin/xwayland-satellite"
+// foot server so Mod+Return (footclient) opens a terminal instantly.
+spawn-at-startup "/run/current-system/sw/bin/foot" "--server"
 spawn-at-startup "/run/current-system/sw/bin/niri" "msg" "action" "focus-workspace" "2"
 
 animations {
-    // Uncomment while tuning.
-    slowdown 1.0
-
-
     window-open {
         duration-ms 260
         // close to a polished macOS-style ease-out feel
@@ -303,15 +283,12 @@ animations {
         off
     }
 
-// ***animations below do not use a shaders ***
-// these are not required
-
-
+    // The animations below don't use custom shaders.
     workspace-switch {
         // Smooth, composed, no bounce.
         spring damping-ratio=1.0 stiffness=760 epsilon=0.0001
     }
-    
+
     horizontal-view-movement {
         // Main "camera glide" for scrollable movement.
         spring damping-ratio=1.0 stiffness=640 epsilon=0.0001

@@ -1,5 +1,3 @@
-*.nix text eol=lf
-*.kdl text eol=lf
-*.json text eol=lf
-*.sh text eol=lf
-*.jq text eol=lf
+* text=auto eol=lf
+*.jpg binary
+*.png binary

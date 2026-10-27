@@ -55,23 +55,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Catppuccin color theme module (currently disabled in core.nix).
-    catppuccin.url = "github:catppuccin/nix";
-
-    # Declarative disk partitioning (used by the install script).
+    # Declarative disk layout (see modules/nixos/disk.nix).
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # Extra niri tooling/modules.
-    nirimod = {
-      url = "github:srinivasr/nirimod";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # Declarative Discord (Vencord) configuration.
-    nixcord.url = "github:FlameFlag/nixcord";
   };
 
   # ── Outputs ───────────────────────────────────────────────────────────────
@@ -81,16 +69,7 @@
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } {
     imports = [ (inputs.import-tree ./modules) ];
 
-    # We only build for 64-bit Linux. Add more here for other architectures.
+    # We only build for 64-bit Linux.
     systems = [ "x86_64-linux" ];
-
-    # Per-system settings. `allowUnfree = true` lets us install proprietary
-    # packages (Nvidia drivers, Steam, Vivaldi, etc.).
-    perSystem = { system, ... }: {
-      _module.args.pkgs = import inputs.nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-      };
-    };
   };
 }

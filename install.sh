@@ -239,6 +239,8 @@ trap cleanup EXIT
 #  MAIN
 # ═════════════════════════════════════════════════════════════════════════════
 MACHINE="$(detect_machine)"
+# Read menu answers from the keyboard even if stdin was redirected.
+[[ -r /dev/tty ]] && exec < /dev/tty
 printf '\033[2J\033[H\n%s\n\n' "SunSD NixOS Installer" > /dev/tty 2>/dev/null || printf '\n%s\n\n' "SunSD NixOS Installer"
 
 # ── Host selection ────────────────────────────────────────────────────────────
@@ -269,8 +271,6 @@ if [[ "$HOST" == "main-pc" && "$MACHINE" == *ThinkPad* ]]; then
   echo "main-pc is desktop-only (AMD/Nvidia/CachyOS). Use: generic"
   exit 1
 fi
-
-[[ -r /dev/tty ]] && exec < /dev/tty
 
 # ── [1/6] Preflight ──────────────────────────────────────────────────────────
 [[ -d /sys/firmware/efi/efivars ]] || {
@@ -307,7 +307,7 @@ else
       "$(lsblk -dno SIZE "/dev/${DISKS[$i]}")" "$(lsblk -dno MODEL "/dev/${DISKS[$i]}" 2>/dev/null || true)"
   done
   read -rp "DANGER: This will WIPE the selected disk. Choose (number): " choice
-  [[ -z "${DISKS[$choice]+x}" ]] && { echo "ERROR: Invalid choice."; exit 1; }
+  [[ "$choice" =~ ^[0-9]+$ && -n "${DISKS[$choice]+x}" ]] || { echo "ERROR: Invalid choice."; exit 1; }
   DEV="/dev/${DISKS[$choice]}"
 fi
 
@@ -398,7 +398,10 @@ DEST="/mnt/home/SunSD/nixconf"
 sudo mkdir -p "$(dirname "$DEST")"
 sudo cp -rT "$WORK_DIR" "$DEST"
 sudo chown -R 1000:1000 "$DEST"
-cd "$DEST" && sudo -u "#1000" git remote set-url origin "$REPO" 2>/dev/null || true
+
+# Remove install-only scratch files from the new system's /tmp.
+cd /
+sudo rm -rf "$WORK_DIR" "$USER_CACHE_DIR" "$ROOT_CACHE_DIR" "$ROOT_HOME_DIR"
 
 status "Done"
 msg "Rebooting..."

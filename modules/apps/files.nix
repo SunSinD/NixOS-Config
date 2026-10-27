@@ -6,13 +6,69 @@
 #   1. Define the user's home folder layout (XDG user directories under
 #      ~/Files/, plus empty .keep files so the subfolders exist).
 #
-#   2. Override .desktop entries for installed apps: most are set to
-#      `NoDisplay=true` so they don't clutter the launcher (Noctalia +
+#   2. Override .desktop entries for installed apps: most are hidden
+#      (`NoDisplay=true`) so they don't clutter the launcher (Noctalia +
 #      fuzzel), and a custom Chrome entry launches a clean dark profile.
 #
 { ... }: {
-  flake.nixosModules.files = { pkgs, ... }: {
-    home-manager.users.SunSD = { config, ... }: {
+  flake.nixosModules.files = { pkgs, lib, ... }: {
+    home-manager.users.SunSD = { config, ... }:
+    let
+      # Hidden with a small stub entry. Fine for apps we never open files
+      # or links with (the stub has no Exec line).
+      hiddenStubs = [
+        "google-chrome"
+        "google-chrome-stable"
+        "btop"
+        "btop++"
+        "blueman-adapters"
+        "blueman-manager"
+        "thunar-bulk-rename"
+        "thunar-settings"
+        "nvim"
+        "ghostty"
+        "com.mitchellh.ghostty"
+        "md.obsidian.Obsidian"
+        "nixos-manual"
+        "remote-viewer"
+        "virt-manager"
+        "pavucontrol"
+        "org.pulseaudio.pavucontrol"
+        "com.spotify.Client"
+        "com.obsproject.Studio"
+        "foot"
+        "footclient"
+        "foot-server"
+      ];
+
+      # Hidden but still working: a copy of the app's real entry with
+      # NoDisplay=true added. Needed for apps that open folders, files or
+      # links (e.g. Thunar is the default for folders), because a stub
+      # without Exec would break "open with".
+      hiddenCopies = {
+        thunar   = pkgs.thunar;
+        mpv      = pkgs.mpv;
+        obsidian = pkgs.obsidian;
+      };
+
+      stub = name: {
+        name  = ".local/share/applications/${name}.desktop";
+        value.text = ''
+          [Desktop Entry]
+          Name=${name}
+          Type=Application
+          NoDisplay=true
+        '';
+      };
+
+      hiddenCopy = name: pkg: {
+        name  = ".local/share/applications/${name}.desktop";
+        value.source = pkgs.runCommand "${name}-hidden.desktop" { } ''
+          sed -e '/^NoDisplay=/d' -e '/^\[Desktop Entry\]$/a NoDisplay=true' \
+            ${pkg}/share/applications/${name}.desktop > $out
+        '';
+      };
+    in {
       # ── XDG user directories ──────────────────────────────────────────────
       # Point Downloads + Documents into ~/Files (a single tidy hub).
       xdg = {
@@ -59,198 +115,10 @@
           Categories=Network;WebBrowser;
           StartupNotify=true
         '';
-
-        # ── Hidden launcher entries ───────────────────────────────────────
-        # Everything below is `NoDisplay=true` so duplicate / helper /
-        # uninteresting .desktop files don't show in the launcher grid.
-        ".local/share/applications/google-chrome.desktop".text = ''
-          [Desktop Entry]
-          Name=Google Chrome
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/google-chrome-stable.desktop".text = ''
-          [Desktop Entry]
-          Name=Google Chrome
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/btop.desktop".text = ''
-          [Desktop Entry]
-          Name=btop
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/btop++.desktop".text = ''
-          [Desktop Entry]
-          Name=btop++
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/blueman-adapters.desktop".text = ''
-          [Desktop Entry]
-          Name=Bluetooth Adapters
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/blueman-manager.desktop".text = ''
-          [Desktop Entry]
-          Name=Bluetooth Manager
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/thunar-bulk-rename.desktop".text = ''
-          [Desktop Entry]
-          Name=Bulk Rename
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/nvim.desktop".text = ''
-          [Desktop Entry]
-          Name=Neovim
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/nirimod.desktop".text = ''
-          [Desktop Entry]
-          Name=NiriMod
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/nirimod-bin.desktop".text = ''
-          [Desktop Entry]
-          Name=NiriMod
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/ghostty.desktop".text = ''
-          [Desktop Entry]
-          Name=Ghostty
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/com.mitchellh.ghostty.desktop".text = ''
-          [Desktop Entry]
-          Name=Ghostty
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/obsidian.desktop".text = ''
-          [Desktop Entry]
-          Name=Obsidian
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/md.obsidian.Obsidian.desktop".text = ''
-          [Desktop Entry]
-          Name=Obsidian
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/nixos-manual.desktop".text = ''
-          [Desktop Entry]
-          Name=NixOS Manual
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/mpv.desktop".text = ''
-          [Desktop Entry]
-          Name=mpv Media Player
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/remote-viewer.desktop".text = ''
-          [Desktop Entry]
-          Name=Remote Viewer
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/thunar.desktop".text = ''
-          [Desktop Entry]
-          Name=Thunar File Manager
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/thunar-settings.desktop".text = ''
-          [Desktop Entry]
-          Name=Thunar Preferences
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/virt-manager.desktop".text = ''
-          [Desktop Entry]
-          Name=Virtual Machine Manager
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/pavucontrol.desktop".text = ''
-          [Desktop Entry]
-          Name=Volume Control
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/org.pulseaudio.pavucontrol.desktop".text = ''
-          [Desktop Entry]
-          Name=Volume Control
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/com.spotify.Client.desktop".text = ''
-          [Desktop Entry]
-          Name=Spotify
-          Type=Application
-          NoDisplay=true
-        '';
-
-        ".local/share/applications/com.obsproject.Studio.desktop".text = ''
-          [Desktop Entry]
-          Name=OBS Studio
-          Type=Application
-          NoDisplay=true
-        '';
-
-        # Hide helper desktop entries we don't want in the launcher grid.
-        ".local/share/applications/foot.desktop".text = ''
-          [Desktop Entry]
-          Name=Foot
-          Type=Application
-          NoDisplay=true
-        '';
-        ".local/share/applications/footclient.desktop".text = ''
-          [Desktop Entry]
-          Name=Foot Client
-          Type=Application
-          NoDisplay=true
-        '';
-        ".local/share/applications/foot-server.desktop".text = ''
-          [Desktop Entry]
-          Name=Foot Server
-          Type=Application
-          NoDisplay=true
-        '';
-      };
+      }
+      # ── Hidden launcher entries ─────────────────────────────────────────
+      // lib.listToAttrs (map stub hiddenStubs)
+      // lib.mapAttrs' hiddenCopy hiddenCopies;
     };
   };
 }

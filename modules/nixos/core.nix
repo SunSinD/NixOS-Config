@@ -10,14 +10,13 @@
   flake.nixosModules.core = { config, pkgs, lib, ... }:
   let
     # ── Helper: btrfs swapfile creator ─────────────────────────────────────
-    # systemd runs this once on boot to make sure /swapfile exists before
-    # the kernel tries to swap on it.
+    # systemd runs this on boot to create /swapfile (only if it's missing)
+    # before the kernel tries to swap on it.
     # Built without Nix '' multiline strings so CRLF / '' rules cannot break systemd's generated wrapper.
     btrfsSwapInit = pkgs.writeShellScript "create-swapfile" (
       lib.concatStringsSep "\n" [
         "set -euo pipefail"
-        "if ${pkgs.util-linux}/bin/swapon --show=NAME --noheadings | ${pkgs.gnugrep}/bin/grep -qx /swapfile; then exit 0; fi"
-        "rm -f /swapfile"
+        "if [ -f /swapfile ]; then exit 0; fi"
         "${pkgs.btrfs-progs}/bin/btrfs filesystem mkswapfile --size 8G /swapfile"
       ]
     );
@@ -30,7 +29,11 @@
 
       log_dir="$HOME/.local/state/niri"
       mkdir -p "$log_dir"
-      exec >> "$log_dir/session.log" 2>&1
+      # Keep only the current and previous session logs.
+      if [ -f "$log_dir/session.log" ]; then
+        mv -f "$log_dir/session.log" "$log_dir/session.log.old"
+      fi
+      exec > "$log_dir/session.log" 2>&1
 
       # NixOS: environment.variables (e.g. NOCTALIA_SETTINGS_FILE) live here; greetd is not a login shell.
       if [ -r /etc/set-environment ]; then
@@ -60,7 +63,6 @@
     # Pull in the modules from external flakes that we want available system-wide.
     imports = [
       inputs.home-manager.nixosModules.home-manager
-      inputs.catppuccin.nixosModules.catppuccin
       inputs.disko.nixosModules.disko
     ];
 
@@ -140,13 +142,6 @@
       ];
     };
 
-    # ── Theme ──────────────────────────────────────────────────────────────
-    # Catppuccin theming is currently off; colors come from app-level configs.
-    catppuccin = {
-      enable = false;
-      cursors.enable = false;
-    };
-
     # ── Fonts ──────────────────────────────────────────────────────────────
     # Inter for UI, JetBrains Mono for terminals/editors, Noto for emoji.
     fonts.packages = with pkgs; [
@@ -212,15 +207,16 @@
     };
 
     # ── Boot loader & kernel quiet flags ───────────────────────────────────
-    # Keep multiple generations and show the boot menu briefly so you can
-    # choose older configs when needed.
+    # Keep a few generations and show the boot menu briefly so you can
+    # choose older configs when needed. Hosts can override both.
     boot.loader.systemd-boot.configurationLimit = lib.mkDefault 3;
     boot.loader.timeout = lib.mkDefault 3;
     # Reduce boot/shutdown noise (and avoids wide "[    OK    ]" status blocks).
+    # No mkDefault on kernelParams: NixOS sets its own params, which would
+    # replace a mkDefault list entirely instead of adding to it.
     boot.consoleLogLevel = lib.mkDefault 0;
-    boot.kernelParams = lib.mkDefault [
+    boot.kernelParams = [
       "quiet"
-      "loglevel=3"
       "udev.log_level=0"
       "systemd.show_status=false"
       "rd.systemd.show_status=false"
@@ -260,15 +256,6 @@
       power-profiles-daemon.enable = true;
       gnome.gnome-keyring.enable = true;
       dbus.enable = true;
-      keyd = {
-        enable = true;
-        keyboards.default = {
-          ids = [ "*" ];
-          settings.main = {
-            # overload(meta, f13) breaks Mod+Enter etc. (niri sees F13+key).
-          };
-        };
-      };
     };
 
     # ── systemd units ──────────────────────────────────────────────────────
@@ -299,7 +286,8 @@
     # ── Virtualization (opt-in) ────────────────────────────────────────────
     # libvirt can fail to start on some machines after updates when systemd
     # credentials are TPM-sealed (seen as "TPM key integrity check failed"),
-    # which would make `nixos-rebuild switch` fail. Keep it opt-in per-host.
+    # which would make `nixos-rebuild switch` fail. Keep it opt-in per-host
+    # (main-pc turns it on).
     virtualisation = {
       libvirtd = {
         enable            = lib.mkDefault false;

@@ -10,13 +10,13 @@
       programs.git = {
         enable = true;
 
-        # ── Identity (used as commit author) ─────────────────────────────
-        settings.user = {
-          name  = "SunSinD";
-          email = "SunpreetSingh22@outlook.com";
-        };
-
         settings = {
+          # ── Identity (used as commit author) ───────────────────────────
+          user = {
+            name  = "SunSinD";
+            email = "SunpreetSingh22@outlook.com";
+          };
+
           # ── Credentials stored in the GNOME keyring ────────────────────
           credential.helper = "${pkgs.git-credential-manager}/bin/git-credential-manager";
           credential.credentialStore = "secretservice";
