@@ -16,7 +16,10 @@ fi
 # ── Phase 1: Sync with GitHub ────────────────────────────────────────────────
 echo ""
 echo "  Syncing with GitHub..."
-git fetch -q origin && git reset -q --hard origin/main
+if ! git fetch -q origin || ! git reset -q --hard origin/main; then
+  echo "  Sync failed. Check your internet connection and try again."
+  exit 1
+fi
 # Restore the saved Secure Boot state.
 if [ -n "$SECURE_BOOT_STATE" ]; then
   printf '%s\n' "$SECURE_BOOT_STATE" > modules/nixos/secure-boot-state.json
@@ -58,3 +61,4 @@ else
   echo "  Build failed. Run 'sudo nixos-rebuild switch --flake ~/nixconf#$(hostname) --show-trace' for details."
 fi
 echo ""
+exit "$RC"
