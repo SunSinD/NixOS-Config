@@ -1,18 +1,18 @@
 # NixOS Config
 
-My NixOS setup: niri (tiling Wayland compositor) + Noctalia shell, managed as a flake with Home Manager.
+My NixOS setup: niri (tiling Wayland compositor) and the Noctalia shell, managed as a flake with Home Manager.
 
 ## Hosts
 
 | Host | Description |
 |------|-------------|
-| `main-pc` | Desktop - AMD/Nvidia, CachyOS kernel, Secure Boot ready |
-| `vm` | VM - QEMU/SPICE/VMware guest tools |
-| `generic` | Portable - works on any UEFI laptop/desktop |
+| `main-pc` | Desktop: AMD/Nvidia, CachyOS kernel, ready for Secure Boot |
+| `vm` | VM: QEMU/SPICE/VMware guest tools |
+| `generic` | Portable: works on any UEFI laptop or desktop |
 
 ## Install
 
-Boot the NixOS ISO in UEFI mode, then connect to Wi-Fi:
+Boot the NixOS ISO in UEFI mode, then connect to WiFi:
 
 ```bash
 nmtui
@@ -24,7 +24,7 @@ Run the installer (it wipes the target disk):
 bash <(curl -fsSL https://raw.githubusercontent.com/SunSinD/NixOS-Config/main/install.sh)
 ```
 
-VMs are auto-detected. The config is copied to `~/nixconf` on the new system.
+VMs are detected automatically. The config is copied to `~/nixconf` on the new system.
 
 ## Commands
 
@@ -33,7 +33,7 @@ VMs are auto-detected. The config is copied to `~/nixconf` on the new system.
 | `update` | Pull the latest config from GitHub and rebuild |
 | `rebuild` | Rebuild from the local `~/nixconf` |
 | `enable-lanzaboote` | Turn on Secure Boot (Lanzaboote) |
-| `finish-install` | Post-install menu (Secure Boot setup, key enrollment) |
+| `finish-install` | Menu to finish the install (Secure Boot setup, key enrollment) |
 
 ## Layout
 
